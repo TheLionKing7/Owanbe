@@ -3,17 +3,27 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 
-// APP_ORIGIN is the canonical public origin of the web app (e.g. https://owanbe.app).
-// It is exposed to client code through envPrefix and read in src/config/env.ts.
+// Public, non-secret configuration exposed to the browser bundle. Each entry is an exact
+// variable name (Vite matches by prefix), so secrets such as AUTH0_CLIENT_SECRET or
+// SUPABASE_SERVICE_ROLE_KEY can never leak into client code. Read in src/config/env.ts.
+const PUBLIC_ENV = [
+  "VITE_",
+  "APP_ORIGIN",
+  "AUTH0_DOMAIN",
+  "AUTH0_CLIENT_ID",
+  "AUTH0_AUDIENCE",
+  "SUPABASE_URL",
+  "SUPABASE_PUBLIC_KEY",
+];
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), ["VITE_", "APP_"]);
+  const env = loadEnv(mode, process.cwd(), PUBLIC_ENV);
   if (mode === "production" && !env.APP_ORIGIN) {
     console.warn("[owanbe] APP_ORIGIN is not set; falling back to window.location.origin at runtime.");
   }
 
   return {
     plugins: [react()],
-    envPrefix: ["VITE_", "APP_"],
+    envPrefix: PUBLIC_ENV,
     resolve: { alias: { "@": path.resolve(__dirname, "src") } },
     server: { port: 8080, host: true },
     build: {

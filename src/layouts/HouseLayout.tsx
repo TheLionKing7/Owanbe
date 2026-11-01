@@ -1,9 +1,21 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { LogOut } from "lucide-react";
+import { RequireAuth } from "@/components/auth/RequireAuth";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { Logo } from "@/components/site/Logo";
 import { HOUSES, type HouseId } from "@/lib/houses";
 
 /** Shell for the Host and Vendor houses: each has its own navigation and never mixes with the other. */
 export default function HouseLayout({ houseId }: { houseId: HouseId }) {
+  return (
+    <RequireAuth>
+      <HouseShell houseId={houseId} />
+    </RequireAuth>
+  );
+}
+
+function HouseShell({ houseId }: { houseId: HouseId }) {
+  const { user, logout } = useAuth();
   const house = HOUSES[houseId];
   const other = HOUSES[houseId === "host" ? "vendor" : "host"];
   return (
@@ -33,6 +45,14 @@ export default function HouseLayout({ houseId }: { houseId: HouseId }) {
         <NavLink to={other.basePath} className="mt-6 hidden min-h-[44px] items-center rounded-xl border border-plum-900/10 px-3 text-sm font-medium text-ink-muted hover:bg-plum-100 lg:flex">
           Switch to {other.name}
         </NavLink>
+        <div className="mt-6 hidden border-t border-plum-900/10 pt-4 lg:block">
+          <p className="truncate text-sm font-semibold text-ink" data-testid="signed-in-as">
+            {user?.display_name ?? user?.email ?? "Signed in"}
+          </p>
+          <button type="button" onClick={() => void logout()} className="mt-2 flex min-h-[44px] items-center gap-2 rounded-xl px-3 text-sm font-medium text-ink-muted hover:bg-plum-100">
+            <LogOut aria-hidden className="h-4 w-4" /> Sign out
+          </button>
+        </div>
       </aside>
       <main id="main" className="px-4 py-6 sm:px-8 lg:py-10">
         <Outlet />

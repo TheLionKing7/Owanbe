@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { ChevronDown, Home, Menu, Search, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { NAV_MENUS, type NavMenu } from "@/data/home";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 function DropdownMenu({ menu, open, onToggle, onClose }: { menu: NavMenu; open: boolean; onToggle: () => void; onClose: () => void }) {
   const id = `menu-${menu.label.toLowerCase()}`;
@@ -39,6 +40,8 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const { status, logout } = useAuth();
+  const signedIn = status === "signedIn";
 
   useEffect(() => {
     setOpenMenu(null);
@@ -84,12 +87,25 @@ export function SiteHeader() {
           <Search aria-hidden className="h-[21px] w-[21px] stroke-[2.25]" />
         </Link>
         <span aria-hidden className="mx-[9px] h-6 w-px bg-plum-900/40" />
-        <Link to="/sign-in" className="btn-outline h-[41px] whitespace-nowrap px-[19px] text-[14.5px]">
-          Sign In
-        </Link>
-        <Link to="/get-started" className="btn-primary ml-3 h-[41px] whitespace-nowrap px-[19px] text-[14.5px]">
-          Get Started
-        </Link>
+        {signedIn ? (
+          <>
+            <button type="button" onClick={() => void logout()} className="btn-outline h-[41px] whitespace-nowrap px-[19px] text-[14.5px]">
+              Sign Out
+            </button>
+            <Link to="/host" className="btn-primary ml-3 h-[41px] whitespace-nowrap px-[19px] text-[14.5px]">
+              My Ówàńbè
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link to="/sign-in" className="btn-outline h-[41px] whitespace-nowrap px-[19px] text-[14.5px]">
+              Sign In
+            </Link>
+            <Link to="/get-started" className="btn-primary ml-3 h-[41px] whitespace-nowrap px-[19px] text-[14.5px]">
+              Get Started
+            </Link>
+          </>
+        )}
       </div>
 
       <button
@@ -128,8 +144,17 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="mt-3 grid grid-cols-2 gap-3 border-t border-plum-900/10 pt-4">
-            <Link to="/sign-in" className="btn-outline h-12">Sign In</Link>
-            <Link to="/get-started" className="btn-primary h-12">Get Started</Link>
+            {signedIn ? (
+              <>
+                <button type="button" onClick={() => void logout()} className="btn-outline h-12">Sign Out</button>
+                <Link to="/host" className="btn-primary h-12">My Ówàńbè</Link>
+              </>
+            ) : (
+              <>
+                <Link to="/sign-in" className="btn-outline h-12">Sign In</Link>
+                <Link to="/get-started" className="btn-primary h-12">Get Started</Link>
+              </>
+            )}
           </div>
         </div>
       )}

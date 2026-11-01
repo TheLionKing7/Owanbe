@@ -154,9 +154,19 @@ npm run dev                   # http://localhost:8080
 
 ## Environment
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `APP_ORIGIN` | yes in production | Canonical public origin, used for canonical URLs, share links and auth redirects. Read in `src/config/env.ts`. |
+Copy `.env.example` to `.env.local`. Only these variables reach the browser (`PUBLIC_ENV` in `vite.config.ts`):
+
+| Variable | Purpose |
+| --- | --- |
+| `APP_ORIGIN` | Canonical public origin, used for canonical URLs, share links and the Auth0 callback (`/auth/callback`). |
+| `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_AUDIENCE` | Auth0 SPA sign-in (F-76). |
+| `SUPABASE_URL`, `SUPABASE_PUBLIC_KEY` | Supabase project URL and publishable/anon key. Never the service-role key. |
+
+Without the Auth0 and Supabase values, the Host and Vendor houses stay locked (fail closed). Setup steps are in `docs/auth0-setup.md`.
+
+## Database
+
+`supabase/migrations/` holds the schema and row-level security. `bash supabase/tests/run-local.sh` runs the database tests against a throwaway local Postgres 16.
 
 ## Structure
 
@@ -178,9 +188,10 @@ owanbe-brand-kit/         source brand assets (logos, icons, patterns, tokens)
 ## Routes
 
 - `/`: homepage (in the initial bundle)
-- `/host`, `/host/:section`: Host House (lazy): plan, events, enquiries, quotes, payments, guests
-- `/vendor`, `/vendor/:section`: Vendor House (lazy): enquiries, quotes, calendar, profile, team, payouts
-- `/discover`, `/vendors/:id`, `/culture`, `/about`, `/help`, `/sign-in`, `/get-started`: placeholders (lazy)
+- `/host`, `/host/:section`: Host House (lazy, sign-in required): plan, events, enquiries, quotes, payments, guests
+- `/vendor`, `/vendor/:section`: Vendor House (lazy, sign-in required): enquiries, quotes, calendar, profile, team, payouts
+- `/sign-in`, `/sign-up`, `/auth/callback`: Auth0 sign-in flow (lazy)
+- `/discover`, `/vendors/:id`, `/culture`, `/about`, `/help`, `/get-started`: placeholders (lazy)
 
 ## Design
 

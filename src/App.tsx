@@ -2,12 +2,15 @@ import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider, type RouteObject } from "react-router-dom";
 import PublicLayout from "@/layouts/PublicLayout";
 import Home from "@/routes/Home";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 
 // Route-level code splitting: only the public shell + homepage ship in the initial bundle.
 const HouseLayout = lazy(() => import("@/layouts/HouseLayout"));
 const HousePage = lazy(() => import("@/routes/HousePage"));
 const PlaceholderPage = lazy(() => import("@/routes/PlaceholderPage"));
 const NotFound = lazy(() => import("@/routes/NotFound"));
+const SignIn = lazy(() => import("@/routes/SignIn"));
+const AuthCallback = lazy(() => import("@/routes/AuthCallback"));
 
 function RouteFallback() {
   return (
@@ -34,10 +37,13 @@ export const routes: RouteObject[] = [
     element: <PublicLayout />,
     children: [
       { index: true, element: <Home /> },
-      ...["discover", "discover/*", "vendors/*", "culture", "about", "help", "sign-in", "get-started"].map((path) => ({
+      ...["discover", "discover/*", "vendors/*", "culture", "about", "help", "get-started"].map((path) => ({
         path,
         element: lazyEl(<PlaceholderPage />),
       })),
+      { path: "sign-in", element: lazyEl(<SignIn />) },
+      { path: "sign-up", element: lazyEl(<SignIn signup />) },
+      { path: "auth/callback", element: lazyEl(<AuthCallback />) },
       { path: "*", element: lazyEl(<NotFound />) },
     ],
   },
@@ -56,5 +62,9 @@ export const routerFuture = {
 const router = createBrowserRouter(routes, { future: routerFuture });
 
 export default function App() {
-  return <RouterProvider router={router} future={{ v7_startTransition: true }} />;
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} future={{ v7_startTransition: true }} />
+    </AuthProvider>
+  );
 }

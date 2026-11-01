@@ -1,13 +1,8 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
-import { routes, routerFuture } from "@/App";
+import { renderApp } from "./fakeAuth";
 
-function renderAt(path: string) {
-  const router = createMemoryRouter(routes, { initialEntries: [path], future: routerFuture });
-  render(<RouterProvider router={router} future={{ v7_startTransition: true }} />);
-  return router;
-}
+const renderAt = (path: string) => renderApp(path).router;
 
 describe("route /", () => {
   it("renders the homepage hero, features, categories and vendors", () => {
