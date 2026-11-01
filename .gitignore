@@ -6,3 +6,7 @@ dist
 !.env.example
 coverage
 .DS_Store
+
+# Cowork desktop app output folder
+Claude outputs/
+publish-to-github.ps1
