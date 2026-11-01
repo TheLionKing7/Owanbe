@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-cream font-sans text-ink antialiased;
+    background-image:
+      radial-gradient(1200px 520px at 8% -12%, rgba(250, 214, 226, 0.55), transparent 60%),
+      radial-gradient(900px 600px at 40% 110%, rgba(255, 229, 205, 0.6), transparent 70%);
+    background-attachment: fixed;
+  }
+  :focus-visible { outline: 2px solid #F8AC00; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-plum-800 font-semibold text-white shadow-pill transition-colors duration-150 hover:bg-plum-700;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-full border border-plum-600/70 bg-white font-semibold text-plum-800 transition-colors duration-150 hover:bg-plum-100;
+  }
+  .surface {
+    @apply rounded-4xl bg-white/95 shadow-card ring-1 ring-plum-900/[0.04];
+  }
+}

@@ -1,8 +1,10 @@
 # Ówàńbè
 
-Ówàńbè is a proposed platform for planning Nigerian celebrations and coordinating vendors.
+Ówàńbè is a platform for planning Nigerian celebrations and coordinating vendors.
 
-Blueprint stage, no application code yet.
+**Your Celebration. Our Culture. Powered by AI.**
+
+Status: F-75 Project setup built. The React + Vite web app is in `src/`, and the blueprint is in `blueprint/`.
 
 ## Overview
 
@@ -130,12 +132,64 @@ See the tech spec for the technology choices.
 - `blueprint/architecture.md`: System architecture and data flow.
 - `blueprint/tech-spec.md`: Technical specification and implementation plan.
 - `blueprint/design-system.md`: Design tokens and UI rules.
+- `src/`, `public/`: the React + Vite web app (see Structure above).
+- `owanbe-brand-kit/`: source brand assets.
+- `docs/`: journal, ADRs, design mockup.
 
-## Getting started
+## Quick start
 
-No code yet.
+```bash
+npm install
+cp .env.example .env.local   # set APP_ORIGIN
+npm run dev                   # http://localhost:8080
+```
 
-Start with the agent workflow:
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Vite dev server |
+| `npm run build` | Type-check and production build to `dist/` |
+| `npm test` | Vitest + Testing Library |
+| `npm run check:bundle` | Fails if first-paint JS for `/` is over 100 kB gzipped |
+| `npm run ci` | typecheck → test → build → bundle budget |
+
+## Environment
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `APP_ORIGIN` | yes in production | Canonical public origin, used for canonical URLs, share links and auth redirects. Read in `src/config/env.ts`. |
+
+## Structure
+
+```
+src/
+  App.tsx                 routes (route-level code splitting via React.lazy)
+  config/env.ts           APP_ORIGIN
+  layouts/PublicLayout    marketing shell: header, help button
+  layouts/HouseLayout     Host / Vendor house shell with each house's own navigation
+  lib/houses.ts           Host + Vendor house navigation definitions
+  routes/                 Home, HousePage, PlaceholderPage, NotFound
+  components/site/        Logo, SiteHeader, HelpButton
+  components/home/        Hero, FeatureStrip, ExploreCategories, FeaturedVendors, DifferenceCard, AnkaraBand
+  data/home.ts            homepage copy, categories, sample vendors
+public/images/            hero, vendor and CTA imagery, wordmark, ankara band
+owanbe-brand-kit/         source brand assets (logos, icons, patterns, tokens)
+```
+
+## Routes
+
+- `/`: homepage (in the initial bundle)
+- `/host`, `/host/:section`: Host House (lazy): plan, events, enquiries, quotes, payments, guests
+- `/vendor`, `/vendor/:section`: Vendor House (lazy): enquiries, quotes, calendar, profile, team, payouts
+- `/discover`, `/vendors/:id`, `/culture`, `/about`, `/help`, `/sign-in`, `/get-started`: placeholders (lazy)
+
+## Design
+
+The homepage follows the approved mockup pixel-for-pixel at 1536 × 1024. It's responsive down to 360 px.
+Fonts are Playfair Display (display) and Figtree (UI). The colours come from `owanbe-brand-kit/tokens` and from samples taken from the mockup (see `tailwind.config.ts`).
+
+> **Imagery note:** the hero, vendor and CTA photos in `public/images/` were cut from the mockup at its native resolution (1536 px wide). Replace them with the high-resolution originals before launch. Keep the same file names and aspect ratios.
+
+## Agent workflow
 
 1. Read `AGENTS.md` and the documents in `blueprint/` before proposing changes.
 2. Connect the Sage 7 MCP server in `opencode.json`:

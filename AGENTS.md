@@ -251,6 +251,17 @@ docs/
 ## UI components
 Before building any UI element, use the shadcn MCP server to search the registries listed in components.json. If nothing fits, build from the base using the project's design tokens. Do not add other component libraries.
 
+## Repository notes (Ówàńbè web app)
+
+Read this before changing code.
+
+- **Spec source:** Sage 7 project "Ówàńbè" (`cfbf39db-b40e-4f75-9039-f241e7b05bfd`). Get the next task from the Sage 7 MCP (`get_next_task`, `get_feature_spec`). Build one feature per branch (`feat/F-<n>-<slug>`) and put the feature ID in every commit, e.g. `feat(F-75): …`.
+- **Decided stack:** React + Vite SPA on Lovable hosting. The backend is Supabase, auth is Auth0, payments are Stripe, email is Resend, jobs are Trigger.dev, search is Algolia, AI is the Vercel AI SDK and observability is Sentry. Don't add frameworks or services without a recorded decision (`report_decision`). UI libraries already recorded: Tailwind CSS, React Router, lucide-react, Vitest/Testing Library.
+- **Design authority:** the owner's homepage mockup (`docs/design/homepage-mockup.png`) and `owanbe-brand-kit/` override the generic Sage 7 design tokens.
+- **Performance:** every route except `/` is `React.lazy`. `npm run check:bundle` enforces a first-paint JS budget of 100 kB gzipped.
+- **Before reporting progress:** `npm run ci` must pass. Add a journal entry in `docs/journal/`.
+- **Two houses:** Host and Vendor navigation live in `src/lib/houses.ts` and must never mix.
+
 <!-- sage7:start -->
 ## Now / Next / Open decisions
 - Now: No current commit activity recorded.
