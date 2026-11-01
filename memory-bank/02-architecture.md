@@ -9,7 +9,15 @@
 | Auth | Auth0 SPA (`@auth0/auth0-spa-js` 2.28.3) → Supabase third-party auth (`@supabase/supabase-js` 2.117.3) | ✅ code; no live tenant **(unverified)** |
 | Payments / Email / Jobs / Search / AI / Observability | Stripe, Resend, Trigger.dev, Algolia, Vercel AI SDK, Sentry | not yet |
 | Mobile | Expo (React Native) | not yet |
-| Tests | Vitest + Testing Library (UI); plain SQL suites on Postgres 16 (`supabase/tests`) | ✅ |
+| Tests | Vitest + Testing Library (UI) ✅; plain SQL suites need Postgres 16 (`supabase/tests`) — **not yet executed in this environment** **(unverified)** |
+
+## Git hosting and what a push does
+
+Remote is `github.com/TheLionKing7/Owanbe` (private). Pushing or merging into `main` **does not deploy anything**:
+- One repository webhook (events `push`, `pull_request`, `issues`, `delete`) points at the Sage 7 sync endpoint, which is how Sage sees commits as build evidence. Its URL carries a private token parameter — never record it here.
+- No `.github/` directory: no workflows, no Actions deployments, no environments; the repo reports zero deployments. No local git hooks.
+- No Lovable/Vercel/Netlify configuration in the tree, so Lovable hosting is not connected to this repo yet (F-79 owns that).
+- No branch protection is available on this plan, so PRs can merge with nothing having run `npm run ci` (F-80 adds CI).
 
 ## Request / runtime flow
 ```

@@ -43,7 +43,7 @@ npm run memory:where -- src/App.tsx   # which memory doc(s) cover a file, plus i
 - **Two houses:** Host House (`/host/*`) and Vendor House (`/vendor/*`) never mix data or navigation.
 - **Design authority:** the owner's mockup (`docs/design/homepage-mockup.png`) plus `owanbe-brand-kit/`. This overrides the Sage 7 tokens (owner-confirmed).
 - **Auth:** Auth0 tokens go straight to Supabase (third-party auth). `public.ensure_user()` is the server session gate.
-- **Built:** F-75 Project setup and F-76 Authentication (both audited); F-77 Data model is waiting for audit. See `07-feature-status.md`.
+- **Built:** F-75 Project setup, F-76 Authentication and F-77 Data model — all three marked built by the Sage 7 audit of 2026-11-01 07:35:28 UTC. "Built" records audit evidence only; live services are not provisioned and the SQL tests have not been run here. See `07-feature-status.md`.
 - **Quality gates:** `npm run ci` covers typecheck, tests, build, the bundle budget (100 kB gzipped initial JS) and the memory check. DB tests: `bash supabase/tests/run-local.sh`.
 - **Git:** one feature per branch, `feat(F-<n>): …` commits, `main` on github.com/TheLionKing7/Owanbe.
 - **Never:** client-side authorization, secrets in `PUBLIC_ENV`, float money, direct client table writes, building ahead of `get_next_task`.

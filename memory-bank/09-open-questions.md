@@ -6,17 +6,21 @@
 | Quote date lock vs soft hold | Proposal: a sent quote creates an advisory date lock, and an accepted quote creates competing 24-hour payment holds. Needs approval. | booking rollout |
 | "Large" fund threshold | Monetary threshold for second-approver actions is undefined | refunds, job reruns |
 | Event manager visibility | What can managers see beyond assigned events? | F-78, event manager features |
+| Unknown Auth0 subject admission | `ensure_user()` creates a `public.users` row for any validly signed-in subject, so an "unrecognised account" is admitted rather than rejected. Is an allow-list / invitation gate required? Reported to Sage 7 as an F-76 gap. | F-76 hardening, F-78 role scoping |
 | Full table list | Owner chose to build tables per feature (F-77 decision); the planned list is in `04` | — |
 | Diamond invitation tier logistics | Scheduling and proof of delivery | invitations |
 
 ## Known gaps / follow-ups
 - Auth0 tenant and Supabase project aren't provisioned, so auth isn't verified end to end **(unverified)**.
+- `supabase/tests/f76_auth.test.sql`, `f77_data_model.test.sql` and `schema_conventions.test.sql` have never run here: no Postgres 16 `initdb`/`psql`, Docker Desktop would not start headless, and WSL defaults to v1. Treat the schema as unexecuted until someone runs `bash supabase/tests/run-local.sh` **(unverified)**.
+- F-76 SQL tests cover wrong audience, expired, wrong issuer, missing subject, suspended account and anon/direct-write denial. Not covered: an absent `exp`, an absent `aud`, `status = 'deactivated'`, a subject shorter than 3 characters, and JWKS signature verification (impossible at SQL level; needs a live tenant).
 - The homepage photography is cut from the mockup at 1536px. Replace it with high-resolution originals.
 - `assignments.target_id` has no FK yet. Add it when the events and cases tables exist.
 - Revoking live sessions and realtime subscriptions on membership removal is F-78 work.
 - Lovable hosting, Sentry and Stripe aren't wired (F-79 and later).
 
 ## Gotchas
+- `publish-to-github.ps1` (repo root) pushes `main` **and deletes every other remote branch**, merging `origin/main` with `-X ours` so the local tree wins on conflicts. Never run it while feature branches still need to survive.
 - `supabase/tests/run-local.sh` refuses to run as root (`initdb`). Use a normal user.
 - On the Windows checkout keep `core.autocrlf=false`. The memory-bank fingerprints normalise CRLF anyway.
 - `/auth/callback` must be listed in Auth0's Allowed Callback URLs for every `APP_ORIGIN`.

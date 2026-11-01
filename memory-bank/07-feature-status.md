@@ -13,6 +13,7 @@ This doc exists only on `chore/memory-bank` (`dbfcd11`); `main` has no `memory-b
 | F-77 Data model (foundation scope) | `feat/F-77-data-model` (stacked on F-76) | `4992cba` | ✅ 2026-11-01 05:01 UTC | ✅ built (audit 2026-11-01 07:35:28 UTC); read "⏳ awaiting audit" in `dbfcd11` | houses, memberships, staff_grants, assignments, audit_events, schema convention tests |
 | F-78 Permission scoping | — | — | — | — | **next**. Wiring: fn `validateToken`, table memberships, env `SUPABASE_SERVICE_ROLE_KEY` |
 | F-79 Deployment | — | — | — | — | Wiring: env SUPABASE_URL, SUPABASE_PUBLIC_KEY, SENTRY_DSN, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET |
+| F-80 CI | — | — | — | — | Planned (Sage 7 `next_three` after F-79). No `.github/` in the repo today: no workflow runs on push or PR. |
 
 ## Audit evidence files (run 2026-11-01 07:35:28 UTC)
 
@@ -22,6 +23,7 @@ Sage 7 stores a one-line audit note per claim, not a file list. The paths below 
   - `docs/journal/2026-10-31-F-75-project-setup.md`, `docs/adr/0001-ui-foundation.md`
   - `package.json` (typecheck / test / build / check:bundle / ci), `scripts/check-bundle.mjs`
   - `src/App.tsx`, `src/config/env.ts`, `src/layouts/HouseLayout.tsx`, `src/lib/houses.ts`
+  - Correction: the note credits "memory-bank indexing", but `a1a4987` contains no memory bank — `memory-bank/` and `scripts/memory-bank.mjs` arrived later in `dbfcd11`. The rest of the note matches `a1a4987`.
 - **F-76** — `50ee4bb` · note: "Auth0 SPA authentication with in-memory tokens, redirect callback handling, and server-side ensure_user session gate."
   - `supabase/migrations/20261101000000_f76_users_auth.sql`, `supabase/tests/f76_auth.test.sql`, `supabase/tests/run-local.sh`, `supabase/tests/supabase_stub.sql`
   - `src/lib/auth/AuthProvider.tsx`, `src/lib/auth/auth0Client.ts`, `src/lib/auth/types.ts`
@@ -38,6 +40,10 @@ Sage 7 stores a one-line audit note per claim, not a file list. The paths below 
 - **F-78:** the role matrix matches the host/vendor-owner/staff/support permissions; vendor staff can't change payouts or member administration (already a DB constraint from F-77); sensitive reads by support and managers are logged. Open: confirm the Auth0 → Supabase validation path for DB and Realtime (answered by ADR 0002).
 - **F-79:** separate dev, staging and prod projects with isolated credentials; backward-compatible migrations deploy before the client; restore and rollback are tested before each release.
 
-## Pending owner actions
-- Push `feat/F-76-authentication` and `feat/F-77-data-model`, then merge F-76 into `main` first.
+## Outstanding actions
+
+- ~~Push `feat/F-76-authentication` and `feat/F-77-data-model`~~ — both are already on `origin` (tracked branches). What is still open is merging them into `main`.
+- **Branch topology:** `chore/memory-bank` (`dbfcd11`, `c9faf0a`) is a linear descendant of `feat/F-77-data-model` → `feat/F-76-authentication` → `main`. Merging `chore/memory-bank` into `main` therefore lands F-76, F-77 **and** the memory bank in one step (48 files, +2715 vs `main`); `main` is an ancestor, so it fast-forwards with no conflicts. Isolating the memory docs onto `main` alone would leave the bank describing `supabase/` and `src/lib/auth/` files that are not there, and `npm run memory:check` would fail.
+- `supabase/tests/*.test.sql` have **not been executed** in this environment (no Postgres 16+ / `initdb`; Docker Desktop would not start, WSL default is v1) **(unverified)**.
 - Provision an Auth0 tenant and a Supabase project (`docs/auth0-setup.md`).
+- No CI and no branch protection on `main` (private repo): nothing runs `npm run ci` on a PR before merge (F-80).
