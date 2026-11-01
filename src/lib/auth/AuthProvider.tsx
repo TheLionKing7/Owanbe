@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { readAuthEnv, type AuthEnv } from "@/config/env";
-import { AccountBlockedError, type AppUser, type AuthClient, type AuthStatus, type LoginOptions } from "./types";
+import { AccountBlockedError, type AppUser, type AuthClient, type AuthStatus, type HouseSummary, type LoginOptions } from "./types";
 
 export type AuthClientLoader = (env: AuthEnv) => Promise<AuthClient>;
 
@@ -9,6 +9,7 @@ const defaultLoader: AuthClientLoader = async (env) => (await import("./auth0Cli
 interface AuthContextValue {
   status: AuthStatus;
   user: AppUser | null;
+  houses: HouseSummary[];
   blockedReason: "suspended" | "deactivated" | null;
   login(options?: LoginOptions): Promise<void>;
   logout(): Promise<void>;
@@ -36,6 +37,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children, loader = defaultLoader, env = readAuthEnv() }: AuthProviderProps) {
   const [status, setStatus] = useState<AuthStatus>(env ? "loading" : "unconfigured");
   const [user, setUser] = useState<AppUser | null>(null);
+  const [houses, setHouses] = useState<HouseSummary[]>([]);
   const [blockedReason, setBlockedReason] = useState<AuthContextValue["blockedReason"]>(null);
   const clientRef = useRef<Promise<AuthClient> | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -49,12 +51,15 @@ export function AuthProvider({ children, loader = defaultLoader, env = readAuthE
   /** Server-side session gate: nothing is "signed in" until ensure_user succeeds. */
   const admit = useCallback(async (client: AuthClient): Promise<boolean> => {
     try {
-      setUser(await client.ensureAppUser());
+      const admitted = await client.ensureAppUser();
+      setHouses(await client.listHouses());
+      setUser(admitted);
       setBlockedReason(null);
       setStatus("signedIn");
       return true;
     } catch (err) {
       setUser(null);
+      setHouses([]);
       if (err instanceof AccountBlockedError) {
         setBlockedReason(err.reason);
         setStatus("blocked");
@@ -93,6 +98,7 @@ export function AuthProvider({ children, loader = defaultLoader, env = readAuthE
     () => ({
       status,
       user,
+      houses,
       blockedReason,
       async login(options) {
         const client = await getClient();
@@ -123,7 +129,7 @@ export function AuthProvider({ children, loader = defaultLoader, env = readAuthE
         setAttempt((n) => n + 1);
       },
     }),
-    [status, user, blockedReason, getClient, admit, env],
+    [status, user, houses, blockedReason, getClient, admit, env],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -81,3 +81,18 @@ describe("F-76 authentication", () => {
     await waitFor(() => expect(client.login).toHaveBeenCalledWith({ returnTo: "/sign-up?next=/vendor", signup: true }));
   });
 });
+
+describe("F-77 houses", () => {
+  it("shows the signed-in user's own house from my_houses()", async () => {
+    renderApp("/vendor");
+    expect(await screen.findByTestId("my-house")).toHaveTextContent("Alice Events Ltd");
+  });
+
+  it("shows an empty state when the user has no house of that kind", async () => {
+    const { fakeClient: make } = await import("./fakeAuth");
+    const client = make("signedIn", { listHouses: async () => [{ house_id: "h-1", kind: "host", display_name: "Alice's celebrations", role: "owner", capabilities: [] }] });
+    renderApp("/vendor/quotes", client);
+    expect(await screen.findByText("No Vendor House yet")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Quotes", level: 1 })).toBeNull();
+  });
+});

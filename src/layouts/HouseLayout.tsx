@@ -15,8 +15,9 @@ export default function HouseLayout({ houseId }: { houseId: HouseId }) {
 }
 
 function HouseShell({ houseId }: { houseId: HouseId }) {
-  const { user, logout } = useAuth();
+  const { user, houses, logout } = useAuth();
   const house = HOUSES[houseId];
+  const myHouse = houses.find((h) => h.kind === houseId);
   const other = HOUSES[houseId === "host" ? "vendor" : "host"];
   return (
     <div className="mx-auto min-h-screen max-w-page lg:grid lg:grid-cols-[260px_1fr]">
@@ -25,6 +26,12 @@ function HouseShell({ houseId }: { houseId: HouseId }) {
         <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-plum-500" data-testid="house-name">
           {house.name}
         </p>
+        {myHouse && (
+          <p className="mt-1 truncate text-sm font-semibold text-ink" data-testid="my-house">
+            {myHouse.display_name}
+            {myHouse.role === "staff" && <span className="ml-1 font-normal text-ink-muted">(staff)</span>}
+          </p>
+        )}
         <nav aria-label={`${house.name} navigation`} className="mt-3">
           <ul className="flex gap-1 overflow-x-auto lg:flex-col">
             {house.nav.map((item) => (
@@ -55,7 +62,18 @@ function HouseShell({ houseId }: { houseId: HouseId }) {
         </div>
       </aside>
       <main id="main" className="px-4 py-6 sm:px-8 lg:py-10">
-        <Outlet />
+        {myHouse ? (
+          <Outlet />
+        ) : (
+          <section role="status" className="max-w-xl rounded-3xl bg-white p-8 shadow-card" data-testid="no-house">
+            <h1 className="font-display text-3xl font-bold text-plum-950">No {house.name} yet</h1>
+            <p className="mt-3 text-ink-muted">
+              {houseId === "vendor"
+                ? "Your account doesn't have a Vendor house. Opening one arrives with the Become a Vendor feature."
+                : "Your Host house is being set up. Please refresh in a moment."}
+            </p>
+          </section>
+        )}
       </main>
     </div>
   );

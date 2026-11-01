@@ -2,7 +2,7 @@
 import { createAuth0Client, type Auth0Client } from "@auth0/auth0-spa-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { absoluteUrl, type AuthEnv } from "@/config/env";
-import { AccountBlockedError, type AppUser, type AuthClient, type LoginOptions } from "./types";
+import { AccountBlockedError, type AppUser, type AuthClient, type HouseSummary, type LoginOptions } from "./types";
 
 export const CALLBACK_PATH = "/auth/callback";
 
@@ -63,6 +63,12 @@ export async function createAuthClient(env: AuthEnv): Promise<AuthClient> {
         throw new Error(error.message || "ensure_user failed");
       }
       return data as AppUser;
+    },
+    async listHouses() {
+      const client = await getSupabase();
+      const { data, error } = await client.rpc("my_houses");
+      if (error) throw new Error(error.message || "my_houses failed");
+      return (data ?? []) as HouseSummary[];
     },
   };
 }

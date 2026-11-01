@@ -4,7 +4,7 @@ import { vi } from "vitest";
 import { routes, routerFuture } from "@/App";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import type { AuthEnv } from "@/config/env";
-import { AccountBlockedError, type AppUser, type AuthClient } from "@/lib/auth/types";
+import { AccountBlockedError, type AppUser, type AuthClient, type HouseSummary } from "@/lib/auth/types";
 
 export const TEST_ENV: AuthEnv = {
   domain: "owanbe-test.us.auth0.com",
@@ -15,6 +15,11 @@ export const TEST_ENV: AuthEnv = {
 };
 
 export const ALICE: AppUser = { id: "u-1", auth0_sub: "auth0|alice", email: "alice@example.com", display_name: "Alice A.", status: "active" };
+
+export const ALICE_HOUSES: HouseSummary[] = [
+  { house_id: "h-1", kind: "host", display_name: "Alice's celebrations", role: "owner", capabilities: [] },
+  { house_id: "h-2", kind: "vendor", display_name: "Alice Events Ltd", role: "owner", capabilities: ["chat", "quotes", "payouts"] },
+];
 
 type Mode = "signedIn" | "signedOut" | "suspended" | "error";
 
@@ -29,6 +34,7 @@ export function fakeClient(mode: Mode, overrides: Partial<AuthClient> = {}): Aut
       if (mode === "error") throw new Error("network");
       return ALICE;
     }),
+    listHouses: vi.fn(async () => ALICE_HOUSES),
     ...overrides,
   };
 }

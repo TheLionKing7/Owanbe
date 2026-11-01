@@ -7,6 +7,15 @@ export interface AppUser {
   status: "active" | "suspended" | "deactivated";
 }
 
+/** Projection from public.my_houses(): only the caller's own houses. */
+export interface HouseSummary {
+  house_id: string;
+  kind: "host" | "vendor";
+  display_name: string;
+  role: "owner" | "staff";
+  capabilities: string[];
+}
+
 export interface LoginOptions {
   returnTo?: string;
   signup?: boolean;
@@ -22,6 +31,8 @@ export interface AuthClient {
   logout(): Promise<void>;
   /** Runs the server-side session gate (token checks, user mapping, status). */
   ensureAppUser(): Promise<AppUser>;
+  /** Houses the admitted user belongs to (public.my_houses()). */
+  listHouses(): Promise<HouseSummary[]>;
 }
 
 export type AuthStatus = "unconfigured" | "loading" | "signedOut" | "signedIn" | "blocked" | "error";
