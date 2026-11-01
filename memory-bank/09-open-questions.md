@@ -5,8 +5,9 @@
 |---|---|---|
 | Quote date lock vs soft hold | Proposal: a sent quote creates an advisory date lock, and an accepted quote creates competing 24-hour payment holds. Needs approval. | booking rollout |
 | "Large" fund threshold | Monetary threshold for second-approver actions is undefined | refunds, job reruns |
-| Event manager visibility | What can managers see beyond assigned events? | F-78, event manager features |
-| Unknown Auth0 subject admission | `ensure_user()` creates a `public.users` row for any validly signed-in subject, so an "unrecognised account" is admitted rather than rejected. Is an allow-list / invitation gate required? Reported to Sage 7 as an F-76 gap. | F-76 hardening, F-78 role scoping |
+| Unknown Auth0 subject admission | **Answered 2026-11-01 10:58 UTC:** admit but restrict — a new user starts in a limited state until verified. Open sub-question: which feature owns the migration, and what exactly is blocked while restricted (quoting? payments? being discoverable?) | F-78 (needs the restricted state to exist before role scoping is meaningful) |
+| Event manager visibility | **Answered 2026-11-01 10:52 UTC:** assigned events only; no guest phone numbers, no health details, no financial authority; paid/not-paid status visible with every view logged as a sensitive read | F-78 implementation |
+| Restricted-state capabilities | What a newly admitted, not-yet-verified user may do before verification is undefined; `users.status` has no restricted value today | F-78 |
 | Full table list | Owner chose to build tables per feature (F-77 decision); the planned list is in `04` | — |
 | Diamond invitation tier logistics | Scheduling and proof of delivery | invitations |
 
