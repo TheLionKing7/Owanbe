@@ -1,0 +1,21 @@
+:root{
+  --owanbe-royal-purple: #4B2E83;
+  --owanbe-sun-gold: #F7B500;
+  --owanbe-yoruba-blue: #0088A8;
+  --owanbe-emerald-green: #0E7D6B;
+  --owanbe-vibrant-red: #E63946;
+  --owanbe-fuchsia-pink: #D81B8D;
+  --owanbe-cream: #FFF9F0;
+  --owanbe-charcoal: #1A1A1A;
+  --owanbe-purple-deep: #3A2268;   /* fold shade, dark UI surfaces */
+  --owanbe-font-display: "Playfair Display", Georgia, serif;
+  --owanbe-font-ui: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* semantic roles */
+  --bg: var(--owanbe-cream);
+  --surface-dark: var(--owanbe-royal-purple);
+  --text: var(--owanbe-charcoal);
+  --text-on-dark: var(--owanbe-cream);
+  --accent: var(--owanbe-sun-gold);       /* fills & highlights; not for small text on cream */
+  --action: var(--owanbe-vibrant-red);
+  --link: var(--owanbe-yoruba-blue);
+}
