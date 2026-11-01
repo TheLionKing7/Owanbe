@@ -251,6 +251,11 @@ docs/
 ## UI components
 Before building any UI element, use the shadcn MCP server to search the registries listed in components.json. If nothing fits, build from the base using the project's design tokens. Do not add other component libraries.
 
+## Memory bank (read first)
+
+Before reading code, read `memory-bank/README.md`, then `memory-bank/00-protocol.md` and `memory-bank/07-feature-status.md`. They index the whole codebase.
+Every change must update the affected memory docs in the same commit (protocol in `memory-bank/00-protocol.md`), then run `npm run memory:update` and `npm run memory:check`, which is part of `npm run ci`.
+
 ## Repository notes (Ówàńbè web app)
 
 Read this before changing code.

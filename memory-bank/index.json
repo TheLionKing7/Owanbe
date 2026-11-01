@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-01T07:27:55.519Z",
+  "docs": [
+    {
+      "file": "README.md",
+      "topic": "entry point and index"
+    },
+    {
+      "file": "00-protocol.md",
+      "topic": "read/update protocol"
+    },
+    {
+      "file": "01-project-brief.md",
+      "topic": "product, roles, scope source"
+    },
+    {
+      "file": "02-architecture.md",
+      "topic": "stack, flows, routes, env, performance"
+    },
+    {
+      "file": "03-codebase-map.md",
+      "topic": "file-by-file map"
+    },
+    {
+      "file": "04-data-model.md",
+      "topic": "database tables, RLS, functions"
+    },
+    {
+      "file": "05-design-system.md",
+      "topic": "visual authority, tokens, layout"
+    },
+    {
+      "file": "06-conventions.md",
+      "topic": "workflow, code, security, tests"
+    },
+    {
+      "file": "07-feature-status.md",
+      "topic": "Sage 7 features and audits"
+    },
+    {
+      "file": "08-decisions.md",
+      "topic": "ADRs and owner decisions"
+    },
+    {
+      "file": "09-open-questions.md",
+      "topic": "open questions, gaps, gotchas"
+    },
+    {
+      "file": "10-changelog.md",
+      "topic": "memory update log"
+    }
+  ],
+  "coverage": [
+    {
+      "pattern": "^supabase/",
+      "docs": [
+        "04-data-model.md"
+      ]
+    },
+    {
+      "pattern": "^src/(lib/auth|components/auth|routes/(SignIn|AuthCallback))",
+      "docs": [
+        "02-architecture.md"
+      ]
+    },
+    {
+      "pattern": "^src/(App\\.tsx|config/|lib/houses|layouts/)",
+      "docs": [
+        "02-architecture.md"
+      ]
+    },
+    {
+      "pattern": "^src/(components/(home|site)|routes/Home|index\\.css|data/)",
+      "docs": [
+        "05-design-system.md"
+      ]
+    },
+    {
+      "pattern": "^(tailwind\\.config\\.ts|index\\.html)$",
+      "docs": [
+        "05-design-system.md"
+      ]
+    },
+    {
+      "pattern": "^(vite\\.config\\.ts|\\.env\\.example|package\\.json|tsconfig.*|postcss\\.config\\.js)$",
+      "docs": [
+        "02-architecture.md",
+        "06-conventions.md"
+      ]
+    },
+    {
+      "pattern": "^src/test/|^scripts/",
+      "docs": [
+        "06-conventions.md"
+      ]
+    },
+    {
+      "pattern": "^docs/adr/",
+      "docs": [
+        "08-decisions.md"
+      ]
+    },
+    {
+      "pattern": "^docs/journal/",
+      "docs": [
+        "07-feature-status.md"
+      ]
+    },
+    {
+      "pattern": "^(AGENTS|README)\\.md$|^\\.gitignore$|^docs/",
+      "docs": [
+        "06-conventions.md"
+      ]
+    }
+  ],
+  "files": {
+    ".env.example": "1acf33fc139af19d",
+    ".gitignore": "2a824f1b83999f35",
+    "AGENTS.md": "d72fba22eaeb17f0",
+    "README.md": "d3356d9da2d75f99",
+    "docs/adr/0001-ui-foundation.md": "0847a938b70a3b62",
+    "docs/adr/0002-auth0-supabase-third-party.md": "55e13b4b41163e6b",
+    "docs/auth0-setup.md": "a08807bd6454c75b",
+    "docs/journal/2026-10-31-F-75-project-setup.md": "42875d21390ff81a",
+    "docs/journal/2026-11-01-F-76-authentication.md": "261e4a07627b27b0",
+    "docs/journal/2026-11-01-F-77-data-model.md": "619b78ace5d67d8d",
+    "index.html": "23a9ab09b38b97f5",
+    "package.json": "c7d32df9f52dd4e6",
+    "postcss.config.js": "08910ce1d5cd87d2",
+    "public/favicon.svg": "ca92ec8b8204ce37",
+    "scripts/check-bundle.mjs": "4a45e568b71587f3",
+    "scripts/memory-bank.mjs": "abdeb98330c70cde",
+    "src/App.tsx": "e441721a4f25b681",
+    "src/components/auth/AuthNotice.tsx": "6a78d7c2e7beb2c6",
+    "src/components/auth/RequireAuth.tsx": "947c9e72119ab450",
+    "src/components/home/AnkaraBand.tsx": "b73d7dde16e45888",
+    "src/components/home/DifferenceCard.tsx": "9c2bb7602ea525bb",
+    "src/components/home/ExploreCategories.tsx": "503b4462926081d9",
+    "src/components/home/FeatureStrip.tsx": "a8fe43a7a31b0b55",
+    "src/components/home/FeaturedVendors.tsx": "e5a5ffaef3d48473",
+    "src/components/home/Hero.tsx": "a7aa928020eeb62e",
+    "src/components/site/HelpButton.tsx": "0e99a6f0fb7274fa",
+    "src/components/site/Logo.tsx": "2637a15241329ecc",
+    "src/components/site/SiteHeader.tsx": "e61c90652f88fa63",
+    "src/config/env.ts": "732c8adc184c9d7a",
+    "src/data/home.ts": "8561c5e231670fdf",
+    "src/index.css": "5079ee9b59a6c98d",
+    "src/layouts/HouseLayout.tsx": "b9c0d9da766694fe",
+    "src/layouts/PublicLayout.tsx": "96d1b5fccd930d54",
+    "src/lib/auth/AuthProvider.tsx": "7b193f8272aebb60",
+    "src/lib/auth/auth0Client.ts": "ba73b7f7da0eb8e1",
+    "src/lib/auth/types.ts": "9ad7577d883fe79b",
+    "src/lib/houses.ts": "247e322f6b31aa5e",
+    "src/main.tsx": "b10869122e05a4e4",
+    "src/routes/AuthCallback.tsx": "538619e31e975b3c",
+    "src/routes/Home.tsx": "103351291c3d7785",
+    "src/routes/HousePage.tsx": "1ba85ad9ba700b33",
+    "src/routes/NotFound.tsx": "d0616146f3dbb1ad",
+    "src/routes/PlaceholderPage.tsx": "60298fe336198940",
+    "src/routes/SignIn.tsx": "d0b16efaead31449",
+    "src/test/auth.test.tsx": "9bdaad8d22aa5c8e",
+    "src/test/env.test.ts": "29568b7957b2c0e5",
+    "src/test/fakeAuth.tsx": "0fc3e1c82965bfed",
+    "src/test/routes.test.tsx": "fbbf74312d59e0a5",
+    "src/test/setup.ts": "9b328c4843431fa7",
+    "src/vite-env.d.ts": "134fafce7b20fa6a",
+    "supabase/config.toml": "7bcdd02d0b92e671",
+    "supabase/migrations/20261101000000_f76_users_auth.sql": "74495a5d156aa00a",
+    "supabase/migrations/20261101020000_f77_data_model.sql": "f677cd6b279c6b02",
+    "supabase/tests/f76_auth.test.sql": "1b127081fb36537a",
+    "supabase/tests/f77_data_model.test.sql": "5e6029fa8682602f",
+    "supabase/tests/run-local.sh": "dbb84ef12307d3c1",
+    "supabase/tests/schema_conventions.test.sql": "44413697face1a56",
+    "supabase/tests/supabase_stub.sql": "632f3445d25938c2",
+    "tailwind.config.ts": "9e3d76df2f897710",
+    "tsconfig.app.json": "f028bd16536ffc88",
+    "tsconfig.json": "e8d6f7b50828db39",
+    "tsconfig.node.json": "fc1079c802a477a2",
+    "vite.config.ts": "6e9a35e84365060f"
+  }
+}

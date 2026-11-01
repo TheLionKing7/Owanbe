@@ -125,6 +125,7 @@ See the tech spec for the technology choices.
 
 ## Repository map
 
+- `memory-bank/`: indexed codebase memory for agents. Start at `memory-bank/README.md`.
 - `AGENTS.md`: Instructions for AI coding agents.
 - `README.md`: Project overview and agent workflow.
 - `blueprint/system-overview.md`: Plain-language system overview.

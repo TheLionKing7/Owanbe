@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Ówàńbè — AI-powered celebration commerce for Yoruba celebrations (web SPA).",
+  "description": "\u00d3w\u00e0\u0144b\u00e8 \u2014 AI-powered celebration commerce for Yoruba celebrations (web SPA).",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -12,7 +12,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check:bundle": "node scripts/check-bundle.mjs",
-    "ci": "npm run typecheck && npm test && npm run build && npm run check:bundle"
+    "ci": "npm run typecheck && npm test && npm run build && npm run check:bundle && npm run memory:check",
+    "memory:check": "node scripts/memory-bank.mjs check",
+    "memory:update": "node scripts/memory-bank.mjs update",
+    "memory:where": "node scripts/memory-bank.mjs where"
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "2.28.3",
