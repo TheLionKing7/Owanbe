@@ -9,50 +9,324 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicRouteImport } from './routes/_public'
+import { Route as HostRouteImport } from './routes/host'
+import { Route as VendorRouteImport } from './routes/vendor'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicSplatRouteImport } from './routes/_public/$'
+import { Route as PublicSignInRouteImport } from './routes/_public/sign-in'
+import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
+import { Route as HostIndexRouteImport } from './routes/host/index'
+import { Route as HostSectionRouteImport } from './routes/host/$section'
+import { Route as VendorIndexRouteImport } from './routes/vendor/index'
+import { Route as VendorSectionRouteImport } from './routes/vendor/$section'
+import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth.callback'
+import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack/webhook'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HostRoute = HostRouteImport.update({
+  id: '/host',
+  path: '/host',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VendorRoute = VendorRouteImport.update({
+  id: '/vendor',
+  path: '/vendor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicIndexRoute = PublicIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicSplatRoute = PublicSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicSignInRoute = PublicSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicSignUpRoute = PublicSignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => PublicRoute,
+} as any)
+const HostIndexRoute = HostIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HostRoute,
+} as any)
+const HostSectionRoute = HostSectionRouteImport.update({
+  id: '/$section',
+  path: '/$section',
+  getParentRoute: () => HostRoute,
+} as any)
+const VendorIndexRoute = VendorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VendorRoute,
+} as any)
+const VendorSectionRoute = VendorSectionRouteImport.update({
+  id: '/$section',
+  path: '/$section',
+  getParentRoute: () => VendorRoute,
+} as any)
+const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => PublicRoute,
+} as any)
+const ApiPublicPaystackWebhookRoute =
+  ApiPublicPaystackWebhookRouteImport.update({
+    id: '/api/public/paystack/webhook',
+    path: '/api/public/paystack/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof PublicIndexRoute
+  '/host': typeof HostRouteWithChildren
+  '/vendor': typeof VendorRouteWithChildren
+  '/$': typeof PublicSplatRoute
+  '/sign-in': typeof PublicSignInRoute
+  '/sign-up': typeof PublicSignUpRoute
+  '/host/$section': typeof HostSectionRoute
+  '/vendor/$section': typeof VendorSectionRoute
+  '/host/': typeof HostIndexRoute
+  '/vendor/': typeof VendorIndexRoute
+  '/auth/callback': typeof PublicAuthCallbackRoute
+  '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/$': typeof PublicSplatRoute
+  '/sign-in': typeof PublicSignInRoute
+  '/sign-up': typeof PublicSignUpRoute
+  '/host/$section': typeof HostSectionRoute
+  '/vendor/$section': typeof VendorSectionRoute
+  '/': typeof PublicIndexRoute
+  '/host': typeof HostIndexRoute
+  '/vendor': typeof VendorIndexRoute
+  '/auth/callback': typeof PublicAuthCallbackRoute
+  '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_public': typeof PublicRouteWithChildren
+  '/host': typeof HostRouteWithChildren
+  '/vendor': typeof VendorRouteWithChildren
+  '/_public/$': typeof PublicSplatRoute
+  '/_public/sign-in': typeof PublicSignInRoute
+  '/_public/sign-up': typeof PublicSignUpRoute
+  '/host/$section': typeof HostSectionRoute
+  '/vendor/$section': typeof VendorSectionRoute
+  '/_public/': typeof PublicIndexRoute
+  '/host/': typeof HostIndexRoute
+  '/vendor/': typeof VendorIndexRoute
+  '/_public/auth/callback': typeof PublicAuthCallbackRoute
+  '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/host'
+    | '/vendor'
+    | '/$'
+    | '/sign-in'
+    | '/sign-up'
+    | '/host/$section'
+    | '/vendor/$section'
+    | '/host/'
+    | '/vendor/'
+    | '/auth/callback'
+    | '/api/public/paystack/webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/$'
+    | '/sign-in'
+    | '/sign-up'
+    | '/host/$section'
+    | '/vendor/$section'
+    | '/'
+    | '/host'
+    | '/vendor'
+    | '/auth/callback'
+    | '/api/public/paystack/webhook'
+  id:
+    | '__root__'
+    | '/_public'
+    | '/host'
+    | '/vendor'
+    | '/_public/$'
+    | '/_public/sign-in'
+    | '/_public/sign-up'
+    | '/host/$section'
+    | '/vendor/$section'
+    | '/_public/'
+    | '/host/'
+    | '/vendor/'
+    | '/_public/auth/callback'
+    | '/api/public/paystack/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  PublicRoute: typeof PublicRouteWithChildren
+  HostRoute: typeof HostRouteWithChildren
+  VendorRoute: typeof VendorRouteWithChildren
+  ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/host': {
+      id: '/host'
+      path: '/host'
+      fullPath: '/host'
+      preLoaderRoute: typeof HostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vendor': {
+      id: '/vendor'
+      path: '/vendor'
+      fullPath: '/vendor'
+      preLoaderRoute: typeof VendorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public/': {
+      id: '/_public/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/$': {
+      id: '/_public/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof PublicSplatRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/sign-in': {
+      id: '/_public/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof PublicSignInRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/sign-up': {
+      id: '/_public/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof PublicSignUpRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/host/': {
+      id: '/host/'
+      path: '/'
+      fullPath: '/host/'
+      preLoaderRoute: typeof HostIndexRouteImport
+      parentRoute: typeof HostRoute
+    }
+    '/host/$section': {
+      id: '/host/$section'
+      path: '/$section'
+      fullPath: '/host/$section'
+      preLoaderRoute: typeof HostSectionRouteImport
+      parentRoute: typeof HostRoute
+    }
+    '/vendor/': {
+      id: '/vendor/'
+      path: '/'
+      fullPath: '/vendor/'
+      preLoaderRoute: typeof VendorIndexRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/vendor/$section': {
+      id: '/vendor/$section'
+      path: '/$section'
+      fullPath: '/vendor/$section'
+      preLoaderRoute: typeof VendorSectionRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/_public/auth/callback': {
+      id: '/_public/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof PublicAuthCallbackRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/api/public/paystack/webhook': {
+      id: '/api/public/paystack/webhook'
+      path: '/api/public/paystack/webhook'
+      fullPath: '/api/public/paystack/webhook'
+      preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
+interface PublicRouteChildren {
+  PublicSplatRoute: typeof PublicSplatRoute
+  PublicSignInRoute: typeof PublicSignInRoute
+  PublicSignUpRoute: typeof PublicSignUpRoute
+  PublicIndexRoute: typeof PublicIndexRoute
+  PublicAuthCallbackRoute: typeof PublicAuthCallbackRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicSplatRoute: PublicSplatRoute,
+  PublicSignInRoute: PublicSignInRoute,
+  PublicSignUpRoute: PublicSignUpRoute,
+  PublicIndexRoute: PublicIndexRoute,
+  PublicAuthCallbackRoute: PublicAuthCallbackRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
+interface HostRouteChildren {
+  HostSectionRoute: typeof HostSectionRoute
+  HostIndexRoute: typeof HostIndexRoute
+}
+
+const HostRouteChildren: HostRouteChildren = {
+  HostSectionRoute: HostSectionRoute,
+  HostIndexRoute: HostIndexRoute,
+}
+
+const HostRouteWithChildren = HostRoute._addFileChildren(HostRouteChildren)
+
+interface VendorRouteChildren {
+  VendorSectionRoute: typeof VendorSectionRoute
+  VendorIndexRoute: typeof VendorIndexRoute
+}
+
+const VendorRouteChildren: VendorRouteChildren = {
+  VendorSectionRoute: VendorSectionRoute,
+  VendorIndexRoute: VendorIndexRoute,
+}
+
+const VendorRouteWithChildren =
+  VendorRoute._addFileChildren(VendorRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  PublicRoute: PublicRouteWithChildren,
+  HostRoute: HostRouteWithChildren,
+  VendorRoute: VendorRouteWithChildren,
+  ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

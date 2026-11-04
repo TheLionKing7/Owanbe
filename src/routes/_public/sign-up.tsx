@@ -1,0 +1,8 @@
+import { createFileRoute } from "@tanstack/react-router";
+import SignIn from "@/pages/SignIn";
+
+export const Route = createFileRoute("/_public/sign-up")({
+  ssr: false,
+  head: () => ({ meta: [{ title: "Create your account — Ówàńbè" }, { name: "description", content: "Join Ówàńbè as a host or vendor." }, { property: "og:title", content: "Create your account — Ówàńbè" }, { property: "og:description", content: "Join Ówàńbè as a host or vendor." }] }),
+  component: () => <SignIn signup />,
+});
