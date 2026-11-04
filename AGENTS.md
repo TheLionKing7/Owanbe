@@ -348,3 +348,8 @@ Before building any UI element, use the shadcn MCP server to search the registri
 - Changed sources: initial compile.
 - Audit evidence: No valid audit yet.
 <!-- sage7:end -->
+
+## Lovable migration notes
+- Pages keep the original react-router-style API through `src/lib/router.tsx` (a thin adapter over TanStack Router), so imported components stay unchanged. Route files live in `src/routes`, and page bodies live in `src/pages`.
+- Database changes waiting for the owner's Supabase connection go in `supabase/pending/`. `supabase/tests/run-local.sh` runs them after `supabase/migrations/`, and they move into migrations through the migration tool once Supabase is connected.
+- Payments use Paystack. Webhooks arrive at `/api/public/paystack/webhook` and are rejected unless they carry a valid HMAC-SHA512 signature.
