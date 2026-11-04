@@ -1,5 +1,7 @@
 import { useLocation, useParams, useSearchParams } from "@/lib/router";
 import { HOUSES, findNavItem, type HouseId } from "@/lib/houses";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { QuotesPanel } from "@/features/quotes/QuotesPanel";
 import NotFound from "./NotFound";
 
 export default function HousePage({ houseId }: { houseId: HouseId }) {
@@ -7,9 +9,11 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
   const { section } = useParams();
   const [params] = useSearchParams();
   const { pathname } = useLocation();
+  const { houses } = useAuth();
   const item = findNavItem(house, section);
   if (!item) return <NotFound />;
 
+  const myHouse = houses.find((entry) => entry.kind === houseId);
   const query = params.get("q");
   return (
     <section aria-labelledby="house-page-title">
@@ -23,9 +27,20 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
           Planning: <strong className="text-plum-800">{query}</strong>
         </p>
       )}
-      <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
-        This workspace is scaffolded; its tools arrive with later features.
-      </p>
+      {item.slug === "quotes" && myHouse ? (
+        <div className="mt-8">
+          <QuotesPanel
+            house={myHouse}
+            side={houseId}
+            hostHint={params.get("host")}
+            dateHint={params.get("date")}
+          />
+        </div>
+      ) : (
+        <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
+          This workspace is scaffolded; its tools arrive with later features.
+        </p>
+      )}
     </section>
   );
 }
