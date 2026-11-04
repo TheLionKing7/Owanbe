@@ -74,7 +74,7 @@ export function NavLink({
   children?: ReactNode;
 }) {
   const { pathname } = useLocation();
-  const base = to.split("?")[0];
+  const base = to.split("?")[0] ?? to;
   const isActive = end ? pathname === base : pathname === base || pathname.startsWith(base.endsWith("/") ? base : `${base}/`);
   const handle = useClick(to, onClick);
   return (

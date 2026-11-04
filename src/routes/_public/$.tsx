@@ -6,7 +6,7 @@ const KNOWN = ["discover", "vendors", "culture", "about", "help", "get-started"]
 
 function CatchAll() {
   const { _splat } = Route.useParams();
-  const first = (_splat ?? "").split("/")[0];
+  const first = (_splat ?? "").split("/")[0] ?? "";
   if (KNOWN.includes(first) && !(first !== "discover" && first !== "vendors" && _splat?.includes("/"))) return <PlaceholderPage />;
   return <NotFound />;
 }
