@@ -1,5 +1,5 @@
 # Supabase CLI project config (only the settings Ówàńbè relies on).
-project_id = "owanbe"
+project_id = "voaseybakdiohzhvmait"
 
 [api]
 schemas = ["public"]
