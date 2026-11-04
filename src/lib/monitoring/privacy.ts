@@ -3,23 +3,27 @@ import type { ErrorEvent } from "@sentry/react";
 /** Strict allowlist: never transmit arbitrary exception messages or application data. */
 export function sanitizeSentryEvent(event: ErrorEvent): ErrorEvent {
   return {
-    event_id: event.event_id,
-    timestamp: event.timestamp,
+    type: undefined,
+    ...(event.event_id ? { event_id: event.event_id } : {}),
+    ...(event.timestamp !== undefined ? { timestamp: event.timestamp } : {}),
     platform: "javascript",
     level: "error",
-    environment: event.environment,
-    release: event.release,
+    ...(event.environment ? { environment: event.environment } : {}),
+    ...(event.release ? { release: event.release } : {}),
     exception: {
       values: (event.exception?.values ?? []).map((exception) => ({
         type: "ApplicationError",
         value: "Redacted application error",
         stacktrace: {
-          frames: (exception.stacktrace?.frames ?? []).map((frame) => ({
-            filename: safeScriptUrl(frame.filename),
-            lineno: frame.lineno,
-            colno: frame.colno,
-            in_app: frame.in_app,
-          })),
+          frames: (exception.stacktrace?.frames ?? []).map((frame) => {
+            const filename = safeScriptUrl(frame.filename);
+            return {
+              ...(filename ? { filename } : {}),
+              ...(frame.lineno !== undefined ? { lineno: frame.lineno } : {}),
+              ...(frame.colno !== undefined ? { colno: frame.colno } : {}),
+              ...(frame.in_app !== undefined ? { in_app: frame.in_app } : {}),
+            };
+          }),
         },
       })),
     },
