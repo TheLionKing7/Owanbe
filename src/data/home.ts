@@ -99,10 +99,10 @@ export interface Category {
 }
 
 export const CATEGORIES: Category[] = [
-  { label: "Venues", slug: "venues", icon: Landmark, color: "bg-cat-venues" },
+  { label: "Event Centers", slug: "venues", icon: Landmark, color: "bg-cat-venues" },
   { label: "Catering", slug: "catering", icon: UtensilsCrossed, color: "bg-cat-catering" },
   { label: "Decoration", slug: "decoration", icon: Flower2, color: "bg-cat-decoration" },
-  { label: "Photography & Videography", slug: "photography", icon: Camera, color: "bg-cat-photo" },
+  { label: "Photo & Video", slug: "photography", icon: Camera, color: "bg-cat-photo" },
   { label: "Fashion & Attire", slug: "fashion", icon: Shirt, color: "bg-cat-fashion" },
   { label: "Music & Entertainment", slug: "music", icon: Music, color: "bg-cat-music" },
 ];

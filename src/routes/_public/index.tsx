@@ -4,6 +4,8 @@ import Home from "@/pages/Home";
 export const Route = createFileRoute("/_public/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Ówàńbè — Your Celebration. Our Culture. Powered by AI." },
       { name: "description", content: "Plan meaningful Yoruba celebrations, discover trusted vendors and bring your occasion to life with Ówàńbè's AI-powered planning." },
       { property: "og:title", content: "Ówàńbè — Your Celebration. Our Culture. Powered by AI." },
