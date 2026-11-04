@@ -25,18 +25,18 @@ function BurstIcon() {
 export function ExploreCategories() {
   return (
     <section aria-labelledby="categories-title" className="surface flex flex-col pb-[14px] pl-[25px] pr-[20px] pt-[11px]">
-      <h2 id="categories-title" className="flex items-center gap-[10px] whitespace-nowrap font-display text-[clamp(17px,1.3vw,20px)] font-bold text-[#2B0A4D]">
+      <h2 id="categories-title" className="flex items-center gap-[10px] font-display text-[17px] font-bold text-plum-900 xl:text-[20px]">
         <BurstIcon />
         Explore Categories
       </h2>
       <ul className="mt-[8px]">
         {CATEGORIES.map(({ label, slug, icon: Icon, color }) => (
           <li key={slug} className="border-t border-plum-900/[0.08] first:border-t-0">
-            <Link to={`/discover?category=${slug}`} className="group flex h-[37px] items-center gap-[12px] text-[14px] font-medium text-[#1F0D2A] hover:text-plum-600">
+            <Link to={`/discover?category=${slug}`} className="group flex min-h-[37px] items-center gap-[12px] py-1 text-[14px] font-medium text-ink hover:text-plum-600">
               <span className={`grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full ${color}`}>
                 <Icon aria-hidden className="h-[14px] w-[14px] stroke-[2.25] text-white" />
               </span>
-              <span className="flex-1 whitespace-nowrap">{label}</span>
+              <span className="min-w-0 flex-1 leading-tight">{label}</span>
               <ChevronRight aria-hidden className="h-[17px] w-[17px] shrink-0 stroke-[2.25] text-[#9C94A6] transition-transform group-hover:translate-x-0.5" />
             </Link>
           </li>

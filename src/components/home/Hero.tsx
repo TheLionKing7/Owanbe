@@ -18,11 +18,11 @@ export function Hero() {
   };
 
   return (
-    <section aria-labelledby="hero-title" className="relative xl:h-[492px]">
+    <section aria-labelledby="hero-title" className="relative lg:min-h-[492px]">
       {/* Hero photography: desktop sits behind the header on the right, mobile stacks below the copy. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute right-0 top-0 hidden h-[490px] w-[min(806px,52.5vw)] xl:block"
+        className="pointer-events-none absolute right-0 top-0 hidden h-[490px] w-[min(806px,52.5vw)] lg:block"
         style={{
           WebkitMaskImage: "linear-gradient(to right, transparent 0%, #000 14%)",
           maskImage: "linear-gradient(to right, transparent 0%, #000 14%)",
@@ -31,7 +31,7 @@ export function Hero() {
         <img src="/images/hero.webp" alt="" width={806} height={490} fetchPriority="high" className="h-full w-full object-cover object-[35%_center]" />
       </div>
 
-      <div className="relative z-10 px-4 pt-8 sm:px-6 lg:px-[54px] xl:pt-[162px]">
+      <div className="relative z-10 px-4 pt-8 sm:px-6 lg:w-[57%] lg:px-[54px] lg:pr-0 lg:pt-[162px]">
         <p className="inline-flex items-center gap-[3px]">
           <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-[#FFD45E] to-[#F8AC00] shadow-sm">
             <Sparkles aria-hidden className="h-4 w-4 fill-white stroke-white" />
@@ -41,7 +41,7 @@ export function Hero() {
           </span>
         </p>
 
-        <h1 id="hero-title" className="mt-4 font-display text-[44px] font-bold leading-[1.02] tracking-[-0.015em] text-plum-950 sm:text-[58px] xl:mt-[12px] xl:text-[clamp(52px,4.1vw,63px)]">
+        <h1 id="hero-title" className="mt-4 font-display text-[44px] font-bold leading-[1.02] text-plum-950 sm:text-[58px] lg:text-[48px] xl:mt-[12px] xl:text-[58px] 2xl:text-[63px]">
           Plan. Source. <span className="text-plum-500">Celebrate.</span>
         </h1>
 
@@ -80,7 +80,7 @@ export function Hero() {
         </div>
       </div>
 
-      <img src="/images/hero.webp" alt="Guests in purple and blue gele and agbada celebrating at an Ówàńbè" width={806} height={490} className="relative mt-2 block max-h-[460px] w-full object-cover object-[35%_30%] xl:hidden" />
+      <img src="/images/hero.webp" alt="Guests in purple and blue gele and agbada celebrating at an Ówàńbè" width={806} height={490} className="relative mt-2 block max-h-[460px] w-full object-cover object-[35%_30%] lg:hidden" />
     </section>
   );
 }
