@@ -40,7 +40,7 @@ bash supabase/tests/run-local.sh         # SQL suites on a disposable Postgres 1
 
 ## Project facts in 10 lines
 - **Ówàńbè** is AI-powered celebration commerce for Yoruba and Nigerian celebrations: hosts plan, vendors are discovered, booked and paid.
-- **Scope source of truth:** Sage 7 project `cfbf39db-b40e-4f75-9039-f241e7b05bfd` (MCP `https://sage7.dev/mcp`). Specs are mirrored in `blueprint/`. The MCP was unreachable from this machine on 2026-11-03/04.
+- **Scope source of truth:** Sage 7 project `cfbf39db-b40e-4f75-9039-f241e7b05bfd` (MCP `https://sage7.dev/mcp`). Specs are mirrored in `blueprint/`. The MCP was unreachable from this machine on 2026-11-03/04 and answered again on 2026-11-04 (`get_answers`: F-75…F-79 all audited built, the stack decision confirmed).
 - **Stack today:** **TanStack Start** (React 19, Vite 8, SSR + nitro) with Tailwind 4 + shadcn/ui, Supabase (Postgres/RLS), Auth0, **Paystack** (replaced Stripe), Sentry; Resend, Trigger.dev, Algolia and the Vercel AI SDK not started. Bun is the package manager. **ADR 0003** (`docs/adr/0003-tanstack-start-runtime-and-paystack.md`) records the runtime and Paystack as owner-approved, and Sage 7 context v4 (`2929081`) now states the same in `AGENTS.md`'s stack table — so neither choice needs defending any more; shadcn/ui still needs its own decision (F-82/F-83).
 - **Two repos:** Lovable syncs `owanbe-project-studio`; `.github/workflows/mirror-to-owanbe.yml` forwards `main` to `TheLionKing7/Owanbe` (the repo Sage 7 audits). Verify workflow = bun test + build + Postgres 16 SQL tests.
 - **Two houses:** Host House (`/host/*`) and Vendor House (`/vendor/*`) never mix data or navigation.

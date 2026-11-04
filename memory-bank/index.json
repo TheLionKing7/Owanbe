@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-04T05:24:28.547Z",
+  "updatedAt": "2026-11-04T05:34:18.980Z",
   "docs": [
     {
       "file": "README.md",
@@ -146,7 +146,7 @@
     "components.json": "37c484818824d252",
     "docs/adr/0001-ui-foundation.md": "0847a938b70a3b62",
     "docs/adr/0002-auth0-supabase-third-party.md": "55e13b4b41163e6b",
-    "docs/adr/0003-tanstack-start-runtime-and-paystack.md": "24b543ddea050f06",
+    "docs/adr/0003-tanstack-start-runtime-and-paystack.md": "09f231e4c2ebd763",
     "docs/auth0-setup.md": "a08807bd6454c75b",
     "docs/decisions/2026-11-04-tanstack-start-and-paystack.md": "676a4c48f337feb8",
     "docs/decisions/f79-monitoring-configuration.md": "26d7db80ce2db545",
