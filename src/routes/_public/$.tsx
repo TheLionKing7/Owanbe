@@ -14,6 +14,8 @@ function CatchAll() {
 export const Route = createFileRoute("/_public/$")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Ówàńbè" },
       { name: "description", content: "Ówàńbè — celebration commerce for Yoruba celebrations." },
       { property: "og:title", content: "Ówàńbè" },
