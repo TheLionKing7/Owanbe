@@ -11,7 +11,10 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "memory:check": "node scripts/memory-bank.mjs check",
+    "memory:update": "node scripts/memory-bank.mjs update",
+    "memory:where": "node scripts/memory-bank.mjs where"
   },
   "overrides": {
     "rolldown": "1.2.1"

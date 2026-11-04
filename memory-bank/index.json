@@ -1,0 +1,252 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-04T02:51:57.927Z",
+  "docs": [
+    {
+      "file": "README.md",
+      "topic": "entry point and index"
+    },
+    {
+      "file": "00-protocol.md",
+      "topic": "read/update protocol"
+    },
+    {
+      "file": "01-project-brief.md",
+      "topic": "product, roles, scope source"
+    },
+    {
+      "file": "02-architecture.md",
+      "topic": "stack, flows, routes, env, performance"
+    },
+    {
+      "file": "03-codebase-map.md",
+      "topic": "file-by-file map"
+    },
+    {
+      "file": "04-data-model.md",
+      "topic": "database tables, RLS, functions"
+    },
+    {
+      "file": "05-design-system.md",
+      "topic": "visual authority, tokens, layout"
+    },
+    {
+      "file": "06-conventions.md",
+      "topic": "workflow, code, security, tests"
+    },
+    {
+      "file": "07-feature-status.md",
+      "topic": "Sage 7 features and audits"
+    },
+    {
+      "file": "08-decisions.md",
+      "topic": "ADRs and owner decisions"
+    },
+    {
+      "file": "09-open-questions.md",
+      "topic": "open questions, gaps, gotchas"
+    },
+    {
+      "file": "10-changelog.md",
+      "topic": "memory update log"
+    }
+  ],
+  "coverage": [
+    {
+      "pattern": "^supabase/",
+      "docs": [
+        "04-data-model.md"
+      ]
+    },
+    {
+      "pattern": "^src/(lib/auth|lib/permissions|components/auth|integrations/supabase)",
+      "docs": [
+        "02-architecture.md"
+      ]
+    },
+    {
+      "pattern": "^src/(lib/(router|houses|error|monitoring|payments|supabase-admin|lovable)|config/|routes/|pages/|layouts/)",
+      "docs": [
+        "02-architecture.md"
+      ]
+    },
+    {
+      "pattern": "^src/(components/(home|site|house)|data/|hooks/)",
+      "docs": [
+        "05-design-system.md"
+      ]
+    },
+    {
+      "pattern": "^(src/styles\\.css|components\\.json)$",
+      "docs": [
+        "05-design-system.md"
+      ]
+    },
+    {
+      "pattern": "^src/vite-env\\.d\\.ts$",
+      "docs": [
+        "02-architecture.md"
+      ]
+    },
+    {
+      "pattern": "^(vite|vitest|eslint)\\.config\\.ts?$|^bunfig\\.toml$|^package\\.json$|^tsconfig.*|^\\.env\\.example$",
+      "docs": [
+        "02-architecture.md",
+        "06-conventions.md"
+      ]
+    },
+    {
+      "pattern": "^src/test/|^scripts/",
+      "docs": [
+        "06-conventions.md"
+      ]
+    },
+    {
+      "pattern": "^\\.github/",
+      "docs": [
+        "02-architecture.md",
+        "06-conventions.md"
+      ]
+    },
+    {
+      "pattern": "^docs/adr/",
+      "docs": [
+        "08-decisions.md"
+      ]
+    },
+    {
+      "pattern": "^docs/journal/",
+      "docs": [
+        "07-feature-status.md"
+      ]
+    },
+    {
+      "pattern": "^docs/(deployment|github-audit-sync)\\.md$",
+      "docs": [
+        "02-architecture.md"
+      ]
+    },
+    {
+      "pattern": "^(AGENTS|README|roadmap)\\.md$|^\\.gitignore$|^docs/",
+      "docs": [
+        "06-conventions.md"
+      ]
+    }
+  ],
+  "files": {
+    ".env.example": "cfaf880789d026c8",
+    ".github/workflows/mirror-to-owanbe.yml": "2e9850d17edc9258",
+    ".github/workflows/verify.yml": "4360a6a943ecad43",
+    ".gitignore": "74366d54bcd8375f",
+    ".prettierignore": "52c7c767ff0615ee",
+    ".prettierrc": "1ed88d3b99eced8d",
+    "AGENTS.md": "a5fb0c177ec586ac",
+    "README.md": "215b498a7460f504",
+    "bunfig.toml": "1ed9b1fc5131fd50",
+    "components.json": "37c484818824d252",
+    "docs/adr/0001-ui-foundation.md": "0847a938b70a3b62",
+    "docs/adr/0002-auth0-supabase-third-party.md": "55e13b4b41163e6b",
+    "docs/auth0-setup.md": "a08807bd6454c75b",
+    "docs/decisions/f79-monitoring-configuration.md": "26d7db80ce2db545",
+    "docs/deployment.md": "1cc3e145692fcc50",
+    "docs/github-audit-sync.md": "0076f4eebd8d4ae8",
+    "docs/journal/2026-10-31-F-75-project-setup.md": "42875d21390ff81a",
+    "docs/journal/2026-11-01-F-76-authentication.md": "261e4a07627b27b0",
+    "docs/journal/2026-11-01-F-77-data-model.md": "619b78ace5d67d8d",
+    "docs/journal/2026-11-04-F-78-permission-scoping.md": "1ff31a9cbd0bc3b3",
+    "docs/journal/2026-11-04-F-79-deployment.md": "eaf3ed350d33d48b",
+    "eslint.config.js": "3266245a1ff610a0",
+    "package.json": "1c071cdd96970f11",
+    "public/favicon.svg": "ca92ec8b8204ce37",
+    "public/robots.txt": "a3d27b3ca5ce3234",
+    "roadmap.md": "950b22846113e8c8",
+    "scripts/check-bundle.mjs": "4a45e568b71587f3",
+    "scripts/memory-bank.mjs": "53da34f70341eee0",
+    "src/components/auth/AuthNotice.tsx": "cd026211cb3c92b2",
+    "src/components/auth/RequireAuth.tsx": "ae4ddc658da01d38",
+    "src/components/home/AnkaraBand.tsx": "b73d7dde16e45888",
+    "src/components/home/DifferenceCard.tsx": "0fb65682c5569ce0",
+    "src/components/home/ExploreCategories.tsx": "cba3454829bbb1f4",
+    "src/components/home/FeatureStrip.tsx": "a8fe43a7a31b0b55",
+    "src/components/home/FeaturedVendors.tsx": "f6866f1235aff396",
+    "src/components/home/Hero.tsx": "4dd52c02c8364f78",
+    "src/components/site/HelpButton.tsx": "42d5ef6cc6ca15ce",
+    "src/components/site/Logo.tsx": "d493360628765714",
+    "src/components/site/SiteHeader.tsx": "06ccf192ce18e089",
+    "src/config/env.ts": "16e683bba587a777",
+    "src/config/server-env.ts": "2ac015a83ce34c32",
+    "src/data/home.ts": "25000028838cc4a9",
+    "src/hooks/use-mobile.tsx": "21eff740f9e5c965",
+    "src/integrations/supabase/auth-attacher.ts": "24d0dbdf8dc0fd49",
+    "src/integrations/supabase/auth-middleware.ts": "ae40b141ce933b52",
+    "src/integrations/supabase/client.server.ts": "56ec7f9ac40ccdf9",
+    "src/integrations/supabase/client.ts": "b300e9491d5b8500",
+    "src/integrations/supabase/cron-auth.ts": "18430aa4c7faff5b",
+    "src/integrations/supabase/previewAuthStorage.ts": "5b00130146b77ecd",
+    "src/integrations/supabase/types.ts": "11a5a8cfb960be04",
+    "src/layouts/HouseLayout.tsx": "66b62a92d63df03b",
+    "src/layouts/PublicLayout.tsx": "d89d79a76c207b17",
+    "src/lib/auth/AuthProvider.tsx": "7b193f8272aebb60",
+    "src/lib/auth/auth0Client.ts": "277bd22bb2192e43",
+    "src/lib/auth/types.ts": "9ad7577d883fe79b",
+    "src/lib/auth/validate-token.server.ts": "94f1309da2063245",
+    "src/lib/error-capture.ts": "d6fa7756cbc4c399",
+    "src/lib/error-page.ts": "635915886f5d44a1",
+    "src/lib/houses.ts": "247e322f6b31aa5e",
+    "src/lib/lovable-error-reporting.ts": "0a2e8b5f3ffd2dd6",
+    "src/lib/monitoring/browser.ts": "4af5004a31698c95",
+    "src/lib/monitoring/config.functions.ts": "c2cee2a788c56c64",
+    "src/lib/monitoring/privacy.ts": "2969bddcf55bac63",
+    "src/lib/payments/paystack.server.ts": "7b9687d2716c3066",
+    "src/lib/permissions.ts": "e68a709b2504896a",
+    "src/lib/router.tsx": "655e43e91d13e302",
+    "src/lib/supabase-admin-env.server.ts": "0679b50ff8cc4097",
+    "src/lib/utils.ts": "d1f1e0d62cb8d8d1",
+    "src/pages/AuthCallback.tsx": "8fae6e4e49e94d9d",
+    "src/pages/Home.tsx": "103351291c3d7785",
+    "src/pages/HousePage.tsx": "b9938ea79b84c055",
+    "src/pages/NotFound.tsx": "0e750e05528edf3f",
+    "src/pages/PlaceholderPage.tsx": "dbf30b89fa94bfa1",
+    "src/pages/SignIn.tsx": "b882057a1a05b3b4",
+    "src/router.tsx": "72b68964d3f55ba4",
+    "src/routes/README.md": "5c8187dbe79dac7a",
+    "src/routes/__root.tsx": "452fa7c6639a8e3a",
+    "src/routes/_public.tsx": "a7c17627e5a05e2f",
+    "src/routes/_public/$.tsx": "1e50ddf2ea315cde",
+    "src/routes/_public/auth.callback.tsx": "209fe37d892d8b56",
+    "src/routes/_public/index.tsx": "0ac78c0e82d9733f",
+    "src/routes/_public/sign-in.tsx": "1d421d94dfc01cfe",
+    "src/routes/_public/sign-up.tsx": "62d28b4e14a115b8",
+    "src/routes/api/public/paystack/webhook.ts": "db7e1721042d1968",
+    "src/routes/host.tsx": "61c85c2cf9eb7d88",
+    "src/routes/host/$section.tsx": "5615e9c3294070ce",
+    "src/routes/host/index.tsx": "6dfff52062bb6343",
+    "src/routes/vendor.tsx": "34ec7681c224257c",
+    "src/routes/vendor/$section.tsx": "006b655772c2440d",
+    "src/routes/vendor/index.tsx": "6d6e0f55a8d5385a",
+    "src/server.ts": "f0ee683067afee14",
+    "src/start.ts": "f3f07f1f6afe2770",
+    "src/styles.css": "ed3ad40c009998b8",
+    "src/test/app-routing.test.tsx": "c817058668430273",
+    "src/test/deployment.test.ts": "83f3833171fc7a53",
+    "src/test/env.test.ts": "846f22ae14d10a48",
+    "src/test/monitoring.test.ts": "e87fd17174c5d04d",
+    "src/test/permissions.test.ts": "08fff119add84890",
+    "src/test/setup.ts": "049fd55d8c3bf874",
+    "src/test/validate-token.test.ts": "f2ae4a5b5aa3379c",
+    "src/vite-env.d.ts": "37ce1bdc251ce25b",
+    "supabase/config.toml": "28e598a9ab8a81e1",
+    "supabase/migrations/20261101000000_f76_users_auth.sql": "74495a5d156aa00a",
+    "supabase/migrations/20261101020000_f77_data_model.sql": "f677cd6b279c6b02",
+    "supabase/pending/20261104000000_f78_permission_scoping.sql": "5723d4b854ee0569",
+    "supabase/tests/f76_auth.test.sql": "1b127081fb36537a",
+    "supabase/tests/f77_data_model.test.sql": "5e6029fa8682602f",
+    "supabase/tests/f78_permissions.test.sql": "c59142df62e9c585",
+    "supabase/tests/run-local.sh": "b9e55d1239dceaeb",
+    "supabase/tests/schema_conventions.test.sql": "44413697face1a56",
+    "supabase/tests/supabase_stub.sql": "632f3445d25938c2",
+    "tsconfig.json": "e86f30fcb44f4fe5",
+    "vite.config.ts": "694f17daf64d3bf3",
+    "vitest.config.ts": "0158325852b8c6c2"
+  }
+}
