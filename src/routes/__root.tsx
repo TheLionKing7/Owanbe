@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth/AuthProvider";
+import { captureApplicationError, initializeMonitoring } from "../lib/monitoring/browser";
 
 function NotFoundComponent() {
   return (
@@ -41,6 +42,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    void captureApplicationError(error);
   }, [error]);
 
   return (
@@ -119,6 +121,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => { void initializeMonitoring(); }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

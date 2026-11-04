@@ -29,7 +29,7 @@ export function readAuthEnv(): AuthEnv | null {
   const clientId = read((import.meta.env.VITE_AUTH0_CLIENT_ID ?? import.meta.env.AUTH0_CLIENT_ID));
   const audience = read((import.meta.env.VITE_AUTH0_AUDIENCE ?? import.meta.env.AUTH0_AUDIENCE));
   const supabaseUrl = read((import.meta.env.VITE_SUPABASE_URL ?? import.meta.env.SUPABASE_URL));
-  const supabasePublicKey = read((import.meta.env.VITE_SUPABASE_PUBLIC_KEY ?? import.meta.env.SUPABASE_PUBLIC_KEY));
+  const supabasePublicKey = read(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) ?? read(import.meta.env.VITE_SUPABASE_ANON_KEY) ?? read(import.meta.env.VITE_SUPABASE_PUBLIC_KEY) ?? read(import.meta.env.SUPABASE_PUBLIC_KEY);
   if (!domain || !clientId || !audience || !supabaseUrl || !supabasePublicKey) return null;
   return { domain, clientId, audience, supabaseUrl, supabasePublicKey };
 }
