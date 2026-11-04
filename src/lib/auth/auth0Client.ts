@@ -48,7 +48,7 @@ export async function createAuthClient(env: AuthEnv): Promise<AuthClient> {
     async login(options: LoginOptions = {}) {
       await auth0.loginWithRedirect({
         appState: { returnTo: safeReturnTo(options.returnTo) },
-        authorizationParams: options.signup ? { screen_hint: "signup" } : undefined,
+        ...(options.signup ? { authorizationParams: { screen_hint: "signup" } } : {}),
       });
     },
     async logout() {

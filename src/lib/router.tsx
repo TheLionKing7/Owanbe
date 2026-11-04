@@ -16,7 +16,7 @@ export function useLocation() {
 export function useNavigate() {
   const router = useRouter();
   return (to: string, opts?: { replace?: boolean }) => {
-    void router.navigate({ href: to, replace: opts?.replace });
+    void router.navigate({ href: to, replace: opts?.replace ?? false });
   };
 }
 
@@ -32,7 +32,7 @@ export function useSearchParams(): [URLSearchParams] {
 export function Navigate({ to, replace }: { to: string; replace?: boolean }) {
   const navigate = useNavigate();
   useEffect(() => {
-    navigate(to, { replace });
+    navigate(to, { replace: replace ?? false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [to, replace]);
   return null;
