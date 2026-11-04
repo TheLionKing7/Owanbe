@@ -10,5 +10,5 @@ trap '"$bin/pg_ctl" -D "$dir" -m immediate stop >/dev/null 2>&1 || true; rm -rf 
 "$bin/pg_ctl" -D "$dir" -o "-p $port -k $dir -c listen_addresses=''" -w start >/dev/null
 psql=(psql -X -q -v ON_ERROR_STOP=1 -h "$dir" -p "$port" -U postgres -d postgres)
 "${psql[@]}" -f "$here/supabase_stub.sql"
-for m in "$here"/../migrations/*.sql; do "${psql[@]}" -f "$m"; done
+for m in "$here"/../migrations/*.sql "$here"/../pending/*.sql; do "${psql[@]}" -f "$m"; done
 for t in "$here"/*.test.sql; do echo "▶ $(basename "$t")"; "${psql[@]}" -f "$t"; done
