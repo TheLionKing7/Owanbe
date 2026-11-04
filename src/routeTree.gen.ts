@@ -21,6 +21,7 @@ import { Route as HostSectionRouteImport } from './routes/host/$section'
 import { Route as VendorIndexRouteImport } from './routes/vendor/index'
 import { Route as VendorSectionRouteImport } from './routes/vendor/$section'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth.callback'
+import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack/webhook'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -81,6 +82,12 @@ const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => PublicRoute,
 } as any)
+const ApiPublicPaystackWebhookRoute =
+  ApiPublicPaystackWebhookRouteImport.update({
+    id: '/api/public/paystack/webhook',
+    path: '/api/public/paystack/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/host/': typeof HostIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
   '/$': typeof PublicSplatRoute
@@ -105,6 +113,7 @@ export interface FileRoutesByTo {
   '/host': typeof HostIndexRoute
   '/vendor': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -120,6 +129,7 @@ export interface FileRoutesById {
   '/host/': typeof HostIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
+  '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/host/'
     | '/vendor/'
     | '/auth/callback'
+    | '/api/public/paystack/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/host'
     | '/vendor'
     | '/auth/callback'
+    | '/api/public/paystack/webhook'
   id:
     | '__root__'
     | '/_public'
@@ -160,12 +172,14 @@ export interface FileRouteTypes {
     | '/host/'
     | '/vendor/'
     | '/_public/auth/callback'
+    | '/api/public/paystack/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
   HostRoute: typeof HostRouteWithChildren
   VendorRoute: typeof VendorRouteWithChildren
+  ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -254,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicAuthCallbackRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/api/public/paystack/webhook': {
+      id: '/api/public/paystack/webhook'
+      path: '/api/public/paystack/webhook'
+      fullPath: '/api/public/paystack/webhook'
+      preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -305,6 +326,7 @@ const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
   HostRoute: HostRouteWithChildren,
   VendorRoute: VendorRouteWithChildren,
+  ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
