@@ -48,4 +48,4 @@ jobs:
           export GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0
           git remote add audit https://github.com/TheLionKing7/Owanbe.git
           git push audit HEAD:refs/heads/main
-          printf 'Mirrored source commit `%s` to TheLionKing7/Owanbe/main.\n' "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Mirrored source commit %s to TheLionKing7/Owanbe/main.\n' "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"

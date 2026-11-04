@@ -31,7 +31,7 @@ export function Hero() {
         <img src="/images/hero.webp" alt="" width={806} height={490} fetchPriority="high" className="h-full w-full object-cover object-[35%_center]" />
       </div>
 
-      <div className="relative z-10 px-4 pt-8 sm:px-6 lg:w-[57%] lg:px-[54px] lg:pr-0 lg:pt-[162px]">
+      <div className="relative z-10 px-4 pt-8 sm:px-6 lg:w-[48%] lg:px-[54px] lg:pr-0 lg:pt-[162px] xl:w-[57%]">
         <p className="inline-flex items-center gap-[3px]">
           <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-[#FFD45E] to-[#F8AC00] shadow-sm">
             <Sparkles aria-hidden className="h-4 w-4 fill-white stroke-white" />
@@ -41,7 +41,7 @@ export function Hero() {
           </span>
         </p>
 
-        <h1 id="hero-title" className="mt-4 font-display text-[44px] font-bold leading-[1.02] text-plum-950 sm:text-[58px] lg:text-[48px] xl:mt-[12px] xl:text-[58px] 2xl:text-[63px]">
+        <h1 id="hero-title" className="mt-4 font-display text-[44px] font-bold leading-[1.02] text-plum-950 sm:text-[58px] lg:text-[36px] xl:mt-[12px] xl:text-[58px] 2xl:text-[63px]">
           Plan. Source. <span className="text-plum-500">Celebrate.</span>
         </h1>
 
