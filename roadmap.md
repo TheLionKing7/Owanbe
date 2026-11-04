@@ -9,3 +9,4 @@
 - [x] Add GitHub audit mirroring and verification workflows with activation instructions
 - [x] Correct deployment guidance for one hosted Supabase project
 - [ ] Activate GitHub audit mirror — blocked: owner must add OWANBE_MIRROR_TOKEN to source repository Actions secrets
+- [ ] Configure newly connected Supabase and Sentry, preserving Auth0 sign-in and checking service readiness
