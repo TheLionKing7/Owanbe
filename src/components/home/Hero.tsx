@@ -28,7 +28,7 @@ export function Hero() {
           maskImage: "linear-gradient(to right, transparent 0%, #000 14%)",
         }}
       >
-        <img src="/images/hero.webp" alt="" width={806} height={490} {...{ fetchpriority: "high" }} className="h-full w-full object-cover object-[35%_center]" />
+        <img src="/images/hero.webp" alt="" width={806} height={490} fetchPriority="high" className="h-full w-full object-cover object-[35%_center]" />
       </div>
 
       <div className="relative z-10 px-4 pt-8 sm:px-6 lg:px-[54px] xl:pt-[162px]">
