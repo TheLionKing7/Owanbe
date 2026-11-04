@@ -1,13 +1,15 @@
 # Deployment runbook (F-79)
 
 ## Environments
-Each environment has its **own** Supabase project, Auth0 tenant (or application), Paystack keys and Sentry project. Never share credentials between them.
+Use **one hosted Supabase project**, as requested by the owner. It is the authoritative production database. Development and destructive tests use disposable local Postgres through `supabase/tests/run-local.sh`; they do not need another hosted project. A staging app connected to the hosted project is **not isolated** and must not run destructive tests or use real personal data for experiments.
 
 | Environment | APP_ENV | Supabase project | Paystack keys | Hosting |
 |---|---|---|---|---|
-| Development | development | owanbe-dev | `sk_test_` / `pk_test_` | Lovable preview |
-| Staging | staging | owanbe-staging | `sk_test_` / `pk_test_` | Lovable draft / staging URL |
-| Production | production | owanbe-prod | `sk_live_` / `pk_live_` | Lovable published URL |
+| Development | development | Local disposable test database | `sk_test_` / `pk_test_` | Local development / preview |
+| Staging | staging | Local test database; hosted reads only when explicitly approved | `sk_test_` / `pk_test_` | Preview / staging URL |
+| Production | production | Owner's single hosted project | `sk_live_` / `pk_live_` | Lovable published URL |
+
+Separate app origins and environment settings do not isolate data in a shared database. Do not connect staging payment writes to production tables. Full hosted staging requires separately approved isolation; it is not provided by this setup.
 
 `src/config/server-env.ts` rejects a live Paystack key outside production and a test key in production.
 
@@ -21,20 +23,27 @@ Paystack webhook URL per environment: `<origin>/api/public/paystack/webhook` (Pa
 
 ## Release order
 1. **Migrations first, and only backward-compatible ones.** Add columns, tables and functions. Never rename or drop in the same release as the code that stops using them (expand → migrate → contract over two releases).
-2. Apply migrations to staging, then run `bash supabase/tests/run-local.sh` and `bun run test`.
+2. Run migrations and SQL tests in a disposable local database using `bash supabase/tests/run-local.sh`, then run `bun run test`. The included GitHub verification workflow runs these without hosted credentials.
 3. Publish the app to staging. Smoke test: homepage, sign-in, Host house, Vendor house, Paystack test webhook.
 4. Apply the same migrations to production.
 5. Publish the app to production.
 
 ## Restore and rollback (test before every release)
-- **Database:** confirm a point-in-time backup exists for production (Supabase → Database → Backups). Each release, restore the latest backup into staging and run the test suite against it.
+- **Database:** inspect the backups actually available on your plan (Supabase → Database → Backups); do not assume point-in-time recovery exists. Before production migrations, take a secured backup/export and rehearse restoration locally with sanitized data. Never restore over the single hosted database just to test recovery.
 - **App:** roll back by restoring the previous version from Lovable's version history and publishing it again. Because migrations are backward-compatible, the previous app version keeps working on the new schema.
-- **Migration rollback:** each migration that is not purely additive ships with a written reverse script in `supabase/rollback/`, tested on staging first.
+- **Migration rollback:** each migration that is not purely additive ships with a written reverse script in `supabase/rollback/`, tested locally first and explicitly approved before hosted execution.
 
 ## Release checklist
 - [ ] `missingServerEnv()` returns nothing in the target environment
 - [ ] `checkEnvIsolation()` returns nothing
-- [ ] Migrations applied to staging and tests pass
-- [ ] Backup restore into staging tested this release
+- [ ] Migrations and tests pass in the disposable local database
+- [ ] Secured backup and local restore rehearsal completed this release
 - [ ] Previous app version noted for rollback
 - [ ] Production migrations applied before publishing
+
+## Paystack and Sentry setup
+- **Paystack:** use the same business account's test and live modes. Copy test keys only into development/staging settings and live keys only into production settings. Set each mode's webhook URL to the corresponding app origin. A single test-mode webhook setting cannot target two origins simultaneously; nominate one test receiver. Test payments must never update production financial records.
+- **Sentry:** create one web project, copy its DSN into the appropriate app settings, and distinguish events using `development`, `staging`, and `production` environment tags. Restrict team access and disable personal-data collection and session replay until reviewed. Set production alerts for errors and failed payment processing. Dashboard setup and a DSN alone do not install instrumentation; the Sentry integration still needs implementation and a verified sample error before claiming monitoring works.
+- **Auth0:** use separate applications/callback allowlists for local/preview and production origins where possible. Keep the approved Auth0 authentication authority; never create a competing login system.
+
+See [GitHub audit sync](github-audit-sync.md) to activate the included mirroring and verification workflows. No workflow deploys production or changes the hosted database.

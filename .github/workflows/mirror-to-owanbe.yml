@@ -1,0 +1,51 @@
+name: Mirror commits to Owanbe for audit
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: owanbe-audit-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    if: github.repository == 'TheLionKing7/owanbe-project-studio'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: main
+          persist-credentials: false
+
+      - name: Forward main without rewriting history
+        shell: bash
+        env:
+          MIRROR_TOKEN: ${{ secrets.OWANBE_MIRROR_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$MIRROR_TOKEN" ]]; then
+            echo "::error::Add the OWANBE_MIRROR_TOKEN Actions secret in the source repository."
+            exit 1
+          fi
+          askpass="$(mktemp)"
+          trap 'rm -f "$askpass"' EXIT
+          cat > "$askpass" <<'SH'
+          #!/usr/bin/env bash
+          case "$1" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$MIRROR_TOKEN" ;;
+          esac
+          SH
+          chmod 700 "$askpass"
+          export GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0
+          git remote add audit https://github.com/TheLionKing7/Owanbe.git
+          git push audit HEAD:refs/heads/main
+          printf 'Mirrored source commit `%s` to TheLionKing7/Owanbe/main.\n' "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
