@@ -1,12 +1,16 @@
 # 06 · Conventions and rules
 
 ## Workflow (Sage 7)
-1. Read `memory-bank/README.md` → `00-protocol.md` → `07-feature-status.md`, then call `get_answers` and `get_next_task` (only when the owner asks). **When the MCP is offline** (as on 2026-11-03/04), work from `roadmap.md`, `docs/journal/` and this bank, and write open questions/decisions into `docs/journal/` + `docs/decisions/` — Sage 7 picks them up on push.
+
+`AGENTS.md` is regenerated whole by Sage 7 (context v4, `2929081`, 2026-11-04T02:06:19 UTC). Never hand-patch its stack table, golden rules or the `<!-- sage7:start --> … <!-- sage7:end -->` Now/Next block — record the decision in `docs/decisions/` + `report_decision` and let the next sync carry it. Its rules below are read as intent, not inventory: `design_system.md` actually lives at `blueprint/design-system.md`, and the suggested `src/features/`, `src/server/`, `mobile/`, `shared/`, `trigger/` folders do not exist yet (see `03`).
+
+1. Read `memory-bank/README.md` → `00-protocol.md` → `07-feature-status.md`, then call `get_answers` and `get_next_task` (only when the owner asks). **When the MCP is offline** (as on 2026-11-03/04), work from `roadmap.md`, `docs/journal/` and this bank, and write open questions/decisions into `docs/journal/` + `docs/decisions/` — v4 now states this fallback itself, so it survives the sync.
 2. Read `get_feature_spec`, propose a plan; **the owner approves it before any code is written**.
 3. One branch per feature, `feat/F-<n>-<slug>`. **Every commit message carries the ID**: `feat(F-78): …`; chores use `docs:` / `chore:`. ⚠️ The commits that landed F-78/F-79 through Lovable are titled "Changes", "Switched to Paystack", etc. — no feature ID, so Sage 7 can only trace them through `docs/journal/`. Keep journal entries complete, and put the ID on anything you commit.
 4. Definition of done: all UI states, authorization enforced in the DB/server, migration added, tests, a journal entry `docs/journal/YYYY-MM-DD-F-<n>-<slug>.md`, every Sage 7 wiring line present, **no unused code** except what the owner explicitly staged for a later stage (the F-78 Foundation modules have no call sites by design — see `09`), memory bank updated, and the gates green.
 5. Report with `report_progress` (feature code + commits), then **stop** and wait for the owner.
 6. Spec gaps: `report_question` (blocking if needed). Choices the spec didn't cover: `report_decision`, plus an ADR in `docs/adr/`.
+7. Stack pressure: v4 forbids reintroducing a React/Vite SPA or Stripe "because historical excerpts mention them" and asks that **TanStack Start deployment support on Lovable hosting be verified and incompatibilities escalated**, not silently swapped. Same rule for `blueprint/` — if a sync restores a provider name the code doesn't use, re-apply from ADR 0003 and report it.
 
 ## Commands
 | Command | Does |
@@ -31,6 +35,7 @@ CI is `.github/workflows/verify.yml`: bun install → `bun run test` → `bun ru
 - The UI talks to auth/data only through the `AuthClient` interface (`src/lib/auth/types.ts`).
 - Data and copy live in `src/data/` and `src/lib/`, not in components.
 - New libraries need a recorded owner decision (`AGENTS.md` stack table; the runtime and Paystack are recorded in `docs/adr/0003-tanstack-start-runtime-and-paystack.md`). Versions are pinned through `bun.lock` + the minimum-release-age rule.
+- v4's code rules that the repo already follows: UUIDs, UTC timestamps, explicit currency + integer minor units, version columns; tenancy derived through foreign keys with composite constraints so a host id can never be attached to a vendor row; permissions and state transitions centralized rather than duplicated; privileged clients confined to server-only modules.
 
 ## Security (target OWASP ASVS L3)
 - Authorization is enforced in the DB and server only; UI guards (`RequireAuth`, `src/lib/permissions.ts`) are UX hints, never the decision point.

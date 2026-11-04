@@ -1,7 +1,8 @@
 # 07 · Feature status (Sage 7)
 
 Project `cfbf39db-b40e-4f75-9039-f241e7b05bfd` · audit repo `github.com/TheLionKing7/Owanbe` · Lovable source repo `github.com/TheLionKing7/owanbe-project-studio`
-Last Sage 7 read: `get_answers` 2026-11-01 10:58 UTC. **The Sage 7 MCP was not reachable on 2026-11-03/04**, so nothing here is fresher than that read; re-run `get_answers` + `get_next_task` before starting work.
+Last Sage 7 read: context **v4**, compiled 2026-11-04T02:06:19 UTC and pushed to `main` as `2929081 docs: sync AGENTS.md from Sage 7`. Its `Now/Next` block says Next: **F-80 CI** and adds five blocked features: **F-82 UI Component Library, F-83 Brand Design System, F-84 Homepage Marketing Sections, F-85 Test Suites, F-86 Error Reporting** (all "planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified"). It also ratifies the rebuilt stack: "Web frontend: TanStack Start", "Payments: Paystack", "Do not introduce a standalone React/Vite SPA or Stripe because historical excerpts mention them", and a new rule to **verify TanStack Start deployment support on Lovable hosting**.
+`get_answers` was last read 2026-11-01 10:58 UTC. The MCP was unreachable from this machine on 2026-11-03/04; re-run `get_answers` + `get_next_task` before starting work.
 
 **Meaning of "built":** the Sage 7 audit record marks the feature built and nothing more. It is not a claim that the feature is ready, secure, or verified against live Auth0/Supabase services.
 

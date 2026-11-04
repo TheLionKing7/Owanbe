@@ -14,7 +14,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `.gitignore` | Ignores node_modules, dist, .output/.nitro/.tanstack, editor files, `*.local` and — since 2026-11-04 — `.env` / `.env.*` with `!.env.example`. |
 | `.prettierignore` | Paths Prettier must not reformat. |
 | `.prettierrc` | Prettier config used by `bun run format` and the ESLint prettier plugin. |
-| `AGENTS.md` | Agent rules: golden rules, stack tables (now TanStack Start + Paystack per ADR 0003), design/security/data rules, Sage 7 workflow and commit convention inside the `<!-- sage7:start -->` block (Sage 7-managed). |
+| `AGENTS.md` | Agent rules, rewritten whole by Sage 7 context v4 (`2929081`): stack table now TanStack Start + Paystack, DoD checklist, folder-layout suggestion and the `<!-- sage7:start -->` Now/Next block (Sage 7-managed). |
 | `README.md` | Repo front page: the owner's Lovable import note, then Lovable's build/ship guidance. Sage 7 proposes a replacement in PR #5. |
 | `bunfig.toml` | Bun settings: 1-day minimum release age, excluding Lovable/MCP packages. |
 | `components.json` | shadcn/ui config: new-york style, src/styles.css, @ aliases; registries is empty (see 05). |

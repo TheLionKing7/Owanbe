@@ -1,8 +1,11 @@
 # ADR 0003: TanStack Start runtime and Paystack payments
 
-**Status:** accepted by the owner (2026-11-04). The owner directed that this be committed so Sage 7
-records the current runtime and payments provider as approved architecture. Reported through
-`docs/decisions/` for Sage 7 pickup on push (the Sage 7 MCP was unreachable from this machine).
+**Status:** accepted by the owner (2026-11-04), and now ratified by Sage 7 itself. The owner
+directed that this be committed so Sage 7 records the current runtime and payments provider as
+approved architecture; the context v4 sync (`2929081`, compiled 2026-11-04T02:06:19 UTC) rewrote
+`AGENTS.md` to say "Web frontend: TanStack Start", "Payments: Paystack" and "Do not introduce a
+standalone React/Vite SPA or Stripe because historical excerpts mention them". Reported through
+`docs/decisions/` for Sage 7 pickup on push (the Sage 7 MCP was unreachable when this was written).
 
 ## Decision
 1. **Runtime: TanStack Start**, not the React Router 6 SPA described in ADR 0001.
