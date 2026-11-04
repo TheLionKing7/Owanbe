@@ -1,0 +1,32 @@
+{
+  "color": {
+    "royal-purple": {
+      "value": "#4B2E83"
+    },
+    "sun-gold": {
+      "value": "#F7B500"
+    },
+    "yoruba-blue": {
+      "value": "#0088A8"
+    },
+    "emerald-green": {
+      "value": "#0E7D6B"
+    },
+    "vibrant-red": {
+      "value": "#E63946"
+    },
+    "fuchsia-pink": {
+      "value": "#D81B8D"
+    },
+    "cream": {
+      "value": "#FFF9F0"
+    },
+    "charcoal": {
+      "value": "#1A1A1A"
+    }
+  },
+  "font": {
+    "display": "Playfair Display",
+    "ui": "Montserrat"
+  }
+}

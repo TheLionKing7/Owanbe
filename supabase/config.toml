@@ -1,0 +1,20 @@
+# Supabase CLI project config (only the settings Ówàńbè relies on).
+project_id = "owanbe"
+
+[api]
+schemas = ["public"]
+extra_search_path = ["public"]
+
+# F-76: Auth0 is the only sign-in authority. Supabase accepts Auth0-issued access
+# tokens (JWKS signature check) as third-party auth; there is no Supabase login.
+[auth]
+enabled = true
+enable_signup = false
+
+[auth.email]
+enable_signup = false
+
+[auth.third_party.auth0]
+enabled = true
+tenant = "env(AUTH0_TENANT)"            # e.g. "owanbe" for owanbe.us.auth0.com
+tenant_region = "env(AUTH0_TENANT_REGION)" # e.g. "us"
