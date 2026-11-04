@@ -136,3 +136,6 @@ begin;
   select set_config('request.jwt.claims', pg_temp.claims('auth0|f78-bisi'), true);
   do $$ begin assert not public.house_can((select house from f), 'chat'), 'revoked staff denied'; end $$;
 commit;
+
+\o
+\echo F-78 permission tests passed
