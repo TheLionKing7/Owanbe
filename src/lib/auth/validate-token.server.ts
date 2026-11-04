@@ -73,8 +73,9 @@ export async function validateRequestToken(authorization: string | null): Promis
     domain,
     audience,
     async findUser(sub) {
-      const url = process.env["SUPABASE_URL"];
-      const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+      const { supabaseServerUrl, supabaseServiceRoleKey } = await import("@/lib/supabase-admin-env.server");
+      const url = supabaseServerUrl();
+      const serviceKey = supabaseServiceRoleKey();
       if (!url || !serviceKey) throw new TokenError("not_configured");
       const { createClient } = await import("@supabase/supabase-js");
       const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
