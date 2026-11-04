@@ -41,7 +41,7 @@ Work on these features in order, one branch each. Acceptance criteria are Sage 7
   - Open: Confirm Auth0-to-Supabase token validation path for DB/Realtime access.
 - F-79 Deployment (ready)
   - Proposed acceptance: Separate dev/staging/prod projects with isolated credentials; Backward-compatible migrations deploy before client release; Restoration and rollback are tested before each release
-  - Must be wired (checked by code; built only when every line is found): env SUPABASE_URL; env SUPABASE_PUBLIC_KEY; env SENTRY_DSN; env STRIPE_SECRET_KEY; env STRIPE_WEBHOOK_SECRET
+  - Must be wired (checked by code; built only when every line is found): env SUPABASE_URL; env SUPABASE_PUBLIC_KEY; env SENTRY_DSN; env PAYSTACK_SECRET_KEY; env PAYSTACK_PUBLIC_KEY
 
 ## Plan
 
@@ -73,7 +73,7 @@ Why this is next: Project setup is next because it is a wave 0 feature marked mu
 
 ## Engineering guardrails
 
-- Decided stack: Web frontend: React + Vite (SPA); Mobile app: Expo (React Native); Backend: Supabase (Postgres, Auth, Storage, Edge Functions); Database: Supabase Postgres; Authentication: Auth0 (Okta); Payments: Stripe (Billing, Checkout, Connect); Email: Resend; Realtime: Supabase Realtime; Background jobs: Trigger.dev; File storage: Supabase Storage; Search: Algolia; AI integration: Vercel AI SDK; Hosting: Lovable hosting; Observability: Sentry. Do not add other frameworks, libraries or services without a recorded decision.
+- Decided stack: Web frontend: TanStack Start (React + Vite, SSR); Mobile app: Expo (React Native); Backend: Supabase (Postgres, Auth, Storage, Edge Functions); Database: Supabase Postgres; Authentication: Auth0 (Okta); Payments: Paystack (Billing, Checkout, Subaccounts); Email: Resend; Realtime: Supabase Realtime; Background jobs: Trigger.dev; File storage: Supabase Storage; Search: Algolia; AI integration: Vercel AI SDK; Hosting: Lovable hosting; Observability: Sentry. Do not add other frameworks, libraries or services without a recorded decision.
 - Top quality drivers (ISO/IEC 25010): Security, Performance efficiency, Reliability, Flexibility, Safety, Compatibility, Maintainability.
 - Design concept: Aso-Oke Ledger. Signature: a thin alternating orange/teal selvage-stripe rule used as section dividers and step progress, echoing the woven edge of aso-oke
 - Architecture decision records are in blueprint/tech-spec.md.

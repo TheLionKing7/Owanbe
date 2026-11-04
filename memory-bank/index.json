@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-04T02:51:57.927Z",
+  "updatedAt": "2026-11-04T03:44:54.374Z",
   "docs": [
     {
       "file": "README.md",
@@ -137,16 +137,18 @@
     ".env.example": "cfaf880789d026c8",
     ".github/workflows/mirror-to-owanbe.yml": "2e9850d17edc9258",
     ".github/workflows/verify.yml": "4360a6a943ecad43",
-    ".gitignore": "74366d54bcd8375f",
+    ".gitignore": "3327235035ad1d4b",
     ".prettierignore": "52c7c767ff0615ee",
     ".prettierrc": "1ed88d3b99eced8d",
-    "AGENTS.md": "a5fb0c177ec586ac",
+    "AGENTS.md": "e4ecdc5e810fbb60",
     "README.md": "215b498a7460f504",
     "bunfig.toml": "1ed9b1fc5131fd50",
     "components.json": "37c484818824d252",
     "docs/adr/0001-ui-foundation.md": "0847a938b70a3b62",
     "docs/adr/0002-auth0-supabase-third-party.md": "55e13b4b41163e6b",
+    "docs/adr/0003-tanstack-start-runtime-and-paystack.md": "2abfbf260133f615",
     "docs/auth0-setup.md": "a08807bd6454c75b",
+    "docs/decisions/2026-11-04-tanstack-start-and-paystack.md": "676a4c48f337feb8",
     "docs/decisions/f79-monitoring-configuration.md": "26d7db80ce2db545",
     "docs/deployment.md": "1cc3e145692fcc50",
     "docs/github-audit-sync.md": "0076f4eebd8d4ae8",

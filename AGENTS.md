@@ -186,12 +186,12 @@ docs/
 
 | Concern | Approved technology |
 |---|---|
-| Web | React + Vite SPA |
+| Web | TanStack Start (React 19 + Vite, SSR through nitro) — ADR 0003 |
 | Mobile | Expo / React Native |
 | Backend | Supabase Postgres, Auth capabilities, Storage, Edge Functions |
 | Database | Supabase Postgres |
 | Authentication authority | Auth0 (Okta) |
-| Payments | Stripe Billing, Checkout, Connect |
+| Payments | Paystack (cards, transfers, webhooks) — ADR 0003 |
 | Email | Resend |
 | Realtime | Supabase Realtime |
 | Background jobs | Trigger.dev |
@@ -205,7 +205,7 @@ docs/
 - Do not interpret Vercel AI SDK approval as approval for Vercel hosting or any model provider.
 - Do not interpret feature dependencies as approved stack additions.
 - Log missing approvals for NIBSS/open banking, partner banking, backup processing, NIMC/BVN/CAC, WhatsApp/SMS, biometrics, malware scanning, and QR/NFC tooling.
-- Do not assume Stripe alone authorizes fund custody or implements the required local banking router.
+- Do not assume Paystack alone authorizes fund custody or implements the required local banking router.
 - Keep unavailable integrations behind explicit interfaces and clearly labeled nonproduction mocks; block production activation until approved and verified.
 - Use Algolia only for authorized searchable projections; never index private identity, guest, health, or payment details.
 - Keep server authority in Supabase and Trigger.dev; never embed it in the Lovable-hosted SPA.
