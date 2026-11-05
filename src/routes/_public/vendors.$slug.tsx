@@ -91,7 +91,7 @@ function VendorProfilePage() {
         </section>
       )}
 
-      <div className="mt-8 rounded-3xl bg-plum-50 p-6">
+      <div className="mt-8 rounded-3xl bg-muted p-6">
         <p className="font-semibold text-plum-950">Interested in {v.business_name}?</p>
         <p className="mt-1 text-sm text-ink-muted">Ask for a quote from your Host house. Prices and dates are only confirmed in a quote.</p>
         <Link to="/host/$section" params={{ section: "quotes" }} className="btn-primary mt-4 inline-flex h-11 items-center px-5">Request a quote</Link>
