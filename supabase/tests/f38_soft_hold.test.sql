@@ -90,15 +90,15 @@ grant select, insert on qa1, qa2, qa3, qb1, qb2, qc1, qc2, qc3, qc4, qd1, outcom
 begin;
   set local role authenticated;
   select set_config('request.jwt.claims', pg_temp.claims('auth0|f38-viki'), true);
-  insert into qa1 select public.create_quote(vendor, ada,   date_a, 'Ada: aso ebi',
+  insert into qa1 select public.create_quote(vendor, ada,   date_a, 'NGN', 'Ada: aso ebi',
     '[{"label":"Fabric","line_total_minor":100000}]'::jsonb, '[]'::jsonb) from ids;
-  insert into qa2 select public.create_quote(vendor, bola,  date_a, 'Bola: aso ebi',
+  insert into qa2 select public.create_quote(vendor, bola,  date_a, 'NGN', 'Bola: aso ebi',
     '[{"label":"Fabric","line_total_minor":100000}]'::jsonb, '[]'::jsonb) from ids;
-  insert into qa3 select public.create_quote(vendor, chidi, date_a, 'Chidi: aso ebi',
+  insert into qa3 select public.create_quote(vendor, chidi, date_a, 'NGN', 'Chidi: aso ebi',
     '[{"label":"Fabric","line_total_minor":100000}]'::jsonb, '[]'::jsonb) from ids;
-  insert into qb1 select public.create_quote(vendor, dele,  date_b, 'Dele: lace',
+  insert into qb1 select public.create_quote(vendor, dele,  date_b, 'NGN', 'Dele: lace',
     '[{"label":"Lace","line_total_minor":90000}]'::jsonb, '[]'::jsonb) from ids;
-  insert into qd1 select public.create_quote(vendor, ada,   date_d, 'Ada: never accepted',
+  insert into qd1 select public.create_quote(vendor, ada,   date_d, 'NGN', 'Ada: never accepted',
     '[{"label":"Fabric","line_total_minor":1000}]'::jsonb, '[]'::jsonb) from ids;
   -- sent in this order, so the date-A slots are 1, 2 and 3 against a capacity of one
   select public.send_quote(qa1.id, q.version) from qa1 join public.quotes q on q.id = qa1.id;
@@ -381,7 +381,7 @@ end $$;
 begin;  -- the freed slot is usable again: a new offer on that date takes slot 1
   set local role authenticated;
   select set_config('request.jwt.claims', pg_temp.claims('auth0|f38-viki'), true);
-  insert into qb2 select public.create_quote(vendor, dele, date_b, 'Dele: second try',
+  insert into qb2 select public.create_quote(vendor, dele, date_b, 'NGN', 'Dele: second try',
     '[{"label":"Lace","line_total_minor":80000}]'::jsonb, '[]'::jsonb) from ids;
   select public.send_quote(q.id, q.version) from qb2 b join public.quotes q on q.id = b.id;
 commit;
@@ -428,13 +428,13 @@ begin;
   set local role authenticated;
   select set_config('request.jwt.claims', pg_temp.claims('auth0|f38-viki'), true);
   select public.set_vendor_daily_capacity(vendor, 3) from ids;
-  insert into qc1 select public.create_quote(vendor, ada,   date_c, 'Ada: capacity test',
+  insert into qc1 select public.create_quote(vendor, ada,   date_c, 'NGN', 'Ada: capacity test',
     '[{"label":"Fabric","line_total_minor":10000}]'::jsonb, '[]'::jsonb) from ids;
-  insert into qc2 select public.create_quote(vendor, bola,  date_c, 'Bola: capacity test',
+  insert into qc2 select public.create_quote(vendor, bola,  date_c, 'NGN', 'Bola: capacity test',
     '[{"label":"Fabric","line_total_minor":10000}]'::jsonb, '[]'::jsonb) from ids;
-  insert into qc3 select public.create_quote(vendor, chidi, date_c, 'Chidi: capacity test',
+  insert into qc3 select public.create_quote(vendor, chidi, date_c, 'NGN', 'Chidi: capacity test',
     '[{"label":"Fabric","line_total_minor":10000}]'::jsonb, '[]'::jsonb) from ids;
-  insert into qc4 select public.create_quote(vendor, dele,  date_c, 'Dele: capacity test',
+  insert into qc4 select public.create_quote(vendor, dele,  date_c, 'NGN', 'Dele: capacity test',
     '[{"label":"Fabric","line_total_minor":10000}]'::jsonb, '[]'::jsonb) from ids;
   select public.send_quote(q.id, q.version) from qc1 c join public.quotes q on q.id = c.id;
   select public.send_quote(q.id, q.version) from qc2 c join public.quotes q on q.id = c.id;

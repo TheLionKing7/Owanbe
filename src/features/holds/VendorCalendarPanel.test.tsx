@@ -16,7 +16,9 @@ const VENDOR_HOUSE: HouseSummary = {
 const HOST_HOUSE: HouseSummary = { ...VENDOR_HOUSE, house_id: "host-1", kind: "host" };
 
 function inHours(hours: number): string {
-  return new Date(Date.now() + hours * 3_600_000).toISOString();
+  // A minute of slack: the window label floors to whole minutes, so a deadline built exactly on the
+  // hour would already read "5h 59m" by the time the component renders.
+  return new Date(Date.now() + hours * 3_600_000 + 60_000).toISOString();
 }
 
 function hold(overrides: Partial<HoldSummary> = {}): HoldSummary {

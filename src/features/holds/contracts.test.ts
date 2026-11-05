@@ -54,9 +54,10 @@ function alert(overrides: Partial<HouseAlert> = {}): HouseAlert {
 
 describe("payment window wording", () => {
   it("describes the deadline the server wrote", () => {
-    const open = paymentWindow(inHours(5), new Date());
+    const now = new Date("2026-11-05T10:00:00.000Z");
+    const open = paymentWindow(new Date(now.getTime() + 5 * 3_600_000).toISOString(), now);
     expect(open.open).toBe(true);
-    expect(open.label).toMatch(/^5h \d+m left to pay$/);
+    expect(open.label).toBe("5h 0m left to pay");
     expect(PAYMENT_WINDOW_HOURS).toBe(24);
   });
 

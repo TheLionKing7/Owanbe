@@ -23,7 +23,9 @@ const VENDOR_OWNER: HouseSummary = {
 const VENDOR_STAFF: HouseSummary = { ...VENDOR_OWNER, role: "staff", capabilities: ["quotes"] };
 
 function inHours(hours: number): string {
-  return new Date(Date.now() + hours * 3_600_000).toISOString();
+  // A minute of slack: the countdown floors to whole minutes, so a deadline built exactly on the
+  // hour would already read "4h 59m" by the time the component renders.
+  return new Date(Date.now() + hours * 3_600_000 + 60_000).toISOString();
 }
 
 function summary(overrides: Partial<QuoteSummary> = {}): QuoteSummary {
