@@ -246,14 +246,14 @@ docs/
 
 <!-- sage7:start -->
 ## Now / Next / Open decisions
-- Now: No current commit activity recorded.
-- Next: F-80 CI
+- Now: F-80 CI — install path resolved (`.npmrc` legacy-peer-deps per owner answer `53116a71`) and a gate added that proves every test file loads; awaiting a real GitHub Actions run, which is still blocked by the account billing lock.
+- Next: In-app chat, which the owner (Sage 7 answer `9b9bc628`, 2026-11-05) reassigned to its own feature code and placed **before** F-13. No `F-` code exists for it in the map yet, so nothing can be pulled or built until one is assigned.
 - Blocked: F-38 Vendor Calendar Soft-hold — planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified
 - Blocked: F-60 Payment Data Protection (Tokenization via Partner) — planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified
 - Blocked: F-57 Admin Decision Audit & Second-person Review — planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified
 - Blocked: F-22 Trust Score System — planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified
 - Blocked: F-51 WhatsApp/SMS Critical Alert Integration — planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified
-- Blocked: F-13 Direct Search & Book Flow — planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified
+- Blocked: F-13 Direct Search & Book Flow — owner answered `9b9bc628` 2026-11-05: in-app chat gets its own feature code and is built first; its Payment Router dependency (F-48) is still gated behind Q10, and acceptance criteria remain empty.
 - Blocked: F-19 Unanswered Enquiry Fallback — planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified
 - Blocked: F-1 Dual Workspace Switcher (Host/Vendor Houses) — planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified
 - Blocked: F-64 Subscription Cancellation & Billing Transparency — planner confirmation missing; acceptance criteria unconfirmed; walking skeleton not verified

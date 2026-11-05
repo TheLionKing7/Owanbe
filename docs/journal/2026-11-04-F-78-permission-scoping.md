@@ -13,3 +13,20 @@
 
 **Open**
 The migration is pending until the owner connects Supabase.
+
+**Applied — and a duplicate-apply note the owner closed on 2026-11-05**
+Supabase is now connected. Re-running the migration returned
+`ERROR 42723: function "owner_only_capabilities" already exists with same argument types`, which is
+the expected result for a file that was already applied: the script creates its functions from
+scratch and has no `or replace` / `drop`, so it aborts on the very first statement and changes
+nothing else. The owner's answer (Sage 7 question `374ee9ac`) is to leave it there — F-78's functions
+were confirmed by the 2026-11-04 audit, so the error is a bookkeeping artefact, not a defect, and no
+re-run is wanted. Two things this does **not** prove, and no one should repeat as fact: that the
+original apply was complete (a 42723 tells you the first statement found a collision, nothing about
+the other ten), and that the F-14 / F-38 / F-60 SQL suites have ever executed — they still need a
+machine with `initdb`/`psql`, so `supabase/tests/db_state_check.sql` exists as a read-only substitute
+that can be pasted into the Dashboard.
+Separately, the working tree on the F-60/F-80 branch holds this file under `supabase/migrations/`
+while `HEAD` still has it under `supabase/pending/` (identical content, deliberately uncommitted —
+that is F-78's deployment-ordering question, not part of either feature).
+
