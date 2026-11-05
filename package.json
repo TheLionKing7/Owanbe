@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:load": "node scripts/check-test-files-load.mjs",
     "test:watch": "vitest"
   },
   "overrides": {

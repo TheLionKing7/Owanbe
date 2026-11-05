@@ -23,7 +23,7 @@ Paystack webhook URL per environment: `<origin>/api/public/paystack/webhook` (Pa
 
 ## Release order
 1. **Migrations first, and only backward-compatible ones.** Add columns, tables and functions. Never rename or drop in the same release as the code that stops using them (expand → migrate → contract over two releases).
-2. Run migrations and SQL tests in a disposable local database using `bash supabase/tests/run-local.sh`, then run `bun run test`. The included GitHub verification workflow runs these without hosted credentials.
+2. Run migrations and SQL tests in a disposable local database using `bash supabase/tests/run-local.sh`, then run `npm run test:load` — the whole vitest suite plus the check that every test file on disk actually loaded and collected (a plain `npm test` can report every test passing while some files never loaded at all). The included GitHub verification workflow runs these, and `npm ci` + `npm run build`, without hosted credentials. Install is npm-based; see `docs/decisions/f80-ci-install-and-test-gate.md`.
 3. Publish the app to staging. Smoke test: homepage, sign-in, Host house, Vendor house, Paystack test webhook.
 4. Apply the same migrations to production.
 5. Publish the app to production.

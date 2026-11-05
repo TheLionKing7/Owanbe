@@ -153,12 +153,43 @@ affected feature, the status and the release impact. Approved answers move to
 ### Q12. What should CI do about the `@types/react` peer conflict?
 
 - **Owner:** Ola (product owner)
-- **Status:** open — dependency/install decision, blocks a reproducible CI install
+- **Status:** **answered 2026-11-05** — Sage 7 question `53116a71`: "Commit .npmrc with
+  legacy-peer-deps=true"
 - **Affected:** F-80 CI, F-85 Test Suites, any fresh clone
-- **Release impact:** `npm install` still ends in ERESOLVE: a `peerOptional` requires `@types/react@^18`
-  while the app uses `@types/react@19.2.17`. The owner installed with `--legacy-peer-deps` and every
-  gate then passed, so the conflict is cosmetic today. CI cannot depend on a flag that lives in
-  someone's shell history, so it needs one of: a committed `.npmrc` with `legacy-peer-deps=true`, or
-  an explicit override/pin that removes the conflict. Not decided here — adding a repository-wide
-  install flag changes how every future dependency is resolved, which is an owner call.
+- **Answer applied:** `.npmrc` with `legacy-peer-deps=true` is committed, and the CI application job
+  installs with `npm ci` against `package-lock.json`. Two consequences are written into
+  `docs/journal/2026-11-05-F-80-ci-install-and-test-load-gate.md` rather than left implied: npm no
+  longer warns when a future dependency really is peer-incompatible (the lockfile is the authority,
+  not the peer graph), and `npm ci` itself has still never been executed by an agent — the registry is
+  unreachable from this machine through the TLS-intercepting proxy, and certificate verification was
+  not disabled.
+
+### Q13. Which lockfile is real: regenerate `bun.lock` or drop it?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — blocks a reproducible install for anyone who follows `bunfig.toml`
+- **Affected:** F-80 CI, F-79 deployment, any fresh clone, and the 24-hour supply-chain guard in
+  `bunfig.toml` (`minimumReleaseAge = 86400`), which npm does not enforce
+- **Release impact:** the repo carries two lockfiles that disagree. `bun.lock` still pins
+  `ai@7.0.162` and `@ai-sdk/openai@4.0.108`, versions the registry does not publish, while
+  `package.json` pins `^6.0.184` / `^3.0.64` and `package-lock.json` resolves them. CI now uses the
+  npm one. `bun install --frozen-lockfile` cannot be repaired from here (registry blocked, security
+  check left on), so `bun.lock` needs either a real `bun install` on a machine with registry access or
+  deletion. Leaving it means a bun-based install silently produces a tree that cannot match
+  `package.json`, and dropping it loses the 24h freshness guard unless an npm equivalent (a lockfile
+  age check, or `npm ci` against a reviewed lock) is adopted at the same time.
+
+### Q14. What is the house print width — and does CI run lint at all?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — formatting configuration, blocks adding lint to CI
+- **Affected:** F-80 CI, F-82 UI Component Library, F-83 Brand Design System, every future PR diff
+- **Release impact:** `.prettierrc` came from the template with `printWidth: 100`, but the code in the
+  repo is written to roughly 120: `npx eslint .` reports 743 `prettier/prettier` errors and 11
+  `react-refresh` warnings, while `npx prettier --print-width 120 --check .` flags zero files. CI
+  therefore has no lint or format step, because it would fail on its first run over formatting rather
+  than correctness. Two ways out, both owner calls: set `printWidth` to what the code already is, or
+  keep 100 and accept one whole-tree rewrap commit that touches every feature's files. Related and
+  smaller: `.prettierignore` omits Markdown, so documentation files are flagged too.
+
 
