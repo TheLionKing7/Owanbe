@@ -71,9 +71,7 @@ function HouseShell({ houseId }: { houseId: HouseId }) {
           <section role="status" className="max-w-xl rounded-3xl bg-white p-8 shadow-card" data-testid="no-house">
             <h1 className="font-display text-3xl font-bold text-plum-950">No {house.name} yet</h1>
             <p className="mt-3 text-ink-muted">
-              {houseId === "vendor"
-                ? "Your account doesn't have a Vendor house. Opening one arrives with the Become a Vendor feature."
-                : "Your Host house is being set up. Please refresh in a moment."}
+              Your Host house is being set up. Please refresh in a moment.
             </p>
           </section>
         )}
