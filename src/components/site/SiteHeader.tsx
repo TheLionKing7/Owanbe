@@ -42,6 +42,8 @@ export function SiteHeader() {
   const location = useLocation();
   const { status, logout } = useAuth();
   const signedIn = status === "signedIn";
+  // Only the homepage overlays the header on the hero artwork; every other page keeps it in normal flow.
+  const overlayHero = location.pathname === "/";
 
   useEffect(() => {
     setOpenMenu(null);
@@ -63,7 +65,7 @@ export function SiteHeader() {
   }, [openMenu]);
 
   return (
-    <header className="relative z-20 flex lg:absolute lg:inset-x-0 lg:top-0 items-start justify-between px-4 pt-3 sm:px-6 lg:px-[48px] lg:pt-[17px]">
+    <header className={`relative z-20 flex ${overlayHero ? "lg:absolute lg:inset-x-0 lg:top-0" : ""} items-start justify-between px-4 pt-3 sm:px-6 lg:px-[48px] lg:pt-[17px]`}>
       <Logo />
 
       <nav ref={navRef} aria-label="Main" className="mr-auto mt-[24px] hidden items-center gap-[clamp(14px,1.76vw,27px)] pl-[clamp(28px,6.3vw,97px)] xl:flex">
