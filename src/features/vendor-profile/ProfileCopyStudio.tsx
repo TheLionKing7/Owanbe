@@ -183,7 +183,43 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
 
   const field = (key: string) => errors[key] && <p className="mt-1 text-sm text-destructive" role="alert">{errors[key]}</p>;
 
+  if (loadState === "loading") {
+    return (
+      <div role="status" aria-live="polite" className="rounded-2xl bg-card p-6 text-sm text-ink-muted shadow-card">
+        <Loader2 className="mr-2 inline h-4 w-4 animate-spin" aria-hidden /> Loading your profile…
+      </div>
+    );
+  }
+  if (loadState === "error") {
+    return (
+      <div role="alert" className="rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-sm">
+        <p>We couldn't load your saved profile.</p>
+        <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => setLoadAttempt((n) => n + 1)}>
+          <RefreshCw className="h-4 w-4" /> Try again
+        </Button>
+      </div>
+    );
+  }
+
   return (
+    <div className="space-y-6">
+    {saved && (
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-card p-4 shadow-card" data-testid="profile-status">
+        <p className="text-sm">
+          {saved.published ? (
+            <><Globe className="mr-1 inline h-4 w-4 text-secondary" aria-hidden /> Your profile is <strong>live</strong> for hosts.</>
+          ) : (
+            <><EyeOff className="mr-1 inline h-4 w-4 text-ink-muted" aria-hidden /> Saved as a <strong>draft</strong>. Only your house can see it.</>
+          )}
+          {dirty && <span className="ml-2 text-ink-muted">You have unsaved changes.</span>}
+        </p>
+        {saved.published && (
+          <Link to="/vendors/$slug" params={{ slug: saved.slug }} target="_blank" className="inline-flex items-center gap-1 text-sm font-semibold text-primary underline-offset-4 hover:underline">
+            View public profile <ExternalLink className="h-4 w-4" aria-hidden />
+          </Link>
+        )}
+      </div>
+    )}
     <div className="grid gap-8 lg:grid-cols-2" data-testid="profile-copy-studio">
       <form
         className="space-y-6 rounded-2xl bg-card p-6 shadow-card"
@@ -348,9 +384,12 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
         )}
 
         {!busy && !copy && !failure && (
-          <p className="mt-6 text-sm text-ink-muted">
-            Pick your category, choose your services and describe your business. Your draft headline, about section and service descriptions will appear here.
-          </p>
+          <div className="mt-6 space-y-3 text-sm text-ink-muted">
+            <p>Pick your category, choose your services and describe your business. Your draft headline, about section and service descriptions will appear here.</p>
+            <Button type="button" variant="outline" size="sm" onClick={startBlank}>
+              <PenLine className="h-4 w-4" /> I'd rather write it myself
+            </Button>
+          </div>
         )}
 
         {copy && (
@@ -371,27 +410,66 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
               <p className="text-sm font-medium">Services</p>
               {copy.services.map((s, i) => (
                 <div key={i} className="rounded-xl border border-border p-3">
+                  <div className="flex justify-end">
+                    <button type="button" aria-label={`Remove service ${i + 1}`} onClick={() => setCopy({ ...copy, services: copy.services.filter((_, j) => j !== i) })} className="rounded-full p-1 text-ink-muted hover:bg-muted">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                   <Input aria-label={`Service ${i + 1} name`} value={s.name} onChange={(e) => setCopy({ ...copy, services: copy.services.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) })} />
                   <Textarea aria-label={`Service ${i + 1} description`} className="mt-2" value={s.description} onChange={(e) => setCopy({ ...copy, services: copy.services.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)) })} />
                 </div>
               ))}
+              {copy.services.length < 12 && (
+                <Button type="button" size="sm" variant="outline" onClick={() => setCopy({ ...copy, services: [...copy.services, { name: "", description: "" }] })}>
+                  <Plus className="h-4 w-4" /> Add a service
+                </Button>
+              )}
             </div>
-            {copy.highlights.length > 0 && (
-              <div>
-                <p className="text-sm font-medium">Why hosts choose you</p>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
-                  {copy.highlights.map((h, i) => <li key={i}>{h}</li>)}
-                </ul>
-              </div>
-            )}
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Why hosts choose you</p>
+              {copy.highlights.map((h, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input aria-label={`Highlight ${i + 1}`} maxLength={120} value={h} onChange={(e) => setCopy({ ...copy, highlights: copy.highlights.map((x, j) => (j === i ? e.target.value : x)) })} />
+                  <button type="button" aria-label={`Remove highlight ${i + 1}`} onClick={() => setCopy({ ...copy, highlights: copy.highlights.filter((_, j) => j !== i) })} className="rounded-full p-2 text-ink-muted hover:bg-muted">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+              {copy.highlights.length < 6 && (
+                <Button type="button" size="sm" variant="outline" onClick={() => setCopy({ ...copy, highlights: [...copy.highlights, ""] })}>
+                  <Plus className="h-4 w-4" /> Add a highlight
+                </Button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={() => void copyAll()}><Copy className="h-4 w-4" /> Copy all</Button>
+              <Button type="button" variant="outline" onClick={() => void copyAll()}><Copy className="h-4 w-4" /> Copy all</Button>
               <Button type="button" variant="outline" disabled={busy} onClick={() => void generate()}><RefreshCw className="h-4 w-4" /> Rewrite</Button>
             </div>
-            <p className="text-xs text-ink-subtle">Saving to your public profile arrives with the profile feature. For now, copy your draft.</p>
+            {houseId && (
+              <div className="space-y-3 border-t border-border pt-4">
+                {saveError && <p role="alert" className="text-sm text-destructive">{saveError}</p>}
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" disabled={!!saving} onClick={() => void save("draft")}>
+                    {saving === "draft" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {saved?.published ? "Save changes" : "Save draft"}
+                  </Button>
+                  {!saved?.published ? (
+                    <Button type="button" disabled={!!saving} onClick={() => void save("publish")}>
+                      {saving === "publish" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />} Publish for hosts
+                    </Button>
+                  ) : (
+                    <Button type="button" variant="ghost" disabled={!!saving} onClick={() => void save("unpublish")}>
+                      {saving === "unpublish" ? <Loader2 className="h-4 w-4 animate-spin" /> : <EyeOff className="h-4 w-4" />} Hide from hosts
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-ink-subtle">Published profiles appear on the public vendor directory. Your notes and brief stay private to your house.</p>
+              </div>
+            )}
           </div>
         )}
       </section>
+    </div>
     </div>
   );
 }

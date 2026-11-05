@@ -58,7 +58,7 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
       )}
       {item.slug === "profile" && houseId === "vendor" && (
         <div className="mt-8">
-          <ProfileCopyStudio defaultName={myHouse?.display_name ?? ""} />
+          <ProfileCopyStudio defaultName={myHouse?.display_name ?? ""} houseId={myHouse?.house_id} />
         </div>
       )}
       {item.slug !== "quotes" && item.slug !== "calendar" && item.slug !== "profile" && (
