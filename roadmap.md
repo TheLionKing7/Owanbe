@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] F-76/F-79 repair: load public Auth0 and external database settings from saved runtime secrets; verify startup and callback without exposing private keys.
+
 - [x] Import Owanbe repo into TanStack Start (homepage unchanged)
 - [x] F-78 Permission scoping (database migration pending Supabase connection)
 - [x] F-79 Deployment, using Paystack instead of Stripe
