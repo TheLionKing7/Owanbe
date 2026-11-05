@@ -35,6 +35,10 @@ export interface AuthClient {
   listHouses(): Promise<HouseSummary[]>;
   /** Current Auth0 access token for calling the app's own server functions. */
   getAccessToken?(): Promise<string | null>;
+  /** Calls a database function as the signed-in user (row-level security applies). */
+  rpc?<T>(fn: string, args?: Record<string, unknown>): Promise<T>;
+  /** Reads rows as the signed-in user (row-level security applies). */
+  selectOne?<T>(table: string, column: string, value: string): Promise<T | null>;
 }
 
 export type AuthStatus = "unconfigured" | "loading" | "signedOut" | "signedIn" | "blocked" | "error";

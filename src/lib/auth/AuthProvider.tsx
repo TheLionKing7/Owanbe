@@ -19,6 +19,9 @@ interface AuthContextValue {
   completeLogin(url: string): Promise<string | null>;
   retry(): void;
   getAccessToken(): Promise<string | null>;
+  rpc<T>(fn: string, args?: Record<string, unknown>): Promise<T>;
+  selectOne<T>(table: string, column: string, value: string): Promise<T | null>;
+  refreshHouses(): Promise<void>;
 }
 
 function whenIdle(task: () => void) {
@@ -151,6 +154,20 @@ export function AuthProvider({ children, loader = defaultLoader, env, configLoad
         } catch {
           return null;
         }
+      },
+      async rpc<T>(fn: string, args?: Record<string, unknown>) {
+        const client = await getClient();
+        if (!client.rpc) throw new Error("not_supported");
+        return client.rpc<T>(fn, args);
+      },
+      async selectOne<T>(table: string, column: string, v: string) {
+        const client = await getClient();
+        if (!client.selectOne) throw new Error("not_supported");
+        return client.selectOne<T>(table, column, v);
+      },
+      async refreshHouses() {
+        const client = await getClient();
+        setHouses(await client.listHouses());
       },
       retry() {
         configRef.current = null;

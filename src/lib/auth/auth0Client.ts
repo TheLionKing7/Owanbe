@@ -71,6 +71,18 @@ export async function createAuthClient(env: AuthEnv): Promise<AuthClient> {
       }
       return data as AppUser;
     },
+    async rpc<T>(fn: string, args: Record<string, unknown> = {}) {
+      const client = await getSupabase();
+      const { data, error } = await client.rpc(fn, args);
+      if (error) throw new Error(error.message || `${fn} failed`);
+      return data as T;
+    },
+    async selectOne<T>(table: string, column: string, value: string) {
+      const client = await getSupabase();
+      const { data, error } = await client.from(table).select("*").eq(column, value).maybeSingle();
+      if (error) throw new Error(error.message || `${table} read failed`);
+      return (data as T) ?? null;
+    },
     async listHouses() {
       const client = await getSupabase();
       const { data, error } = await client.rpc("my_houses");
