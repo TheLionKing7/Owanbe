@@ -54,3 +54,68 @@ affected feature, the status and the release impact. Approved answers move to
   non-negative minor-unit amount. There is no catalogue to validate them against,
   so "Best price" or a misspelt service is accepted. Nothing was invented to fill
   the gap.
+
+## F-38 Vendor Calendar Soft-hold
+
+### Q5. How is a "show alternatives" list produced for the host who lost the date?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — the feature text promises it, the spec does not define it
+- **Affected:** F-38 (losing-host experience), F-35 Emergency Replacement Vendor
+  Recommendation (blocked), F-27 AI 'Best Bargain' Ranking (blocked), F-4 (search)
+- **Release impact:** F-38 records the outbid release, the refund obligation and a
+  `date_outbid` alert saying the date is gone. It does not list replacement
+  vendors, because ranking candidates needs F-35/F-27 and an approved relevance
+  rule. Inventing a "similar vendors" query would be an unapproved commercial
+  ranking, and Trust Score (F-22) is not built to feed one.
+
+### Q6. What amount actually satisfies the 24-hour payment window?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — depends on the approved 70/30 release rules
+- **Affected:** F-38 (`record_payment_confirmation`), F-15 Split Payment &
+  Completion Confirmation (blocked), F-42 Losing-bid Refund (blocked)
+- **Release impact:** the built function treats any server-recorded confirmation as
+  satisfying the window and stores what was paid (`paid_minor` + currency). It does
+  not compare the amount to the quote total, so a deposit — if F-15 allows one —
+  secures the date exactly like a full payment. Whether it should is F-15's
+  decision, not something F-38 may assume.
+
+### Q7. What happens to a second, different payment for a quote that is already secured?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — needs the provider's behaviour, which F-48 owns
+- **Affected:** F-38 refund ledger, F-48 Payment Router (unbuilt), F-42 (blocked),
+  F-60 Payment Data Protection (blocked)
+- **Release impact:** `record_payment_confirmation` is idempotent per payment
+  reference and refuses a second, different reference on a confirmed hold with
+  `payment_already_recorded` — it does not write a refund obligation, because a
+  refusal at that boundary does not prove money was taken. Once Paystack is wired,
+  the webhook may still report a charge that the database refused; reconciling that
+  (refund it, or reject the webhook) has to be decided with F-42/F-48, and the
+  owner's wallet plus AI-powered router still needs an ADR before any real fund
+  holding or routing is activated.
+
+### Q8. Whose job is it to run `release_lapsed_payment_holds()`?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — scheduling, not design
+- **Affected:** F-38, F-72 Automated Timed Jobs (blocked), F-73 Real-time Job
+  Monitoring (blocked)
+- **Release impact:** a lapsed window is released as soon as either house reads its
+  own projections, so the calendar is never lying. Nothing releases a date nobody
+  looks at: the unscoped sweep is a `service_role` function with no caller until
+  F-72 registers it with Trigger.dev.
+
+### Q9. Do these alert rows belong to F-24, F-31 and F-3?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — overlapping feature ownership
+- **Affected:** F-38 (`public.notifications`), F-24 Multi-channel Notification
+  Delivery (blocked), F-31 Notification Channel Preferences (blocked), F-3
+  Cross-house Alert Badges (blocked)
+- **Release impact:** F-38 writes house-scoped in-app rows and reads them back
+  through `my_notifications`; the unread count shown next to "Date alerts" is only
+  for that list. There is no email/push, no per-user channel preference, and no
+  cross-house badge. Those three features will want the same table; whoever builds
+  next should extend it rather than create a second notifications store.

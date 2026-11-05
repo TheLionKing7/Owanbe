@@ -1,5 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { HoldsApi } from "@/features/holds/api";
+import type { HoldSummary } from "@/features/holds/contracts";
 import { QuoteError, type QuoteApi, type QuoteRevision, type QuoteSummary } from "./api";
 import { QuotesPanel } from "./QuotesPanel";
 import type { HouseSummary } from "@/lib/auth/types";
@@ -284,5 +286,128 @@ describe("QuotesPanel", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "That quote is no longer open to this action.",
     );
+  });
+});
+
+describe("QuotesPanel payment windows (F-38)", () => {
+  function hold(overrides: Partial<HoldSummary> = {}): HoldSummary {
+    return {
+      hold_id: "h-1",
+      quote_id: "q-1",
+      title: "Wedding reception",
+      service_date: "2026-12-05",
+      status: "awaiting_payment",
+      payment_due_at: inHours(7),
+      confirmed_at: null,
+      released_at: null,
+      release_reason: null,
+      lock_slot: 1,
+      daily_capacity: 1,
+      competing: false,
+      is_vendor_side: false,
+      counterparty_house: "vendor-1",
+      counterparty_name: "Alice Events Ltd",
+      paid_minor: null,
+      paid_currency: null,
+      refund_minor: null,
+      refund_currency: null,
+      refund_reason: null,
+      ...overrides,
+    };
+  }
+
+  function stubHolds(overrides: Partial<HoldsApi> = {}): HoldsApi {
+    return {
+      holds: vi.fn(async () => [] as HoldSummary[]),
+      alerts: vi.fn(async () => []),
+      markSeen: vi.fn(async () => {}),
+      ...overrides,
+    };
+  }
+
+  it("shows the deadline the database set once the host accepts", async () => {
+    const holds = vi.fn(async () => [hold()]);
+    render(
+      <QuotesPanel
+        house={HOST_HOUSE}
+        side="host"
+        api={stubApi({ list: vi.fn(async () => [summary({ status: "accepted" })]) })}
+        holdApi={stubHolds({ holds })}
+      />,
+    );
+
+    expect(await screen.findByTestId("quote-payment-window")).toHaveTextContent(
+      /7h \d+m left to pay/,
+    );
+    expect(screen.getByTestId("quote-payment-window")).toHaveTextContent(
+      "Nothing here is a payment button",
+    );
+    expect(holds).toHaveBeenCalledWith("host-1");
+  });
+
+  it("reads the windows only when something was accepted", async () => {
+    const holds = vi.fn(async () => [] as HoldSummary[]);
+    render(
+      <QuotesPanel
+        house={HOST_HOUSE}
+        side="host"
+        api={stubApi({ list: vi.fn(async () => [summary()]) })}
+        holdApi={stubHolds({ holds })}
+      />,
+    );
+
+    await screen.findByTestId("quote-card");
+    expect(holds).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("quote-payment-window")).not.toBeInTheDocument();
+  });
+
+  it("tells the host the date was outbid and the money is owed back", async () => {
+    render(
+      <QuotesPanel
+        house={HOST_HOUSE}
+        side="host"
+        api={stubApi({ list: vi.fn(async () => [summary({ status: "accepted" })]) })}
+        holdApi={stubHolds({
+          holds: vi.fn(
+            async () =>
+              [
+                hold({
+                  status: "released",
+                  release_reason: "outbid",
+                  refund_minor: 175_000,
+                  refund_currency: "NGN",
+                  refund_reason: "outbid",
+                }),
+              ] as HoldSummary[],
+          ),
+        })}
+      />,
+    );
+
+    expect(await screen.findByTestId("quote-payment-window")).toHaveTextContent(
+      "Another payment reached this date first",
+    );
+    expect(screen.getByTestId("quote-payment-window")).toHaveTextContent(/1,?750\.00 owed back/);
+  });
+
+  it("keeps the quotes on screen when the windows cannot be read", async () => {
+    render(
+      <QuotesPanel
+        house={HOST_HOUSE}
+        side="host"
+        api={stubApi({ list: vi.fn(async () => [summary({ status: "accepted" })]) })}
+        holdApi={stubHolds({
+          holds: vi.fn(async () => {
+            throw new QuoteError("forbidden", "forbidden: calendar in house");
+          }),
+        })}
+      />,
+    );
+
+    expect(await screen.findByTestId("holds-error")).toHaveTextContent(
+      "Your account cannot do that in this house.",
+    );
+    expect(screen.getByTestId("quote-card")).toBeInTheDocument();
+    expect(screen.queryByTestId("quote-payment-window")).not.toBeInTheDocument();
   });
 });

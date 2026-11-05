@@ -66,7 +66,12 @@ export function classifyQuoteError(message: string): QuoteErrorCode {
   const text = message.toLowerCase();
   if (text.includes("stale_version")) return "stale_version";
   if (text.includes("invalid_transition")) return "invalid_transition";
-  if (text.includes("quote_not_found")) return "not_found";
+  if (
+    text.includes("quote_not_found") ||
+    text.includes("hold_not_found") ||
+    text.includes("notification_not_found")
+  )
+    return "not_found";
   if (text.includes("forbidden") || text.includes("permission denied")) return "forbidden";
   if (text.includes("auth_not_configured") || text.includes("invalid_token")) return "unconfigured";
   if (
@@ -100,7 +105,8 @@ interface RpcResult {
 
 type RpcClient = (name: string, args?: Record<string, unknown>) => PromiseLike<RpcResult>;
 
-async function rpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
+/** Shared RPC boundary: every call is an authorized projection or a `security definer` function. */
+export async function rpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
   const { supabase } = await import("@/integrations/supabase/client");
   // The generated client is typed against an empty schema; the RPC names and payloads are
   // declared by this module and enforced by the database.

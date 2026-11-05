@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { holdsApi, type HoldsApi } from "@/features/holds/api";
+import type { HoldSummary } from "@/features/holds/contracts";
 import {
   QUOTE_ERROR_COPY,
   QuoteError,
@@ -20,6 +22,8 @@ interface QuotesPanelProps {
   dateHint?: string | null | undefined;
   /** Injected in tests; defaults to the Supabase RPC boundary. */
   api?: QuoteApi | undefined;
+  /** F-38 payment windows for the accepted quotes on this list. */
+  holdApi?: HoldsApi | undefined;
 }
 
 interface QuoteState {
@@ -44,9 +48,18 @@ function messageFor(error: unknown): string {
   return QUOTE_ERROR_COPY.unknown;
 }
 
-export function QuotesPanel({ house, side, hostHint, dateHint, api = quoteApi }: QuotesPanelProps) {
+export function QuotesPanel({
+  house,
+  side,
+  hostHint,
+  dateHint,
+  api = quoteApi,
+  holdApi = holdsApi,
+}: QuotesPanelProps) {
   const [quotes, setQuotes] = useState<QuoteSummary[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+  const [holds, setHolds] = useState<Map<string, HoldSummary> | null>(null);
+  const [holdsError, setHoldsError] = useState<string | null>(null);
   const [states, setStates] = useState<Record<string, QuoteState>>({});
   const [builder, setBuilder] = useState<
     null | { mode: "create" } | { mode: "revise"; quote: QuoteSummary; initial: BuilderValues }
@@ -65,13 +78,30 @@ export function QuotesPanel({ house, side, hostHint, dateHint, api = quoteApi }:
 
   const load = useCallback(async () => {
     setListError(null);
+    let rows: QuoteSummary[] | null = null;
     try {
-      setQuotes(await api.list(house.house_id));
+      rows = await api.list(house.house_id);
+      setQuotes(rows);
     } catch (error) {
       setQuotes(null);
       setListError(messageFor(error));
     }
-  }, [api, house.house_id]);
+    // A payment window exists only once a quote is accepted, so the holds projection is read for
+    // that case alone. Reading it is also what lets the database sweep a lapsed window.
+    if (rows?.some((quote) => quote.status === "accepted")) {
+      setHoldsError(null);
+      try {
+        const holdRows = await holdApi.holds(house.house_id);
+        setHolds(new Map(holdRows.map((hold) => [hold.quote_id, hold])));
+      } catch (error) {
+        setHolds(null);
+        setHoldsError(messageFor(error));
+      }
+    } else {
+      setHolds(null);
+      setHoldsError(null);
+    }
+  }, [api, holdApi, house.house_id]);
 
   useEffect(() => {
     void load();
@@ -309,6 +339,26 @@ export function QuotesPanel({ house, side, hostHint, dateHint, api = quoteApi }:
         </section>
       )}
 
+      {holdsError && (
+        <section
+          role="alert"
+          className="rounded-2xl bg-ink-subtle/15 px-4 py-3"
+          data-testid="holds-error"
+        >
+          <p className="text-sm font-semibold text-ink">{holdsError}</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            Your quotes are still shown below; only the payment windows could not be read.
+          </p>
+          <button
+            type="button"
+            className="btn-outline mt-3 min-h-[44px] px-5 py-2 text-sm"
+            onClick={() => void load()}
+          >
+            Reload the windows
+          </button>
+        </section>
+      )}
+
       {quotes !== null && quotes.length === 0 && (
         <section className="surface p-6" data-testid="quotes-empty">
           <h2 className="font-display text-xl font-bold text-plum-950">
@@ -329,6 +379,7 @@ export function QuotesPanel({ house, side, hostHint, dateHint, api = quoteApi }:
               quote={quote}
               side={side}
               now={now}
+              hold={holds?.get(quote.quote_id) ?? null}
               revisions={states[quote.quote_id]?.revisions ?? null}
               pending={states[quote.quote_id]?.pending ?? null}
               error={states[quote.quote_id]?.error ?? null}
@@ -350,6 +401,7 @@ export function QuotesPanel({ house, side, hostHint, dateHint, api = quoteApi }:
               quote={quote}
               side={side}
               now={now}
+              hold={holds?.get(quote.quote_id) ?? null}
               revisions={states[quote.quote_id]?.revisions ?? null}
               pending={states[quote.quote_id]?.pending ?? null}
               error={states[quote.quote_id]?.error ?? null}

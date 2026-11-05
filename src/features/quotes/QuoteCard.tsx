@@ -1,4 +1,6 @@
 import { useState } from "react";
+import type { HoldSummary } from "@/features/holds/contracts";
+import { paymentWindow, REFUND_COPY, RELEASE_COPY } from "@/features/holds/contracts";
 import type { QuoteRevision, QuoteSummary } from "./api";
 import { actionsFor, countdownFrom, formatMinor, STATUS_LABELS, type QuoteSide } from "./contracts";
 
@@ -18,6 +20,11 @@ interface QuoteCardProps {
   error: string | null;
   /** Render-time clock. The deadline itself always comes from the server. */
   now: Date;
+  /**
+   * F-38 payment hold for this quote, read from `my_date_holds`. Null until the holds projection
+   * has been read, so an accepted quote shows no window rather than an invented one.
+   */
+  hold?: HoldSummary | null | undefined;
   onAction(action: QuoteAction, detail?: QuoteActionDetail): void;
   onShowHistory(): void;
 }
@@ -39,6 +46,7 @@ export function QuoteCard({
   pending,
   error,
   now,
+  hold,
   onAction,
   onShowHistory,
 }: QuoteCardProps) {
@@ -47,6 +55,7 @@ export function QuoteCard({
   const [mode, setMode] = useState<null | "counter" | "cancel">(null);
   const actions = actionsFor(quote.status, side);
   const countdown = countdownFrom(quote.expires_at, now);
+  const pay = hold?.status === "awaiting_payment" ? paymentWindow(hold.payment_due_at, now) : null;
   const busy = pending !== null;
 
   function submitCounter() {
@@ -116,6 +125,45 @@ export function QuoteCard({
               with another quote for the same day.
             </span>
           )}
+        </p>
+      )}
+
+      {hold?.status === "awaiting_payment" && pay && (
+        <p
+          className={`mt-3 rounded-2xl px-4 py-3 text-sm font-semibold ${
+            pay.open ? "bg-gold-100 text-plum-900" : "bg-ink-subtle/15 text-ink-muted"
+          }`}
+          data-testid="quote-payment-window"
+        >
+          {pay.label}
+          {pay.open
+            ? " The date is yours until the window closes. Nothing here is a payment button — the checkout records it."
+            : " The window closed, so the date is free again. A payment that lands now is recorded as owed back."}
+        </p>
+      )}
+
+      {hold?.status === "confirmed" && (
+        <p
+          className="mt-3 rounded-2xl bg-owanbe-emerald-green/15 px-4 py-3 text-sm font-semibold text-owanbe-emerald-green"
+          data-testid="quote-payment-window"
+        >
+          Payment recorded{hold.confirmed_at ? ` on ${hold.confirmed_at.slice(0, 10)}` : ""}
+          {hold.paid_minor !== null && hold.paid_currency !== null
+            ? ` · ${formatMinor(hold.paid_minor, hold.paid_currency)}`
+            : ""}
+          . This date is yours.
+        </p>
+      )}
+
+      {hold?.status === "released" && (
+        <p
+          className="mt-3 rounded-2xl bg-ink-subtle/15 px-4 py-3 text-sm text-ink-muted"
+          data-testid="quote-payment-window"
+        >
+          {hold.release_reason ? RELEASE_COPY[hold.release_reason] : "This date was released."}
+          {hold.refund_minor !== null && hold.refund_currency !== null && hold.refund_reason
+            ? ` ${formatMinor(hold.refund_minor, hold.refund_currency)} owed back. ${REFUND_COPY[hold.refund_reason]}`
+            : ""}
         </p>
       )}
 
