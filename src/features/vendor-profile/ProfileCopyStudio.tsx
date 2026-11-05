@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
-import { Check, Copy, Loader2, Plus, RefreshCw, Sparkles, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Copy, ExternalLink, EyeOff, Globe, Loader2, PenLine, Plus, RefreshCw, Save, Sparkles, Trash2, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { publishProblem, saveErrorMessage, toSavePayload, type VendorProfileRow } from "./profile-data";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +12,14 @@ import { draftProfileCopy } from "./copy.functions";
 import { profileBriefSchema, type ProfileCopy } from "./contracts";
 import { findCategory, TONES, VENDOR_CATEGORIES, type Tone } from "./presets";
 
-export function ProfileCopyStudio({ defaultName = "" }: { defaultName?: string }) {
-  const { getAccessToken } = useAuth();
+export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?: string; houseId?: string }) {
+  const { getAccessToken, rpc, selectOne } = useAuth();
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">(houseId ? "loading" : "ready");
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [saved, setSaved] = useState<{ slug: string; published: boolean; updatedAt: string } | null>(null);
+  const [saving, setSaving] = useState<null | "draft" | "publish" | "unpublish">(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
   const [businessName, setBusinessName] = useState(defaultName);
   const [category, setCategory] = useState("");
   const [offerings, setOfferings] = useState<string[]>([]);
@@ -26,6 +34,85 @@ export function ProfileCopyStudio({ defaultName = "" }: { defaultName?: string }
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<{ message: string; retryable: boolean } | null>(null);
   const [copy, setCopy] = useState<ProfileCopy | null>(null);
+
+  useEffect(() => {
+    if (!houseId) return;
+    let cancelled = false;
+    setLoadState("loading");
+    selectOne<VendorProfileRow>("vendor_profiles", "house_id", houseId)
+      .then((row) => {
+        if (cancelled) return;
+        if (row) {
+          setBusinessName(row.business_name);
+          setCategory(row.category);
+          setLocations(row.locations);
+          setPriceNote(row.price_note);
+          const b = row.brief ?? {};
+          setOfferings(b.offerings ?? []);
+          setCustomOfferings(b.customOfferings ?? []);
+          setDetails(b.details ?? {});
+          setStory(b.story ?? "");
+          if (b.tone && TONES.some((t) => t.value === b.tone)) setTone(b.tone as Tone);
+          if (row.headline || row.about) {
+            setCopy({ headline: row.headline, tagline: row.tagline, about: row.about, services: row.services ?? [], highlights: row.highlights ?? [] });
+          }
+          setSaved({ slug: row.slug, published: row.published, updatedAt: row.updated_at });
+        }
+        setDirty(false);
+        setLoadState("ready");
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        // Table not created yet: let the vendor keep drafting; saving explains what's missing.
+        const msg = err instanceof Error ? err.message : "";
+        setLoadState(msg.includes("vendor_profiles") || msg.includes("schema cache") ? "ready" : "error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [houseId, selectOne, loadAttempt]);
+
+  // Any edit after loading/saving marks the profile as having unsaved changes.
+  useEffect(() => {
+    if (loadState === "ready") setDirty(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businessName, category, offerings, customOfferings, details, story, tone, locations, priceNote, copy]);
+
+  async function save(mode: "draft" | "publish" | "unpublish") {
+    if (!houseId || !copy) return;
+    const input = {
+      businessName,
+      category,
+      locations,
+      priceNote,
+      brief: { offerings, customOfferings, details, story, tone },
+      copy,
+    };
+    if (mode === "publish") {
+      const problem = publishProblem(input);
+      if (problem) {
+        setSaveError(problem);
+        return;
+      }
+    }
+    setSaving(mode);
+    setSaveError(null);
+    try {
+      const publish = mode === "publish" || (mode === "draft" && !!saved?.published);
+      const row = await rpc<VendorProfileRow>("save_vendor_profile", { p_house: houseId, p_profile: toSavePayload(input), p_publish: mode === "unpublish" ? false : publish });
+      setSaved({ slug: row.slug, published: row.published, updatedAt: row.updated_at });
+      setDirty(false);
+      toast.success(mode === "publish" ? "Your profile is live" : mode === "unpublish" ? "Your profile is hidden from hosts" : "Profile saved");
+    } catch (err) {
+      setSaveError(saveErrorMessage(err));
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  function startBlank() {
+    setCopy({ headline: "", tagline: "", about: "", services: offerings.map((o) => ({ name: o, description: "" })), highlights: [] });
+  }
 
   const preset = useMemo(() => findCategory(category), [category]);
   const allOptions = [...(preset?.offerings ?? []), ...customOfferings];
