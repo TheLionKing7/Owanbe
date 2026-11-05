@@ -85,15 +85,41 @@ Deliberately allowed, each with a test that pins it:
 
 | Gate | Result |
 |---|---|
-| `npx vitest run` (whole repo) | 11 of 15 files collect; **99 tests pass, 0 fail**. The 4 that fail to load are the React component suites, and they fail on `Cannot find module '@testing-library/dom'` — a required peer missing from `node_modules` and the lockfile, not a code failure. |
+| `npx vitest run` (whole repo) | **15 of 15 files, 134 tests, all pass.** Earlier in the day this same command could only collect 11 files and 99 tests: the 4 React suites died on `Cannot find module '@testing-library/dom'`, a peer that was missing from both the manifest and the lockfile. The owner pinned `ai@^6` / `@ai-sdk/openai@^3` / `@testing-library/dom@^10` and installed on a clean network (commit `3d89d2d`), which is what made them executable. |
 | `npx vitest run src/lib/payments/credential-guard.test.ts` | 35 tests, all pass |
-| `npx tsc --noEmit` | no error in any F-60 file. The remaining errors are `@testing-library/react` member exports (same missing peer) and `copy.server.ts` importing `ai`/`@ai-sdk/openai`, which are not installed. See Q11. |
-| `npx eslint` on changed files | run, see the commit note |
-| `bash supabase/tests/run-local.sh` (F-14, F-38, F-60 SQL) | **not run — cannot run here.** No `initdb`/`psql` on this machine and the Docker daemon is down, so the throwaway Postgres the suites need does not exist. The SQL is written to be executed, and is unverified until someone with Postgres runs it. |
-| GitHub Actions | not run: the account is behind a billing lock, and `npm ci` would fail on the nonexistent AI SDK versions (Q11) |
+| `npx tsc --noEmit` | **clean, zero errors** (previously it reported the missing peer and the uninstalled AI SDK imports in `copy.server.ts`) |
+| `npm run build` | **green** — `vite build` completed and nitro emitted `.output` |
+| `npx eslint` / `npm run format` | **not run** — `eslint` and `prettier` are declared in `devDependencies` but are not present in `node_modules`, and installing them from this machine hits the TLS-intercepting proxy that blocked every download today. Formatting was matched by hand against the surrounding files. |
+| `bash supabase/tests/run-local.sh` (F-14, F-38, F-60 SQL) | **still not run — cannot run here.** No `initdb`/`psql` on this machine and the Docker daemon is down, so the throwaway Postgres the suites need does not exist. The SQL is written to be executed, and is unverified until someone with Postgres runs it. |
+| GitHub Actions | not run: the account is behind a billing lock |
+
+## What running the suites for the first time found
+
+Six assertions failed the moment the four React suites became executable. None of the six was an
+F-60 problem; all of them were tests that had never been run since they were written.
+
+| Test | Real cause | Fix |
+|---|---|---|
+| `QuotesPanel` builder: create never called, and two wrong alert texts | `newQuoteSchema` validates `host_house_id`/`vendor_house_id` as **uuids**, but the fixtures used `"host-1"`/`"vendor-1"`, so the builder refused its own submit and displayed "Invalid uuid" where the test expected the server-refusal copy | fixtures now use real uuid constants (`HOST_HOUSE_ID`, `VENDOR_HOUSE_ID`) and the assertions reference them |
+| `QuotesPanel` "stops an incomplete offer before it reaches the database" | **a real defect, not a test bug.** A named line with a non-numeric amount became `line_total_minor: 0` in `toLines`, the zod schema happily accepted `0`, and the amount check lived only inside the `if (!parsed.success)` branch — so the vendor silently quoted that line as free work | the amount check in `QuoteBuilder.submit()` now runs whether or not the schema passed, and blocks the submit |
+| `VendorCalendarPanel` "Slot 1 of 1 per day" | the component capitalises and ends with a full stop; the assertion did not | match the rendered text |
+| `VendorCalendarPanel` paid amount | assertion regex was `/1,?2500\.00/` for `1_250_000` minor → `12,500.00` — a typo that could only ever have failed | `/12,?500\.00/` |
+| `HouseAlerts` first row | `getByTestId("alert-row")` with three rows rendered throws on the multiple-match guard | `getAllByTestId("alert-row")[0]` |
+
+The lesson for F-80 CI is the same one the SQL suites already taught: a test file that cannot load is
+not a passing test, and the suite count is the thing to watch, not the failure count.
+
+## Open consequence for F-80 (CI)
+
+`npm install` still resolves into an ERESOLVE conflict — a `peerOptional` wants `@types/react@^18`
+while the app is on `@types/react@19.2.17`. `--legacy-peer-deps` installs cleanly and every gate then
+passes, so the conflict is benign today, but CI cannot rely on a flag nobody wrote down. F-80 needs
+an explicit owner decision between a committed `.npmrc` with `legacy-peer-deps=true` and pinning the
+`@types/react` peer. Raised as a decision, not decided here.
 
 One real defect was found while trying to run the SQL suites: `supabase/tests/f38_soft_hold.test.sql`
 called `public.create_quote` with 6 arguments for a 7-argument function (currency was missing at all
 10 call sites). It is fixed in this branch. That suite has never been executed anywhere, which is
 the reason it was still passing inspection while being wrong — the honest answer to "did the
 database tests run" is still no.
+

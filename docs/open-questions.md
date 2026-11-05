@@ -139,14 +139,26 @@ affected feature, the status and the release impact. Approved answers move to
 ### Q11. Which AI SDK versions does this project actually depend on?
 
 - **Owner:** Ola (product owner)
-- **Status:** open — dependency decision, and a broken install
+- **Status:** **answered 2026-11-05** — the owner pinned and installed the versions
 - **Affected:** F-80 CI (next task), F-85 Test Suites, F-86 Error Reporting, F-12/F-46 AI features,
   `src/features/vendor-profile/copy.server.ts`
-- **Release impact:** `package.json` asks for `@ai-sdk/openai@^4.0.108` and `ai@^7.0.162`. The
-  registry has no 4.x for the first (latest 3.0.64) and no 7.x for the second (latest 6.0.184), and
-  `package-lock.json` carries neither package nor `@testing-library/dom` (a required peer of the
-  already-installed `@testing-library/react@16.0.1`). Consequences measured on 2026-11-05: `npm
-  install` cannot resolve, `tsc` reports 4 errors in `copy.server.ts` for the two absent AI modules,
-  and 11 of 15 vitest files collect (99 tests, all passing) while the 4 React component suites fail
-  to load. The fix is an owner decision about the intended versions — not something to guess at,
-  because a downgrade changes the AI call surface the vendor-profile feature was written against.
+- **Answer applied:** `ai@^6.0.184`, `@ai-sdk/openai@^3.0.64` and the missing
+  `@testing-library/dom@^10.4.0` peer, committed by the owner as `3d89d2d`. The nonexistent `^7`/`^4`
+  ranges are gone. Measured after the install: `tsc --noEmit` clean, `npm run build` green, and all
+  15 vitest files collect with 134 tests passing — the 4 React suites that previously could not load
+  now run, and 6 of their assertions failed on first execution (see
+  `docs/journal/2026-11-05-F-60-payment-data-protection.md`). `copy.server.ts` compiles against the
+  AI SDK v6 surface unchanged, so no feature code had to move.
+
+### Q12. What should CI do about the `@types/react` peer conflict?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — dependency/install decision, blocks a reproducible CI install
+- **Affected:** F-80 CI, F-85 Test Suites, any fresh clone
+- **Release impact:** `npm install` still ends in ERESOLVE: a `peerOptional` requires `@types/react@^18`
+  while the app uses `@types/react@19.2.17`. The owner installed with `--legacy-peer-deps` and every
+  gate then passed, so the conflict is cosmetic today. CI cannot depend on a flag that lives in
+  someone's shell history, so it needs one of: a committed `.npmrc` with `legacy-peer-deps=true`, or
+  an explicit override/pin that removes the conflict. Not decided here — adding a repository-wide
+  install flag changes how every future dependency is resolved, which is an owner call.
+
