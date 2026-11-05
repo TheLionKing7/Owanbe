@@ -1,10 +1,11 @@
-import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useRouter, type ErrorComponentProps } from "@tanstack/react-router";
+import type { PublicVendorProfile } from "@/features/vendor-profile/profile-data";
 import { CheckCircle2, MapPin, Wallet } from "lucide-react";
 import { getPublicVendor } from "@/features/vendor-profile/public.functions";
 import { findCategory } from "@/features/vendor-profile/presets";
 
 export const Route = createFileRoute("/_public/vendors/$slug")({
-  loader: async ({ params }) => {
+  loader: async ({ params }): Promise<PublicVendorProfile> => {
     const result = await getPublicVendor({ data: { slug: params.slug } });
     if (!result.ok) throw new Error(result.error);
     const vendor = result.vendors[0];
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/_public/vendors/$slug")({
   ),
 });
 
-function VendorError({ error }: { error: Error }) {
+function VendorError({ error }: ErrorComponentProps) {
   const router = useRouter();
   return (
     <section role="alert" className="mx-auto max-w-page px-4 py-16 sm:px-8 lg:mt-16">

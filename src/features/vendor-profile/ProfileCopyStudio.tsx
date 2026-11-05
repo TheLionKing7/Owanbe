@@ -12,7 +12,7 @@ import { draftProfileCopy } from "./copy.functions";
 import { profileBriefSchema, type ProfileCopy } from "./contracts";
 import { findCategory, TONES, VENDOR_CATEGORIES, type Tone } from "./presets";
 
-export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?: string; houseId?: string }) {
+export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?: string; houseId?: string | undefined }) {
   const { getAccessToken, rpc, selectOne } = useAuth();
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">(houseId ? "loading" : "ready");
   const [loadAttempt, setLoadAttempt] = useState(0);
