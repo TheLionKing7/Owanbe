@@ -14,7 +14,7 @@ export default function PlaceholderPage() {
   const base = `/${pathname.split("/")[1] ?? ""}`;
   const page = TITLES[base] ?? { title: "Coming soon", body: "This page is part of the Ówàńbè roadmap." };
   return (
-    <section className="mx-4 mb-24 mt-10 xl:mt-[170px] max-w-3xl sm:mx-6 lg:mx-[54px]">
+    <section className="mx-4 mb-24 mt-10 lg:mt-16 max-w-3xl sm:mx-6 lg:mx-[54px]">
       <h1 className="font-display text-4xl font-bold text-plum-950 sm:text-5xl">{page.title}</h1>
       <p className="mt-4 text-lg text-ink-muted">{page.body}</p>
       {base === "/get-started" ? (
