@@ -6,15 +6,19 @@ import { QuoteError, type QuoteApi, type QuoteRevision, type QuoteSummary } from
 import { QuotesPanel } from "./QuotesPanel";
 import type { HouseSummary } from "@/lib/auth/types";
 
+// newQuoteSchema validates house ids as uuids, so the builder fixtures use real ones.
+const HOST_HOUSE_ID = "6f1e9c4a-2b3d-4e5f-8a7b-1c2d3e4f5a6b";
+const VENDOR_HOUSE_ID = "2a5b8c1d-4e6f-4a8b-9c0d-1e2f3a4b5c6d";
+
 const HOST_HOUSE: HouseSummary = {
-  house_id: "host-1",
+  house_id: HOST_HOUSE_ID,
   kind: "host",
   display_name: "The Ogun wedding",
   role: "owner",
   capabilities: ["quotes"],
 };
 const VENDOR_OWNER: HouseSummary = {
-  house_id: "vendor-1",
+  house_id: VENDOR_HOUSE_ID,
   kind: "vendor",
   display_name: "Alice Events Ltd",
   role: "owner",
@@ -42,7 +46,7 @@ function summary(overrides: Partial<QuoteSummary> = {}): QuoteSummary {
     close_note: null,
     version: 3,
     is_vendor_side: false,
-    counterparty_house: "vendor-1",
+    counterparty_house: VENDOR_HOUSE_ID,
     counterparty_name: "Alice Events Ltd",
     title: "Wedding reception",
     lock_slot: 1,
@@ -84,7 +88,9 @@ function stubApi(overrides: Partial<QuoteApi> = {}): QuoteApi {
 }
 
 function fillBuilder() {
-  fireEvent.change(screen.getByLabelText("Host house ID"), { target: { value: "host-1" } });
+  fireEvent.change(screen.getByLabelText("Host house ID"), {
+    target: { value: HOST_HOUSE_ID },
+  });
   fireEvent.change(screen.getByLabelText("Celebration date"), { target: { value: "2026-12-05" } });
   fireEvent.change(screen.getByLabelText("Quote title"), {
     target: { value: "Wedding reception" },
@@ -102,7 +108,7 @@ describe("QuotesPanel", () => {
 
     expect(screen.getByTestId("quotes-loading")).toBeInTheDocument();
     expect(await screen.findByTestId("quote-card")).toBeInTheDocument();
-    expect(api.list).toHaveBeenCalledWith("host-1");
+    expect(api.list).toHaveBeenCalledWith(HOST_HOUSE_ID);
     expect(screen.getByTestId("quote-status")).toHaveTextContent("Awaiting the host");
     expect(screen.getByTestId("quote-total").textContent).toMatch(/1,?750\.00/);
     expect(screen.getByTestId("quote-countdown").textContent).toMatch(/5h \d+m left to respond/);
@@ -199,7 +205,7 @@ describe("QuotesPanel", () => {
     );
     fireEvent.change(await screen.findByTestId("capacity-input"), { target: { value: "3" } });
     fireEvent.click(screen.getByTestId("capacity-save"));
-    await waitFor(() => expect(setDailyCapacity).toHaveBeenCalledWith("vendor-1", 3));
+    await waitFor(() => expect(setDailyCapacity).toHaveBeenCalledWith(VENDOR_HOUSE_ID, 3));
 
     fireEvent.change(screen.getByTestId("capacity-input"), { target: { value: "0" } });
     fireEvent.click(screen.getByTestId("capacity-save"));
@@ -220,8 +226,8 @@ describe("QuotesPanel", () => {
     fireEvent.click(screen.getByTestId("builder-save"));
     await waitFor(() =>
       expect(create).toHaveBeenCalledWith({
-        vendor_house_id: "vendor-1",
-        host_house_id: "host-1",
+        vendor_house_id: VENDOR_HOUSE_ID,
+        host_house_id: HOST_HOUSE_ID,
         service_date: "2026-12-05",
         currency: "NGN",
         title: "Wedding reception",
@@ -254,7 +260,9 @@ describe("QuotesPanel", () => {
     render(<QuotesPanel house={VENDOR_OWNER} side="vendor" api={stubApi({ create })} />);
 
     fireEvent.click(await screen.findByTestId("new-quote"));
-    fireEvent.change(screen.getByLabelText("Host house ID"), { target: { value: "host-1" } });
+    fireEvent.change(screen.getByLabelText("Host house ID"), {
+      target: { value: HOST_HOUSE_ID },
+    });
     fireEvent.change(screen.getByLabelText("Celebration date"), {
       target: { value: "2026-12-05" },
     });
@@ -307,7 +315,7 @@ describe("QuotesPanel payment windows (F-38)", () => {
       daily_capacity: 1,
       competing: false,
       is_vendor_side: false,
-      counterparty_house: "vendor-1",
+      counterparty_house: VENDOR_HOUSE_ID,
       counterparty_name: "Alice Events Ltd",
       paid_minor: null,
       paid_currency: null,
@@ -344,7 +352,7 @@ describe("QuotesPanel payment windows (F-38)", () => {
     expect(screen.getByTestId("quote-payment-window")).toHaveTextContent(
       "Nothing here is a payment button",
     );
-    expect(holds).toHaveBeenCalledWith("host-1");
+    expect(holds).toHaveBeenCalledWith(HOST_HOUSE_ID);
   });
 
   it("reads the windows only when something was accepted", async () => {

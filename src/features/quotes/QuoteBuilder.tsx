@@ -173,18 +173,21 @@ export function QuoteBuilder({
       extras: toLines(extras, currency),
     };
     const parsed = newQuoteSchema.safeParse(candidate);
+    const next: Partial<Record<BuilderField, string>> = {};
     if (!parsed.success) {
-      const next: Partial<Record<BuilderField, string>> = {};
       for (const issue of parsed.error.issues) {
         const key = issue.path[0]?.toString();
         if (isField(key)) next[key] ??= issue.message;
       }
-      // A blank or non-numeric amount becomes 0 above; call it out instead of quoting free work.
-      for (const draft of [...inclusions, ...extras]) {
-        if (draft.label.trim() && toMinor(draft.amount, currency) === null) {
-          next.inclusions ??= "Every line needs an amount of 0 or more";
-        }
+    }
+    // A blank or non-numeric amount becomes 0 in toLines, so an unrelated schema pass would submit
+    // the line as free work; refuse it whatever the rest of the quote looks like.
+    for (const draft of [...inclusions, ...extras]) {
+      if (draft.label.trim() && toMinor(draft.amount, currency) === null) {
+        next.inclusions ??= "Every line needs an amount of 0 or more";
       }
+    }
+    if (!parsed.success || Object.keys(next).length > 0) {
       setFieldErrors(next);
       return;
     }
