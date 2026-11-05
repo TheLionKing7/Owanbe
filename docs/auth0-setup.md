@@ -49,7 +49,11 @@ AUTH0_AUDIENCE=https://api.owanbe.app
 SUPABASE_URL=https://<ref>.supabase.co
 SUPABASE_PUBLIC_KEY=<publishable / anon key>
 ```
-Only the variables above reach the browser (see `PUBLIC_ENV` in `vite.config.ts`). Never put secret keys here.
+For local development, prefix these public values with `VITE_` in the ignored `.env.local` file. This file does not configure the published app.
+
+For Lovable hosting, save `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_AUDIENCE`, `EXTERNAL_SUPABASE_URL`, and `EXTERNAL_SUPABASE_ANON_KEY` (or `EXTERNAL_SUPABASE_PUBLISHABLE_KEY`) in project Secrets. The public configuration server function returns only these sign-in identifiers. External database settings take precedence over managed settings. Never expose `EXTERNAL_SUPABASE_SERVICE_ROLE_KEY` or `PAYSTACK_SECRET_KEY` to the browser.
+
+After saving settings and updating the code, publish the app to apply the change to the live site. Auth0's allowed origins and callback URLs must include the published origin and `/auth/callback` respectively. Missing settings fail closed; temporary loading failures can be retried.
 
 ## Checks
 - `npm test`: UI session gate (signed out, signed in, suspended, callback, error/retry, fail-closed).

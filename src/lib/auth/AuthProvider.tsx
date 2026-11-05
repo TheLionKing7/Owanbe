@@ -1,8 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { readAuthEnv, type AuthEnv } from "@/config/env";
+import { getPublicClientConfig } from "./config.functions";
 import { AccountBlockedError, type AppUser, type AuthClient, type AuthStatus, type HouseSummary, type LoginOptions } from "./types";
 
 export type AuthClientLoader = (env: AuthEnv) => Promise<AuthClient>;
+export type AuthConfigLoader = () => Promise<AuthEnv | null>;
 
 const defaultLoader: AuthClientLoader = async (env) => (await import("./auth0Client")).createAuthClient(env);
 
@@ -30,23 +32,34 @@ interface AuthProviderProps {
   children: ReactNode;
   /** Injected in tests; defaults to the lazily loaded Auth0 + Supabase client. */
   loader?: AuthClientLoader;
-  /** Injected in tests; defaults to the build-time environment. */
+  /** Explicit null fails closed in tests; otherwise runtime settings are loaded first. */
   env?: AuthEnv | null;
+  configLoader?: AuthConfigLoader;
 }
 
-export function AuthProvider({ children, loader = defaultLoader, env = readAuthEnv() }: AuthProviderProps) {
-  const [status, setStatus] = useState<AuthStatus>(env ? "loading" : "unconfigured");
+export function AuthProvider({ children, loader = defaultLoader, env, configLoader = getPublicClientConfig }: AuthProviderProps) {
+  const [status, setStatus] = useState<AuthStatus>(env === null ? "unconfigured" : "loading");
   const [user, setUser] = useState<AppUser | null>(null);
   const [houses, setHouses] = useState<HouseSummary[]>([]);
   const [blockedReason, setBlockedReason] = useState<AuthContextValue["blockedReason"]>(null);
   const clientRef = useRef<Promise<AuthClient> | null>(null);
+  const configRef = useRef<Promise<AuthEnv | null> | null>(null);
   const [attempt, setAttempt] = useState(0);
 
+  const getEnv = useCallback(() => {
+    configRef.current ??= env !== undefined
+      ? Promise.resolve(env)
+      : configLoader().then((runtime) => runtime ?? readAuthEnv());
+    return configRef.current;
+  }, [env, configLoader]);
+
   const getClient = useCallback(() => {
-    if (!env) return Promise.reject(new Error("auth_not_configured"));
-    clientRef.current ??= loader(env);
+    clientRef.current ??= getEnv().then((settings) => {
+      if (!settings) throw new Error("auth_not_configured");
+      return loader(settings);
+    });
     return clientRef.current;
-  }, [env, loader]);
+  }, [getEnv, loader]);
 
   /** Server-side session gate: nothing is "signed in" until ensure_user succeeds. */
   const admit = useCallback(async (client: AuthClient): Promise<boolean> => {
@@ -73,13 +86,19 @@ export function AuthProvider({ children, loader = defaultLoader, env = readAuthE
   const callbackRef = useRef<Promise<string | null> | null>(null);
 
   useEffect(() => {
-    if (!env) return;
+    if (env === null) return;
     if (window.location.pathname === "/auth/callback") return; // completeLogin drives this
     let cancelled = false;
     // Session restore pulls in the Auth0 + Supabase chunks; wait for an idle moment so the
     // homepage paints first on slow connections.
     whenIdle(async () => {
       try {
+        const settings = await getEnv();
+        if (cancelled) return;
+        if (!settings) {
+          setStatus("unconfigured");
+          return;
+        }
         const client = await getClient();
         const ok = await client.restoreSession();
         if (cancelled) return;
@@ -92,7 +111,7 @@ export function AuthProvider({ children, loader = defaultLoader, env = readAuthE
     return () => {
       cancelled = true;
     };
-  }, [env, getClient, admit, attempt]);
+  }, [env, getEnv, getClient, admit, attempt]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -117,15 +136,18 @@ export function AuthProvider({ children, loader = defaultLoader, env = readAuthE
             const client = await getClient();
             const returnTo = await client.handleRedirectCallback(url);
             return (await admit(client)) ? returnTo : null;
-          } catch {
-            setStatus(env ? "error" : "unconfigured");
+          } catch (error) {
+            setStatus(error instanceof Error && error.message === "auth_not_configured" ? "unconfigured" : "error");
             return null;
           }
         })();
         return callbackRef.current;
       },
       retry() {
-        setStatus(env ? "loading" : "unconfigured");
+        configRef.current = null;
+        clientRef.current = null;
+        callbackRef.current = null;
+        setStatus(env === null ? "unconfigured" : "loading");
         setAttempt((n) => n + 1);
       },
     }),

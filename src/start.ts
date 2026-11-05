@@ -1,7 +1,6 @@
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -26,6 +25,9 @@ const csrfMiddleware = createCsrfMiddleware({
 });
 
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
+  // Auth0 is this app's identity authority. Do not restore the generated managed
+  // Supabase session attacher: it requires unavailable VITE_* settings before
+  // even public configuration RPCs can run. Protected handlers verify Auth0.
+  functionMiddleware: [],
   requestMiddleware: [errorMiddleware, csrfMiddleware],
 }));
