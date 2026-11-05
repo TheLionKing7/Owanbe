@@ -56,7 +56,7 @@ describe("HouseAlerts", () => {
     expect(await screen.findAllByTestId("alert-row")).toHaveLength(3);
     expect(alerts).toHaveBeenCalledWith("vendor-1");
     expect(screen.getByTestId("alerts-unread")).toHaveTextContent("2");
-    expect(screen.getByTestId("alert-row")).toHaveTextContent("Two hosts hold this date");
+    expect(screen.getAllByTestId("alert-row")[0]).toHaveTextContent("Two hosts hold this date");
     // The body never repeats an offer line or a payment reference; the server keeps those out.
     expect(document.body.textContent).not.toMatch(/inclusions|payment_reference/);
   });

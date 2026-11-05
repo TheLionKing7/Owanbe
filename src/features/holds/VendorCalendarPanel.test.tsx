@@ -70,7 +70,7 @@ describe("VendorCalendarPanel", () => {
     );
     expect(api.holds).toHaveBeenCalledWith("vendor-1");
     expect(screen.getByTestId("calendar-date-summary")).toHaveTextContent("0 of 1 secured");
-    expect(screen.getByTestId("calendar-hold")).toHaveTextContent("slot 1 of 1 per day");
+    expect(screen.getByTestId("calendar-hold")).toHaveTextContent("Slot 1 of 1 per day");
     expect(screen.getByTestId("calendar-hold-window").textContent).toMatch(/6h \d+m left to pay/);
   });
 
@@ -109,7 +109,7 @@ describe("VendorCalendarPanel", () => {
       />,
     );
 
-    expect(await screen.findByTestId("calendar-hold-paid")).toHaveTextContent(/1,?2500\.00/);
+    expect(await screen.findByTestId("calendar-hold-paid")).toHaveTextContent(/12,?500\.00/);
     expect(screen.getByTestId("calendar-date-summary")).toHaveTextContent("1 of 1 secured");
     expect(screen.getByTestId("calendar-hold-status")).toHaveTextContent("Date secured");
   });
