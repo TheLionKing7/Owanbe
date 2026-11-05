@@ -4,6 +4,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { Logo } from "@/components/site/Logo";
 import { HOUSES, type HouseId } from "@/lib/houses";
+import { OpenVendorHouse } from "@/features/vendor-profile/OpenVendorHouse";
 
 /** Shell for the Host and Vendor houses: each has its own navigation and never mixes with the other. */
 export default function HouseLayout({ houseId }: { houseId: HouseId }) {
@@ -64,13 +65,13 @@ function HouseShell({ houseId }: { houseId: HouseId }) {
       <main id="main" className="px-4 py-6 sm:px-8 lg:py-10">
         {myHouse ? (
           <Outlet />
+        ) : houseId === "vendor" ? (
+          <OpenVendorHouse />
         ) : (
           <section role="status" className="max-w-xl rounded-3xl bg-white p-8 shadow-card" data-testid="no-house">
             <h1 className="font-display text-3xl font-bold text-plum-950">No {house.name} yet</h1>
             <p className="mt-3 text-ink-muted">
-              {houseId === "vendor"
-                ? "Your account doesn't have a Vendor house. Opening one arrives with the Become a Vendor feature."
-                : "Your Host house is being set up. Please refresh in a moment."}
+              Your Host house is being set up. Please refresh in a moment.
             </p>
           </section>
         )}

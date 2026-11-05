@@ -21,6 +21,8 @@ import { Route as HostSectionRouteImport } from './routes/host/$section'
 import { Route as VendorIndexRouteImport } from './routes/vendor/index'
 import { Route as VendorSectionRouteImport } from './routes/vendor/$section'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth.callback'
+import { Route as PublicVendorsIndexRouteImport } from './routes/_public/vendors.index'
+import { Route as PublicVendorsSlugRouteImport } from './routes/_public/vendors.$slug'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack/webhook'
 
 const PublicRoute = PublicRouteImport.update({
@@ -82,6 +84,16 @@ const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicVendorsIndexRoute = PublicVendorsIndexRouteImport.update({
+  id: '/vendors/',
+  path: '/vendors/',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicVendorsSlugRoute = PublicVendorsSlugRouteImport.update({
+  id: '/vendors/$slug',
+  path: '/vendors/$slug',
+  getParentRoute: () => PublicRoute,
+} as any)
 const ApiPublicPaystackWebhookRoute =
   ApiPublicPaystackWebhookRouteImport.update({
     id: '/api/public/paystack/webhook',
@@ -101,6 +113,8 @@ export interface FileRoutesByFullPath {
   '/host/': typeof HostIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/vendors/': typeof PublicVendorsIndexRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -113,6 +127,8 @@ export interface FileRoutesByTo {
   '/host': typeof HostIndexRoute
   '/vendor': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/vendors': typeof PublicVendorsIndexRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesById {
@@ -129,6 +145,8 @@ export interface FileRoutesById {
   '/host/': typeof HostIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
+  '/_public/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/_public/vendors/': typeof PublicVendorsIndexRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
@@ -145,6 +163,8 @@ export interface FileRouteTypes {
     | '/host/'
     | '/vendor/'
     | '/auth/callback'
+    | '/vendors/$slug'
+    | '/vendors/'
     | '/api/public/paystack/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -157,6 +177,8 @@ export interface FileRouteTypes {
     | '/host'
     | '/vendor'
     | '/auth/callback'
+    | '/vendors/$slug'
+    | '/vendors'
     | '/api/public/paystack/webhook'
   id:
     | '__root__'
@@ -172,6 +194,8 @@ export interface FileRouteTypes {
     | '/host/'
     | '/vendor/'
     | '/_public/auth/callback'
+    | '/_public/vendors/$slug'
+    | '/_public/vendors/'
     | '/api/public/paystack/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -268,6 +292,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicAuthCallbackRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/vendors/': {
+      id: '/_public/vendors/'
+      path: '/vendors'
+      fullPath: '/vendors/'
+      preLoaderRoute: typeof PublicVendorsIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/vendors/$slug': {
+      id: '/_public/vendors/$slug'
+      path: '/vendors/$slug'
+      fullPath: '/vendors/$slug'
+      preLoaderRoute: typeof PublicVendorsSlugRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/api/public/paystack/webhook': {
       id: '/api/public/paystack/webhook'
       path: '/api/public/paystack/webhook'
@@ -284,6 +322,8 @@ interface PublicRouteChildren {
   PublicSignUpRoute: typeof PublicSignUpRoute
   PublicIndexRoute: typeof PublicIndexRoute
   PublicAuthCallbackRoute: typeof PublicAuthCallbackRoute
+  PublicVendorsSlugRoute: typeof PublicVendorsSlugRoute
+  PublicVendorsIndexRoute: typeof PublicVendorsIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
@@ -292,6 +332,8 @@ const PublicRouteChildren: PublicRouteChildren = {
   PublicSignUpRoute: PublicSignUpRoute,
   PublicIndexRoute: PublicIndexRoute,
   PublicAuthCallbackRoute: PublicAuthCallbackRoute,
+  PublicVendorsSlugRoute: PublicVendorsSlugRoute,
+  PublicVendorsIndexRoute: PublicVendorsIndexRoute,
 }
 
 const PublicRouteWithChildren =

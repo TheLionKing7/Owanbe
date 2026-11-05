@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
-import { Check, Copy, Loader2, Plus, RefreshCw, Sparkles, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Copy, ExternalLink, EyeOff, Globe, Loader2, PenLine, Plus, RefreshCw, Save, Sparkles, Trash2, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { publishProblem, saveErrorMessage, toSavePayload, type VendorProfileRow } from "./profile-data";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +12,14 @@ import { draftProfileCopy } from "./copy.functions";
 import { profileBriefSchema, type ProfileCopy } from "./contracts";
 import { findCategory, TONES, VENDOR_CATEGORIES, type Tone } from "./presets";
 
-export function ProfileCopyStudio({ defaultName = "" }: { defaultName?: string }) {
-  const { getAccessToken } = useAuth();
+export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?: string; houseId?: string | undefined }) {
+  const { getAccessToken, rpc, selectOne } = useAuth();
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">(houseId ? "loading" : "ready");
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [saved, setSaved] = useState<{ slug: string; published: boolean; updatedAt: string } | null>(null);
+  const [saving, setSaving] = useState<null | "draft" | "publish" | "unpublish">(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
   const [businessName, setBusinessName] = useState(defaultName);
   const [category, setCategory] = useState("");
   const [offerings, setOfferings] = useState<string[]>([]);
@@ -26,6 +34,85 @@ export function ProfileCopyStudio({ defaultName = "" }: { defaultName?: string }
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<{ message: string; retryable: boolean } | null>(null);
   const [copy, setCopy] = useState<ProfileCopy | null>(null);
+
+  useEffect(() => {
+    if (!houseId) return;
+    let cancelled = false;
+    setLoadState("loading");
+    selectOne<VendorProfileRow>("vendor_profiles", "house_id", houseId)
+      .then((row) => {
+        if (cancelled) return;
+        if (row) {
+          setBusinessName(row.business_name);
+          setCategory(row.category);
+          setLocations(row.locations);
+          setPriceNote(row.price_note);
+          const b = row.brief ?? {};
+          setOfferings(b.offerings ?? []);
+          setCustomOfferings(b.customOfferings ?? []);
+          setDetails(b.details ?? {});
+          setStory(b.story ?? "");
+          if (b.tone && TONES.some((t) => t.value === b.tone)) setTone(b.tone as Tone);
+          if (row.headline || row.about) {
+            setCopy({ headline: row.headline, tagline: row.tagline, about: row.about, services: row.services ?? [], highlights: row.highlights ?? [] });
+          }
+          setSaved({ slug: row.slug, published: row.published, updatedAt: row.updated_at });
+        }
+        setDirty(false);
+        setLoadState("ready");
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        // Table not created yet: let the vendor keep drafting; saving explains what's missing.
+        const msg = err instanceof Error ? err.message : "";
+        setLoadState(msg.includes("vendor_profiles") || msg.includes("schema cache") ? "ready" : "error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [houseId, selectOne, loadAttempt]);
+
+  // Any edit after loading/saving marks the profile as having unsaved changes.
+  useEffect(() => {
+    if (loadState === "ready") setDirty(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businessName, category, offerings, customOfferings, details, story, tone, locations, priceNote, copy]);
+
+  async function save(mode: "draft" | "publish" | "unpublish") {
+    if (!houseId || !copy) return;
+    const input = {
+      businessName,
+      category,
+      locations,
+      priceNote,
+      brief: { offerings, customOfferings, details, story, tone },
+      copy,
+    };
+    if (mode === "publish") {
+      const problem = publishProblem(input);
+      if (problem) {
+        setSaveError(problem);
+        return;
+      }
+    }
+    setSaving(mode);
+    setSaveError(null);
+    try {
+      const publish = mode === "publish" || (mode === "draft" && !!saved?.published);
+      const row = await rpc<VendorProfileRow>("save_vendor_profile", { p_house: houseId, p_profile: toSavePayload(input), p_publish: mode === "unpublish" ? false : publish });
+      setSaved({ slug: row.slug, published: row.published, updatedAt: row.updated_at });
+      setDirty(false);
+      toast.success(mode === "publish" ? "Your profile is live" : mode === "unpublish" ? "Your profile is hidden from hosts" : "Profile saved");
+    } catch (err) {
+      setSaveError(saveErrorMessage(err));
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  function startBlank() {
+    setCopy({ headline: "", tagline: "", about: "", services: offerings.map((o) => ({ name: o, description: "" })), highlights: [] });
+  }
 
   const preset = useMemo(() => findCategory(category), [category]);
   const allOptions = [...(preset?.offerings ?? []), ...customOfferings];
@@ -96,7 +183,43 @@ export function ProfileCopyStudio({ defaultName = "" }: { defaultName?: string }
 
   const field = (key: string) => errors[key] && <p className="mt-1 text-sm text-destructive" role="alert">{errors[key]}</p>;
 
+  if (loadState === "loading") {
+    return (
+      <div role="status" aria-live="polite" className="rounded-2xl bg-card p-6 text-sm text-ink-muted shadow-card">
+        <Loader2 className="mr-2 inline h-4 w-4 animate-spin" aria-hidden /> Loading your profile…
+      </div>
+    );
+  }
+  if (loadState === "error") {
+    return (
+      <div role="alert" className="rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-sm">
+        <p>We couldn't load your saved profile.</p>
+        <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => setLoadAttempt((n) => n + 1)}>
+          <RefreshCw className="h-4 w-4" /> Try again
+        </Button>
+      </div>
+    );
+  }
+
   return (
+    <div className="space-y-6">
+    {saved && (
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-card p-4 shadow-card" data-testid="profile-status">
+        <p className="text-sm">
+          {saved.published ? (
+            <><Globe className="mr-1 inline h-4 w-4 text-secondary" aria-hidden /> Your profile is <strong>live</strong> for hosts.</>
+          ) : (
+            <><EyeOff className="mr-1 inline h-4 w-4 text-ink-muted" aria-hidden /> Saved as a <strong>draft</strong>. Only your house can see it.</>
+          )}
+          {dirty && <span className="ml-2 text-ink-muted">You have unsaved changes.</span>}
+        </p>
+        {saved.published && (
+          <Link to="/vendors/$slug" params={{ slug: saved.slug }} target="_blank" className="inline-flex items-center gap-1 text-sm font-semibold text-primary underline-offset-4 hover:underline">
+            View public profile <ExternalLink className="h-4 w-4" aria-hidden />
+          </Link>
+        )}
+      </div>
+    )}
     <div className="grid gap-8 lg:grid-cols-2" data-testid="profile-copy-studio">
       <form
         className="space-y-6 rounded-2xl bg-card p-6 shadow-card"
@@ -261,9 +384,12 @@ export function ProfileCopyStudio({ defaultName = "" }: { defaultName?: string }
         )}
 
         {!busy && !copy && !failure && (
-          <p className="mt-6 text-sm text-ink-muted">
-            Pick your category, choose your services and describe your business. Your draft headline, about section and service descriptions will appear here.
-          </p>
+          <div className="mt-6 space-y-3 text-sm text-ink-muted">
+            <p>Pick your category, choose your services and describe your business. Your draft headline, about section and service descriptions will appear here.</p>
+            <Button type="button" variant="outline" size="sm" onClick={startBlank}>
+              <PenLine className="h-4 w-4" /> I'd rather write it myself
+            </Button>
+          </div>
         )}
 
         {copy && (
@@ -284,27 +410,66 @@ export function ProfileCopyStudio({ defaultName = "" }: { defaultName?: string }
               <p className="text-sm font-medium">Services</p>
               {copy.services.map((s, i) => (
                 <div key={i} className="rounded-xl border border-border p-3">
+                  <div className="flex justify-end">
+                    <button type="button" aria-label={`Remove service ${i + 1}`} onClick={() => setCopy({ ...copy, services: copy.services.filter((_, j) => j !== i) })} className="rounded-full p-1 text-ink-muted hover:bg-muted">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                   <Input aria-label={`Service ${i + 1} name`} value={s.name} onChange={(e) => setCopy({ ...copy, services: copy.services.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) })} />
                   <Textarea aria-label={`Service ${i + 1} description`} className="mt-2" value={s.description} onChange={(e) => setCopy({ ...copy, services: copy.services.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)) })} />
                 </div>
               ))}
+              {copy.services.length < 12 && (
+                <Button type="button" size="sm" variant="outline" onClick={() => setCopy({ ...copy, services: [...copy.services, { name: "", description: "" }] })}>
+                  <Plus className="h-4 w-4" /> Add a service
+                </Button>
+              )}
             </div>
-            {copy.highlights.length > 0 && (
-              <div>
-                <p className="text-sm font-medium">Why hosts choose you</p>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
-                  {copy.highlights.map((h, i) => <li key={i}>{h}</li>)}
-                </ul>
-              </div>
-            )}
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Why hosts choose you</p>
+              {copy.highlights.map((h, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input aria-label={`Highlight ${i + 1}`} maxLength={120} value={h} onChange={(e) => setCopy({ ...copy, highlights: copy.highlights.map((x, j) => (j === i ? e.target.value : x)) })} />
+                  <button type="button" aria-label={`Remove highlight ${i + 1}`} onClick={() => setCopy({ ...copy, highlights: copy.highlights.filter((_, j) => j !== i) })} className="rounded-full p-2 text-ink-muted hover:bg-muted">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+              {copy.highlights.length < 6 && (
+                <Button type="button" size="sm" variant="outline" onClick={() => setCopy({ ...copy, highlights: [...copy.highlights, ""] })}>
+                  <Plus className="h-4 w-4" /> Add a highlight
+                </Button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={() => void copyAll()}><Copy className="h-4 w-4" /> Copy all</Button>
+              <Button type="button" variant="outline" onClick={() => void copyAll()}><Copy className="h-4 w-4" /> Copy all</Button>
               <Button type="button" variant="outline" disabled={busy} onClick={() => void generate()}><RefreshCw className="h-4 w-4" /> Rewrite</Button>
             </div>
-            <p className="text-xs text-ink-subtle">Saving to your public profile arrives with the profile feature. For now, copy your draft.</p>
+            {houseId && (
+              <div className="space-y-3 border-t border-border pt-4">
+                {saveError && <p role="alert" className="text-sm text-destructive">{saveError}</p>}
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" disabled={!!saving} onClick={() => void save("draft")}>
+                    {saving === "draft" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {saved?.published ? "Save changes" : "Save draft"}
+                  </Button>
+                  {!saved?.published ? (
+                    <Button type="button" disabled={!!saving} onClick={() => void save("publish")}>
+                      {saving === "publish" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />} Publish for hosts
+                    </Button>
+                  ) : (
+                    <Button type="button" variant="ghost" disabled={!!saving} onClick={() => void save("unpublish")}>
+                      {saving === "unpublish" ? <Loader2 className="h-4 w-4 animate-spin" /> : <EyeOff className="h-4 w-4" />} Hide from hosts
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-ink-subtle">Published profiles appear on the public vendor directory. Your notes and brief stay private to your house.</p>
+              </div>
+            )}
           </div>
         )}
       </section>
+    </div>
     </div>
   );
 }
