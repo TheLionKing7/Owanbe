@@ -44,7 +44,11 @@ begin;
     assert (select auth0_sub from public.users) = 'google-oauth2|bob';
   end $$;
 commit;
-do $$ begin assert (select count(*) from public.users) = 2; end $$;
+-- Every suite shares this database and runs in filename order, so count only F-76's own subjects.
+do $$ begin
+  assert (select count(*) from public.users
+          where auth0_sub in ('auth0|alice', 'google-oauth2|bob')) = 2;
+end $$;
 
 -- 3. Token checks: issuer, audience, expiry, subject
 begin;

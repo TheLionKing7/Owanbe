@@ -1,5 +1,9 @@
 import { useLocation, useParams, useSearchParams } from "@/lib/router";
 import { HOUSES, findNavItem, type HouseId } from "@/lib/houses";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { QuotesPanel } from "@/features/quotes/QuotesPanel";
+import { VendorCalendarPanel } from "@/features/holds/VendorCalendarPanel";
+import { HouseAlerts } from "@/features/holds/HouseAlerts";
 import NotFound from "./NotFound";
 
 export default function HousePage({ houseId }: { houseId: HouseId }) {
@@ -7,10 +11,15 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
   const { section } = useParams();
   const [params] = useSearchParams();
   const { pathname } = useLocation();
+  const { houses } = useAuth();
   const item = findNavItem(house, section);
   if (!item) return <NotFound />;
 
+  const myHouse = houses.find((entry) => entry.kind === houseId);
   const query = params.get("q");
+  const holdsDates =
+    myHouse !== undefined &&
+    (myHouse.capabilities.includes("calendar") || myHouse.capabilities.includes("quotes"));
   return (
     <section aria-labelledby="house-page-title">
       <p className="text-sm text-ink-muted">{house.tagline}</p>
@@ -23,9 +32,34 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
           Planning: <strong className="text-plum-800">{query}</strong>
         </p>
       )}
-      <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
-        This workspace is scaffolded; its tools arrive with later features.
-      </p>
+      {item.slug === "quotes" && myHouse && (
+        <div className="mt-8 space-y-6">
+          <HouseAlerts house={myHouse} />
+          <QuotesPanel
+            house={myHouse}
+            side={houseId}
+            hostHint={params.get("host")}
+            dateHint={params.get("date")}
+          />
+        </div>
+      )}
+      {item.slug === "calendar" && myHouse && holdsDates && (
+        <div className="mt-8 space-y-6">
+          <HouseAlerts house={myHouse} />
+          <VendorCalendarPanel house={myHouse} />
+        </div>
+      )}
+      {item.slug === "calendar" && myHouse && !holdsDates && (
+        <p className="mt-8 text-sm text-ink-muted" data-testid="calendar-no-capability">
+          Your role in this house does not include the calendar. Ask the owner for the calendar
+          capability.
+        </p>
+      )}
+      {item.slug !== "quotes" && item.slug !== "calendar" && (
+        <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
+          This workspace is scaffolded; its tools arrive with later features.
+        </p>
+      )}
     </section>
   );
 }
