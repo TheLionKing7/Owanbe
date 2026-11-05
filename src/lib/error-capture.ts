@@ -1,5 +1,6 @@
 // Captures the original Error out-of-band so server.ts can recover the stack
 // when h3 has already swallowed the throw into a generic 500 Response.
+import { redactPaymentCredentials, sanitizeForLog } from "@/lib/payments/credential-guard";
 
 let lastCapturedError: { error: unknown; at: number } | undefined;
 const TTL_MS = 5_000;
@@ -52,12 +53,14 @@ function isErrorLike(value: unknown): value is Error {
 // Wrap console.error so errors logged by any layer — including h3's internal
 // unhandled-error logging, which this file cannot hook directly — are both
 // recorded for consumeLastCapturedError and expanded before serialization.
+// F-60: every string leaving this file is credential-scanned first, because a payment
+// error's message or cause chain is exactly where a card number would surface.
 const originalConsoleError = console.error.bind(console);
 console.error = (...args: unknown[]) => {
   const expanded = args.map((arg) => {
-    if (!isErrorLike(arg)) return arg;
+    if (!isErrorLike(arg)) return sanitizeForLog(arg);
     record(arg);
-    return describeError(arg);
+    return redactPaymentCredentials(describeError(arg));
   });
   originalConsoleError(...expanded);
 };

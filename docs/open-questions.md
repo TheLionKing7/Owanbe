@@ -119,3 +119,34 @@ affected feature, the status and the release impact. Approved answers move to
   for that list. There is no email/push, no per-user channel preference, and no
   cross-house badge. Those three features will want the same table; whoever builds
   next should extend it rather than create a second notifications store.
+
+### Q10. Does Ówàńbè ever hold money, and under what licence?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — regulated, cannot be decided by an engineer
+- **Affected:** F-60 Payment Data Protection (protection half built 2026-11-05), F-48 Payment
+  Router & Banking Integrations (unbuilt), F-42 Losing-bid Refund (blocked), F-49 Backup Payment
+  Processor, F-47 Large-fund second approval
+- **Release impact:** the owner approved F-60 as a protection-only slice and said "this feature
+  shouldn't be forgotten. AI payment router is key." What is built proves no raw card or bank
+  credential can enter storage, logs or Sentry. What is *not* built is the other half of F-60 —
+  wallet balances and transaction records — because a wallet is fund holding. `refund_obligations`
+  therefore records who is owed what and moves nothing. Before any ledger table exists, the owner
+  needs the licence/arrangement answer (held funds, settlement, NIBSS/open-banking access) and then
+  F-48's provider choice. Until both exist, a losing payment is a manual refund, and the UI must
+  keep saying so in plain language.
+
+### Q11. Which AI SDK versions does this project actually depend on?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — dependency decision, and a broken install
+- **Affected:** F-80 CI (next task), F-85 Test Suites, F-86 Error Reporting, F-12/F-46 AI features,
+  `src/features/vendor-profile/copy.server.ts`
+- **Release impact:** `package.json` asks for `@ai-sdk/openai@^4.0.108` and `ai@^7.0.162`. The
+  registry has no 4.x for the first (latest 3.0.64) and no 7.x for the second (latest 6.0.184), and
+  `package-lock.json` carries neither package nor `@testing-library/dom` (a required peer of the
+  already-installed `@testing-library/react@16.0.1`). Consequences measured on 2026-11-05: `npm
+  install` cannot resolve, `tsc` reports 4 errors in `copy.server.ts` for the two absent AI modules,
+  and 11 of 15 vitest files collect (99 tests, all passing) while the 4 React component suites fail
+  to load. The fix is an owner decision about the intended versions — not something to guess at,
+  because a downgrade changes the AI call surface the vendor-profile feature was written against.

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { safeEventName } from "@/lib/payments/credential-guard";
 import { verifyPaystackSignature } from "@/lib/payments/paystack.server";
 
 // Paystack calls this URL. Unsigned or wrongly signed requests are rejected.
@@ -12,7 +13,10 @@ export const Route = createFileRoute("/api/public/paystack/webhook")({
         if (!ok) return new Response("invalid signature", { status: 401 });
         let event = "unknown";
         try {
-          event = String((JSON.parse(raw) as { event?: unknown }).event ?? "unknown");
+          // F-60: the signed body is read for its event name and then dropped. It is never stored,
+          // never forwarded, and never written to a log — a card payload inside it must not survive
+          // this function, so the name is whitelisted to a bare identifier.
+          event = safeEventName((JSON.parse(raw) as { event?: unknown }).event);
         } catch {
           return new Response("invalid body", { status: 400 });
         }
