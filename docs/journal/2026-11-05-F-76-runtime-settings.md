@@ -9,4 +9,6 @@ Owner requested implementation of the previously described configuration bridge 
 - Preserve Auth0 authority, existing admission gates, homepage and AGENTS.md unchanged.
 - Local public `VITE_*` settings remain a fallback. Publish is required to update the live site.
 
-Verification results are recorded in the Sage 7 report; authenticated admission is not claimed without a completed real sign-in.
+Verification: 12 focused tests pass; preview builds report OK. Saved config RPCs return HTTP 200 and the browser reaches Auth0, which rejects the localhost callback URL. Complete real sign-in/admission remains unverified. The full suite has 81 passing and 6 failing tests in existing quote/hold UI suites unrelated to this repair; these were left unchanged.
+
+Removed the global managed Supabase session attacher because it tried to initialize an unrelated client with missing build-time settings before public RPCs could execute. Existing Auth0 third-party database authentication and admission gates remain unchanged; both current server functions are public configuration reads.
