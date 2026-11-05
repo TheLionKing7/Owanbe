@@ -18,6 +18,7 @@ interface AuthContextValue {
   /** Finishes an Auth0 redirect; resolves to the in-app path to continue to, or null if not admitted. */
   completeLogin(url: string): Promise<string | null>;
   retry(): void;
+  getAccessToken(): Promise<string | null>;
 }
 
 function whenIdle(task: () => void) {
@@ -142,6 +143,14 @@ export function AuthProvider({ children, loader = defaultLoader, env, configLoad
           }
         })();
         return callbackRef.current;
+      },
+      async getAccessToken() {
+        try {
+          const client = await getClient();
+          return (await client.getAccessToken?.()) ?? null;
+        } catch {
+          return null;
+        }
       },
       retry() {
         configRef.current = null;

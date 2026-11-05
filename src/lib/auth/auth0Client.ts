@@ -33,6 +33,13 @@ export async function createAuthClient(env: AuthEnv): Promise<AuthClient> {
   };
 
   return {
+    async getAccessToken() {
+      try {
+        return (await auth0.getTokenSilently()) ?? null;
+      } catch {
+        return null;
+      }
+    },
     async handleRedirectCallback(url) {
       const result = await auth0.handleRedirectCallback<{ returnTo?: string }>(url);
       return safeReturnTo(result.appState?.returnTo);

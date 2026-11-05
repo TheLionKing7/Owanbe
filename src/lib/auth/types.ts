@@ -33,6 +33,8 @@ export interface AuthClient {
   ensureAppUser(): Promise<AppUser>;
   /** Houses the admitted user belongs to (public.my_houses()). */
   listHouses(): Promise<HouseSummary[]>;
+  /** Current Auth0 access token for calling the app's own server functions. */
+  getAccessToken?(): Promise<string | null>;
 }
 
 export type AuthStatus = "unconfigured" | "loading" | "signedOut" | "signedIn" | "blocked" | "error";

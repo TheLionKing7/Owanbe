@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { QuotesPanel } from "@/features/quotes/QuotesPanel";
 import { VendorCalendarPanel } from "@/features/holds/VendorCalendarPanel";
 import { HouseAlerts } from "@/features/holds/HouseAlerts";
+import { ProfileCopyStudio } from "@/features/vendor-profile/ProfileCopyStudio";
 import NotFound from "./NotFound";
 
 export default function HousePage({ houseId }: { houseId: HouseId }) {
@@ -55,7 +56,12 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
           capability.
         </p>
       )}
-      {item.slug !== "quotes" && item.slug !== "calendar" && (
+      {item.slug === "profile" && houseId === "vendor" && (
+        <div className="mt-8">
+          <ProfileCopyStudio defaultName={myHouse?.display_name ?? ""} />
+        </div>
+      )}
+      {item.slug !== "quotes" && item.slug !== "calendar" && item.slug !== "profile" && (
         <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
           This workspace is scaffolded; its tools arrive with later features.
         </p>
