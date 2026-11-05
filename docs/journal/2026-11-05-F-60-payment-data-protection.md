@@ -81,6 +81,41 @@ Deliberately allowed, each with a test that pins it:
 6. **Nothing moves money.** No provider call, no balance, no settlement, no refund execution. F-42
    and F-48 act on the ledger later.
 
+## Why the SQL gap could not be closed from here (and what to run instead)
+
+The owner applied `20261104000000_f78_permission_scoping.sql` by hand today and Postgres answered:
+
+> `ERROR: 42723: function "owner_only_capabilities" already exists with same argument types`
+
+That is not a defect in F-78. The file declares `app_private.owner_only_capabilities()` exactly once,
+at line 12, so 42723 means the function was **already in that database** — the file had been applied
+before, while it sat in `supabase/pending/` carrying the note "apply through the migration tool once
+the project's Supabase is connected", and F-78 was audited built on 2026-11-04. Because the statement
+that failed is the *first* one, the re-run aborted immediately and changed nothing; it did not
+half-apply. What stays unknown is whether the original apply got through all eleven functions.
+
+Two things blocked a direct answer from this machine, both recorded rather than worked around:
+
+- `https://<ref>.supabase.co/rest/v1/` fails certificate verification here. The same
+  TLS-intercepting proxy that blocked `npm install` earlier today. Verification was **not** disabled
+  and no CA was exported from the system store to route around it.
+- The repository points at two different hosted projects: `supabase/config.toml` declares
+  `project_id = "voaseybakdiohzhvmait"` while `.env.local`'s `SUPABASE_URL` is
+  `faiknjzbpaxrsedmhbsn.supabase.co`. A hand-pasted migration therefore lands in whichever dashboard
+  tab happens to be open — which is how a duplicate apply happens in the first place. Raised as a
+  question, not decided here.
+
+`supabase/tests/db_state_check.sql` is the replacement for "trust me": read-only, plain SQL with no
+psql metacommands, so it can be pasted into the Dashboard SQL editor. It returns which objects from
+F-77/F-14/F-38/F-60/F-78 exist, the F-78 signatures with argument types and `prosecdef`, and every
+public table's `relrowsecurity` plus its policy count. Run it against the project that is meant to be
+production, then apply the migrations in order for anything it reports missing.
+
+One consequence worth repeating for the audits: **the F-14, F-38 and F-60 SQL suites are still
+unexecuted.** The new unit-test evidence does not touch them, and no part of the database half of
+F-60 should be called verified until `db_state_check.sql` and the suites have been run somewhere with
+Postgres.
+
 ## Gates actually run on 2026-11-05
 
 | Gate | Result |
