@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] F-76/F-79 repair: load public Auth0 and external database settings from saved runtime secrets; verify startup and callback without exposing private keys.
+- [x] F-76/F-79 repair: load public Auth0 and external database settings from saved runtime secrets; startup, single-use callback and retries tested.
+- [ ] Complete real sign-in verification — blocked: Auth0 rejects the localhost callback URL; owner must allow http://localhost:8080/auth/callback and publish for live verification.
 
 - [x] Import Owanbe repo into TanStack Start (homepage unchanged)
 - [x] F-78 Permission scoping (database migration pending Supabase connection)
