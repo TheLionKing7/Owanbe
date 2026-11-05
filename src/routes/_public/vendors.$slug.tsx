@@ -42,7 +42,7 @@ function VendorError({ error }: ErrorComponentProps) {
   const router = useRouter();
   return (
     <section role="alert" className="mx-auto max-w-page px-4 py-16 sm:px-8 lg:mt-16">
-      <p className="text-ink-muted">{error.message || "We couldn't load this vendor."}</p>
+      <p className="text-ink-muted">{error instanceof Error && error.message ? error.message : "We couldn't load this vendor."}</p>
       <button type="button" className="btn-primary mt-4 h-11 px-5" onClick={() => void router.invalidate()}>Try again</button>
     </section>
   );
