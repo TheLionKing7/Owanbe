@@ -12,6 +12,11 @@ Sage 7 MCP never edits code, dispatches builds or marks a feature built. Its onl
 - When a feature is done, call report_progress with its feature ID and commits. It shows as awaiting audit; audit evidence decides what is built, commits are only build evidence. Then stop and tell the owner: don't pull or start another feature until they say so.
 - When the spec doesn't answer something, call report_question (blocking=true if you can't continue) with plain_language the owner can follow without technical knowledge; report decisions you make with report_decision. Never decide or build a feature whose blocking question you asked is still unanswered. Call get_answers at the start of each session.
 
+## Branching (owner decision, 2026-11-06; overrides "one feature per branch" above)
+- `main` is production-ready only. Merge `develop` into `main` to release.
+- `develop` is the single branch for all new work. Don't create feature branches.
+- Keep the feature ID in every commit (`feat(F-123): …`) and a `docs/journal/` entry per feature. That is how Sage 7 traces each feature.
+
 ## Commit convention
 Include the feature ID in every commit message, for example feat(F-123): ...
 
