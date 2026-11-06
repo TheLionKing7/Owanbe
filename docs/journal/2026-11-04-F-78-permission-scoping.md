@@ -26,7 +26,8 @@ original apply was complete (a 42723 tells you the first statement found a colli
 the other ten), and that the F-14 / F-38 / F-60 SQL suites have ever executed — they still need a
 machine with `initdb`/`psql`, so `supabase/tests/db_state_check.sql` exists as a read-only substitute
 that can be pasted into the Dashboard.
-Separately, the working tree on the F-60/F-80 branch holds this file under `supabase/migrations/`
-while `HEAD` still has it under `supabase/pending/` (identical content, deliberately uncommitted —
-that is F-78's deployment-ordering question, not part of either feature).
+Separately, the file was moved from `supabase/pending/` to `supabase/migrations/` (identical SQL, line
+endings normalised to LF). The owner asked for the move to be committed on 2026-11-06, on branch
+`feat/F-78-promote-migration`; the F-78 functions were already applied and audited, so this only
+changes bookkeeping.
 
