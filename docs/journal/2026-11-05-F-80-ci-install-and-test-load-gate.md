@@ -122,3 +122,9 @@ only, while work now lands on `develop` (owner decision `d843e3d7`). Once billin
 to `develop` still would not run it, and `main` currently carries the pre-F-80 **bun** variant of
 `verify.yml` (`oven-sh/setup-bun@v2`, `bun install --frozen-lockfile`), which is the version known to
 fail on the unpinned AI SDK ranges. Adding `develop` to the triggers is an owner call, not assumed here.
+
+**Answered 2026-11-06T23:14:17Z (`40cf8a8e`): "We should stop the CI, since its not working, there is no
+need to be triggering it."** So the triggers are not widened. Disabling workflow `406422326` through the
+API was blocked by the host permission classifier as a CI bypass and did not execute; no workaround was
+attempted, and `verify.yml` is still reported `active`. The decision and the two ways to put it into
+effect are in `docs/decisions/f80-stop-ci-triggering.md`.
