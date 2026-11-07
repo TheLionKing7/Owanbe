@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as HostRouteImport } from './routes/host'
 import { Route as VendorRouteImport } from './routes/vendor'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicSplatRouteImport } from './routes/_public/$'
 import { Route as PublicSignInRouteImport } from './routes/_public/sign-in'
@@ -37,6 +38,11 @@ const HostRoute = HostRouteImport.update({
 const VendorRoute = VendorRouteImport.update({
   id: '/vendor',
   path: '/vendor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/host': typeof HostRouteWithChildren
   '/vendor': typeof VendorRouteWithChildren
+  '/welcome': typeof WelcomeRoute
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
+  '/welcome': typeof WelcomeRoute
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/_public': typeof PublicRouteWithChildren
   '/host': typeof HostRouteWithChildren
   '/vendor': typeof VendorRouteWithChildren
+  '/welcome': typeof WelcomeRoute
   '/_public/$': typeof PublicSplatRoute
   '/_public/sign-in': typeof PublicSignInRoute
   '/_public/sign-up': typeof PublicSignUpRoute
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/'
     | '/host'
     | '/vendor'
+    | '/welcome'
     | '/$'
     | '/sign-in'
     | '/sign-up'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/api/public/paystack/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/welcome'
     | '/$'
     | '/sign-in'
     | '/sign-up'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/_public'
     | '/host'
     | '/vendor'
+    | '/welcome'
     | '/_public/$'
     | '/_public/sign-in'
     | '/_public/sign-up'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
   HostRoute: typeof HostRouteWithChildren
   VendorRoute: typeof VendorRouteWithChildren
+  WelcomeRoute: typeof WelcomeRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
@@ -227,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/vendor'
       fullPath: '/vendor'
       preLoaderRoute: typeof VendorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public/': {
@@ -368,6 +388,7 @@ const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
   HostRoute: HostRouteWithChildren,
   VendorRoute: VendorRouteWithChildren,
+  WelcomeRoute: WelcomeRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport

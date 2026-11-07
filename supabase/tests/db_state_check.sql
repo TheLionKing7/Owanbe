@@ -78,7 +78,12 @@ from (values
   ('function','app_private','staff_grant_for',                       '20261104000000_f78'),
   ('function','app_private','log_sensitive_read',                    '20261104000000_f78'),
   ('function','public',   'support_house_members',                   '20261104000000_f78'),
-  ('function','public',   'authorize_sensitive_read',                '20261104000000_f78')
+  ('function','public',   'authorize_sensitive_read',                '20261104000000_f78'),
+  -- F-7 sign-up onboarding
+  ('table',  'public',    'onboarding_profiles',                     '20261107090000_f7'),
+  ('function','public',   'my_onboarding',                           '20261107090000_f7'),
+  ('function','public',   'save_onboarding',                         '20261107090000_f7'),
+  ('function','public',   'complete_onboarding',                     '20261107090000_f7')
 ) as w(kind, schema, name, migration)
 order by w.migration, w.kind, w.name;
 

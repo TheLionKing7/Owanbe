@@ -24,11 +24,15 @@ Applied migrations: `supabase/migrations/` (filename order). **Pending** (not ye
 | `staff_grants` | F-77 | user_id, `capability` support/finance/operations/arbitrator/event_manager/verification_reviewer, `scope_kind` global/event/case/verification_case, granted_by (≠ user), expires_at, revoked_at; **unique (id, scope_kind)**; event_manager must be event-scoped | read own active, unexpired grants |
 | `assignments` | F-77 | FK **(staff_grant_id, target_kind) → staff_grants(id, scope_kind)**; target_id (FK to events/cases added when those tables exist); expires/revoked | read own active assignments of active grants |
 | `audit_events` | F-77 | actor_user_id, `action` (`noun.verb`), target_table, target_id, house_id, purpose, details (identifiers only) | **no client access**; append-only trigger blocks update/delete/truncate |
+| `onboarding_profiles` | F-7 (`20261107090000_f7_onboarding.sql`) | `user_id` **unique** → users; `role` host/vendor; `phone_e164` (E.164 check, `phone_verified` false until F-51 verifies it; a changed number resets it); `city`; `host_intent` hosting/arranging; `event_type`, `event_date`; `business_category`; `completed_at` | **no client access** (RLS forced, all privileges revoked); read and written only through the three F-7 functions |
 | `app_private.auth_settings` | F-76 | single row: issuer `https://<domain>/`, audience | none (set via `configure_auth0`) |
 
 ## Functions
 | Function | Who calls | Does |
 |---|---|---|
+| `public.my_onboarding()` | browser (F-7) | the caller's onboarding row joined with `users.display_name` and whether they own a Vendor house; no row = not started |
+| `public.save_onboarding(role, display_name?, phone?, city?, host_intent?, event_type?, event_date?, business_category?)` | browser (F-7) | upserts the caller's row (null keeps a field); updates `users.display_name`; refuses `invalid_role`, `invalid_name`, `event_date_in_past`, and `role_locked` once completed |
+| `public.complete_onboarding()` | browser (F-7) | idempotent; requires name ≥ 2, phone and city, plus host intent (host) or business category **and** an owned Vendor house (vendor); raises `onboarding_incomplete:<part>`; audits `onboarding.completed` with the role only (no phone or city) |
 | `app_private.configure_auth0(domain, audience)` | operator / service role | sets the accepted issuer and audience; until it runs, all sessions fail with `auth_not_configured` |
 | `app_private.verified_sub()` | RLS, functions | returns the Auth0 `sub` after checking iss, aud (string or array), exp and sub; raises `invalid_token: …` (28000) |
 | `app_private.current_user_id()` | RLS, functions | `users.id` for the verified sub when active |

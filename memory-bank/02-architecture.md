@@ -39,10 +39,12 @@ Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
 | File | URL | Guard |
 |---|---|---|
 | `src/routes/_public/index.tsx` | `/` | public; SSR on; preloads `/images/hero.webp` |
-| `src/routes/_public/sign-in.tsx` · `sign-up.tsx` | `/sign-in` · `/sign-up` | signed-in users are redirected to `?next=` (default `/host`); `safeReturnTo` rejects `//host` style values |
+| `src/routes/_public/sign-in.tsx` | `/sign-in` | signed-in users are redirected to `?next=` (default `/host`); `safeReturnTo` rejects `//host` style values |
+| `src/routes/_public/sign-up.tsx` | `/sign-up` | public role picker (`src/pages/SignUp.tsx`, F-7): Host or Vendor, then Auth0 sign-up with `returnTo=/welcome?role=…`; a signed-in visitor goes straight to `/welcome` |
+| `src/routes/welcome.tsx` | `/welcome?role=&next=` | `RequireAuth`; F-7 onboarding wizard (`src/pages/Welcome.tsx`): about you (name, phone, city) → host intent or vendor business → the house (`/host?welcome=1` or `/vendor/profile?welcome=1`, or a safe in-app `next`) |
 | `src/routes/_public/auth.callback.tsx` | `/auth/callback` | public — must be in Auth0's Allowed Callback URLs for every origin |
 | `src/routes/_public/$.tsx` | `/*` | splat: `discover, vendors, culture, about, help, get-started` → `PlaceholderPage`, anything else → `NotFound` |
-| `src/routes/host.tsx` + `host/index.tsx` + `host/$section.tsx` | `/host`, `/host/:section` | `RequireAuth` inside `HouseLayout houseId="host"` |
+| `src/routes/host.tsx` + `host/index.tsx` + `host/$section.tsx` | `/host`, `/host/:section` | `RequireAuth` → `OnboardingGate` (F-7: unfinished onboarding redirects to `/welcome?role=host&next=…`; staff of another house and a missing migration pass through) inside `HouseLayout houseId="host"` |
 | `src/routes/vendor.tsx` + `vendor/*` | `/vendor`, `/vendor/:section` | same for the Vendor house |
 | `src/routes/api/public/paystack/webhook.ts` | `/api/public/paystack/webhook` | POST only; rejects a bad signature with 401 |
 

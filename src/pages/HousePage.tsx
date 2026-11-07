@@ -5,6 +5,7 @@ import { QuotesPanel } from "@/features/quotes/QuotesPanel";
 import { VendorCalendarPanel } from "@/features/holds/VendorCalendarPanel";
 import { HouseAlerts } from "@/features/holds/HouseAlerts";
 import { ProfileCopyStudio } from "@/features/vendor-profile/ProfileCopyStudio";
+import { WelcomePlanCard } from "@/features/onboarding/WelcomePlanCard";
 import NotFound from "./NotFound";
 
 export default function HousePage({ houseId }: { houseId: HouseId }) {
@@ -33,6 +34,7 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
           Planning: <strong className="text-plum-800">{query}</strong>
         </p>
       )}
+      {houseId === "host" && item.slug === "" && <WelcomePlanCard />}
       {item.slug === "quotes" && myHouse && (
         <div className="mt-8 space-y-6">
           <HouseAlerts house={myHouse} />

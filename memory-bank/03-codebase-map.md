@@ -149,6 +149,18 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/pages/NotFound.tsx` | Unknown route page. |
 | `src/pages/PlaceholderPage.tsx` | Coming-soon page for the marketing slugs listed in the splat route. |
 | `src/pages/SignIn.tsx` | Sign-in/sign-up screen: starts Auth0 login and redirects signed-in users to ?next=. |
+| `src/pages/SignUp.tsx` | F-7 /sign-up: Host or Vendor role picker, then Auth0 sign-up returning to /welcome?role=. |
+| `src/pages/Welcome.tsx` | F-7 /welcome onboarding wizard with progress bar: about you → host intent or vendor business → the right house. |
+| `src/routes/welcome.tsx` | Route for /welcome (client-only, noindex). |
+| `src/features/onboarding/contracts.ts` | F-7 rules: steps, resume step, E.164 phone normalisation (local Nigerian numbers), field validation, OwanbePlanner opener, safe next path. |
+| `src/features/onboarding/api.ts` | F-7 RPC boundary (my_onboarding, save_onboarding, complete_onboarding, open_vendor_house) and plain-language error codes. |
+| `src/features/onboarding/OnboardingGate.tsx` | F-7: keeps a house closed until onboarding is complete; never locks people out when the check can't run. |
+| `src/features/onboarding/gate-cache.ts` | F-7: remembers per page load that the signed-in user finished onboarding. |
+| `src/features/onboarding/WelcomePlanCard.tsx` | F-7: Host overview card with what the host said at sign-up and a hand-off to the AI Planner. |
+| `src/features/onboarding/contracts.test.ts` | Tests for the F-7 rules. |
+| `src/features/onboarding/Welcome.test.tsx` | Tests for the F-7 wizard and gate (host path, vendor path, failures, staff bypass). |
+| `supabase/migrations/20261107090000_f7_onboarding.sql` | F-7 onboarding_profiles table and my_onboarding / save_onboarding / complete_onboarding. |
+| `supabase/tests/f7_onboarding.test.sql` | SQL tests for F-7 (validation, completion rules, isolation, no phone in audit). |
 
 #### src/router.tsx/
 
