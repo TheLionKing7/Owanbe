@@ -1,86 +1,67 @@
 # Ówàńbè context
 
-> Context version 6. Compiled at 2026-11-04T09:40:01.622Z.
+> Context version 7. Compiled at 2026-11-06T12:33:40.292Z.
+
+## Project summary
+
+Ówàńbè tracks 98 features across areas including event workflows, commerce, scheduling, user management, and security. Its feature inventory lists 27 built, 59 planned, 12 flagged, and none marked missing; reconciliation notes identify gaps in event-day vendor timelines, planner workspaces, aso-ebi ordering, and event-manager assignments.
 
 ## Current task spec
 
-### F-38 Vendor Calendar Soft-hold
+No buildable feature is mapped yet.
 
-Category: Data & State | Priority: must | Status: planned
-
-Accepting a quote starts a 24-hour payment window and softly holds the date; a vendor may engage multiple hosts on the same date but both are alerted, and the first confirmed payment wins while the other is auto-refunded and shown alternatives.
-Open questions: What happens to the date if a payment is still mid-process when the 24 hours end?.
-
-Technical notes: Race-condition handling: first confirmed payment wins; reversal job for the losing payment.
-
-Design notes: Clear 'another host is engaging' alert copy to manage expectations.
-
-Read the [full PRD](./prd.md), [design system](./design-system.md), [tech spec](./tech-spec.md) before starting.
-
-Next after this: F-60 Payment Data Protection (Tokenization via Partner), F-57 Admin Decision Audit & Second-person Review.
+Read the [system overview](./system-overview.md) for the intended product scope.
 
 ## Current batch
 
-- F-38 Vendor Calendar Soft-hold (ready)
-  - Proposed acceptance: Acceptance opens 24-hour payment window; Competing hosts on same date are alerted; Atomic confirmed-payment selects single winner; Losing payment auto-refunds with alternatives shown
-  - Must be wired (checked by code; built only when every line is found): table calendar_holds; fn allocateAtomicBookingWinner; api POST /quotes/:id/accept; table payments
-  - Open: How many simultaneous soft-holds per vendor-date are allowed?
-- F-60 Payment Data Protection (Tokenization via Partner) (ready)
-  - Proposed acceptance: No raw card/account credentials stored on platform; Only tokens, balances and transactions persisted; Partner handles PCI-scope credential storage; Audit confirms absence of raw credential fields
-  - Must be wired (checked by code; built only when every line is found): table wallets; table transactions; env PAYMENT_PARTNER_API_KEY
-  - Open: Which payment partner certifies PCI tokenization compliance?;
-- F-57 Admin Decision Audit & Second-person Review (ready)
-  - Proposed acceptance: Every approve/reject decision logs staff rationale immutably; Second reviewer checks decisions weekly and monthly; Vendor can appeal and resubmit after rejection; Escalation never implies silent approval
-  - Must be wired (checked by code; built only when every line is found): table decision_audit_log; fn logDecision; route /admin/decisions/review
-  - Open: What exact cadence triggers weekly vs monthly review?; How does vendor appeal resubmission re-enter the queue?
-- F-22 Trust Score System (ready)
-  - Proposed acceptance: Score updates from ratings, reviews and completions; Cancellations reduce score without admin override; Low score reduces vendor visibility in search
-  - Must be wired (checked by code; built only when every line is found): table trust_scores; fn computeTrustScore
-  - Open: How are ratings/reviews features integrated since not in current feature set?
-- F-13 Direct Search & Book Flow (ready)
-  - Proposed acceptance: Search leads to profile, chat, quote, acceptance, payment flow; Booking confirmed only after successful payment
-  - Must be wired (checked by code; built only when every line is found): route /search; route /vendor/:id; api POST /bookings; table bookings
+No buildable batch right now: every remaining feature is blocked or done.
+
+## Engineering Workflow & Blocker Rules
+
+- No ungrounded completion claims: an infrastructure feature (CI, deployment, migrations) is only built when the audit finds the configuration files it needs in the repository, such as GitHub Actions workflow files, deployment descriptors and migration files. Cite the exact path in the feature's acceptance criteria and, for CI, the command the workflow runs. A commit message alone proves nothing.
+- Blocker reporting: when a missing architectural choice, an environment dependency or a credential blocks you, call report_question with blocking: true, 2-3 concrete options and your recommendation, then stop and call get_answers. Do not guess past the blocker, and never paste a secret into the question; the owner sets credentials in the environment.
+- Check owner answers: when the ## Answers from the owner section is present, every entry in it is an authoritative decision. Respect it in all later prompts; it overrides assumptions in earlier work and the default you would otherwise choose.
 
 ## Answers from the owner
 
 Follow these; they override assumptions in earlier work.
 
-- F-82 Q: Do you approve shadcn/ui + Radix as the component library, or should new UI be hand-built from the brand tokens only? → answered: Shadcn + radix should be used to get rich components but structured with brand token
-- F-76 Decision: TanStack Start runtime and Paystack payments → confirmed
-- Decision: Owner decision: TanStack Start runtime and Paystack are approved architecture → confirmed
-- F-79 Decision: F-79: Browser monitoring configuration → confirmed
-- F-79 Decision: Owner requested one hosted Supabase project and GitHub commit mirroring to TheLionKing7/Owanbe; added fast-forward-only audit mirror and disposable local database CI, with no deployment automation. → confirmed
-- F-78 Decision: Confirmed: a paid/not-paid status for event managers carries no amount, currency, instrument, or transaction reference — it is a state label only. → confirmed
-- Q: Should an Auth0 subject that has no application user be auto-created (current ensure_user behaviour) or refused until invited/allow-listed? → answered: Admit but restrict: new users start in a limited state until verified
-- F-79 Decision: Merging into main does not deploy anything: the repo has exactly one webhook (the Sage 7 push-sync endpoint) and no CI workflows, no deployments, and no Lovable/Vercel/Netlify configuration. → confirmed
-- F-77 Decision: In the memory bank, "built" for F-75/F-76/F-77 records the Sage 7 audit run of 2026-11-01 07:35:28 UTC and nothing more; no feature is described as ready or secure. → confirmed: Year the other agent didn't know the status when recording the memory file.
-- Q: Inside an assigned event, which fields may an event manager read, and must those reads be logged as sensitive? → answered: Let’s use Sage’s suggested approach: event managers can see only their assigned events, with no guest phone numbers, health details, or money authority. They may see a simple paid/not-paid status, and each time they view it should be recorded. Please confirm the status does not reveal amounts or other payment details.
+- F-13 Decision: F-13: in-app chat comes first, under its own feature code → confirmed
+- F-80 Decision: F-80: CI installs with npm, and must prove every test file loaded → confirmed
+- F-80 Decision: F-80: CI's application job installs with npm from package-lock.json (bun removed from that job), because bun.lock still pins AI SDK versions the registry does not publish; bun.lock is left untouched and raised as an owner question rather than edited blind. → confirmed: I agree with using npm in the CI application job and leaving bun.lock unchanged for now. Please don’t describe CI as green until a workflow has actually run successfully. Keep the Bun lockfile and security-setting question open for me to decide, and leave formatting checks out for now. However, is the CI not a github action which is blocked through billing issue?
+- F-13 Q: F-13 (Direct Search & Book Flow) names three dependencies and two of them do not exist yet - there is no in-app chat anywhere in the code or schema, and no payment router (F-48, still gated behind the wallet/licence question). Which way do you want it built? → answered: Reassign In-app chat to its own feature code, build it first, then return to F-13
+- F-80 Decision: Applied the owner's answer to question 614b5ebe exactly: package.json now pins ai@^6.0.184, @ai-sdk/openai@^3.0.64 and the missing @testing-library/dom@^10.4.0 peer, with the lockfile refreshed by the owner (commit 3d89d2d). → confirmed: Thanks. Keep the applied versions and the fix. Before we confirm this as complete, please resolve or clearly document the install conflict, and make CI check that all test files load—not just that the tests that did load pass.
+- F-78 Q: F-78 was applied twice: did you want it re-run, and which Supabase project is the database these migrations should land in? → answered: Ignore it: F-78's functions were confirmed by the 2026-11-04 audit, and leave the duplicate-apply note in the journal
+- F-80 Q: F-80 CI: npm install still hits a peer-dependency conflict (@types/react 18 vs 19) that only resolves with --legacy-peer-deps. Should CI commit an .npmrc with legacy-peer-deps, or should the peer be pinned/overridden so a plain install works? → answered: Commit .npmrc with legacy-peer-deps=true (what the owner already does locally; simplest, but silently skips peer checks forever)
+- F-80 Q: F-80 CI cannot install dependencies: which AI SDK versions should package.json pin, and may I add @testing-library/dom? → answered: Pin the intended AI SDK versions (owner decision - a downgrade changes the call surface vendor-profile was written against), then refresh the lockfile and add @testing-library/dom - recommended
+- F-22 Q: F-22 Trust Score has no input data and no approved weights or suspension threshold - which should come first? → answered: Build F-26 (ratings/reviews) first, then compute the score from completed bookings + ratings - recommended
+- F-57 Q: F-57 has no decision records to audit yet - what should it audit, and who is the second reviewer? → answered: Build F-53 first (verification queue + decision rows), then F-57 audits those decisions - recommended
 
 ## Plan
 
-- Blocked F-51 WhatsApp/SMS Critical Alert Integration: planner confirmation missing; acceptance criteria unconfirmed
-- Blocked F-43 Vendor Team Role Delegation: planner confirmation missing; acceptance criteria unconfirmed
-- Blocked F-66 Biometric Data Consent (Face Scan): planner confirmation missing; acceptance criteria unconfirmed
-- Blocked F-23 Quote Counter-Offer Controls: planner confirmation missing; acceptance criteria unconfirmed
-- Blocked F-32 Team, Roles & Billing Settings: planner confirmation missing; acceptance criteria unconfirmed
-- Blocked F-39 Record Retention Policy: planner confirmation missing; acceptance criteria unconfirmed
-- Blocked F-63 Marketing Email Unsubscribe + Postal Address: planner confirmation missing; acceptance criteria unconfirmed
-- Blocked F-58 GDPR/UK-GDPR Data Rights for Diaspora Users: planner confirmation missing; acceptance criteria unconfirmed
-- Blocked F-35 Emergency Replacement Vendor Recommendation: planner confirmation missing; acceptance criteria unconfirmed
-- Blocked F-27 AI 'Best Bargain' Ranking: planner confirmation missing; acceptance criteria unconfirmed
+- Blocked F-19 Unanswered Enquiry Fallback: needs "Vendor vetting": did you mean F-10 Vendor Vetting at Sign-up?; needs "Recommendation engine": did you mean F-35 Emergency Replacement Vendor Recommendation?
+- Blocked F-64 Subscription Cancellation & Billing Transparency: needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?
+- Blocked F-37 In
 
 ## Decisions
 
-- reconcile: High-confidence verification against .github/workflows/verify.yml, scripts/check-bundle.mjs; auto-confirmed by Sage CTO.
+- reconcile: A coding agent found that the plan needs "Cultural guides hub with Ask OwanbePlanner", which isn't a feature yet. A public library of guides to Yoruba and Nigerian ceremonies (introduction, engagement, naming, wedding, burial, birthday), covering etiquette, what to buy and typical costs. Visitors can ask OwanbePlanner questions about traditions. It builds cultural authority and search traffic, and every guide links into planning and vendor discovery.
+- reconcile: Product grew beyond the blueprint; made official.
+- reconcile: Regression after the push: Outbid and late-payment refund tracking and notifications implemented in soft-hold schema and UI; actual payout reversal pending.
+- reconcile: Regression after the push: Suspended user status revocation tested in auth SQL, full member removal revocation flow not read.
+- reconcile: Regression after the push: Capability-based scoping for house sections exists in HousePage and permissions.
+- reconcile: Regression aft
+
+[Decisions truncated to the context budget.]
 
 ## Engineering guardrails
 
 - Decided stack: Web frontend: TanStack Start (owner); Mobile app: Expo (React Native); Backend: Supabase (Postgres, Auth, Storage, Edge Functions); Database: Supabase Postgres; Authentication: Auth0 (Okta); Payments: Paystack (owner); Email: Resend; Realtime: Supabase Realtime; Background jobs: Trigger.dev; File storage: Supabase Storage; Search: Algolia; AI integration: Vercel AI SDK; Hosting: Lovable hosting; Observability: Sentry. Do not add other frameworks, libraries or services without a recorded decision.
 - Top quality drivers (ISO/IEC 25010): Security, Performance efficiency, Reliability, Flexibility, Safety, Compatibility, Maintainability.
+- Architecture decision records are in blueprint/tech-spec.md.
 
 ## Active design tokens
 
-- color background = #FEF9F4 (Page background.)
 - color card = #FFFDFB (Raised surfaces: cards, popovers, dialogs.)
 - color dark-warning = #CF953A (Dark mode warning.)
 - color destructive = #9B2D28 (Errors and irreversible actions.)
@@ -88,7 +69,6 @@ Follow these; they override assumptions in earlier work.
 - color muted = #F0EAE3 (Subtle fills: table stripes, inputs, inactive tabs.)
 - color primary = #F09000 (Main actions and selected states. One primary action per view.)
 - color ring = #FFB05F (Focus outline: 2px with 2px offset on every interactive element.)
-- color success = #135127 (Confirmed and completed states.)
 - component _rationale = Aso-Oke Ledger: Information is woven like aso-oke cloth, with warm stripe rhythms organizing vendor records, quotes and payments into trustworthy, legible bands. Signature: a thin alternating orange/teal selvage-stripe rule used as section dividers and step progress, echoing the woven edge of aso-oke (Avoids: generic white-and-gold luxury wedding template with script fonts and soft gradients)
 - component Alert = Full-width banner, soft rounded corners, warm tone border-left in orange/teal selvage-stripe, subtle elevation, calm fade-in. (Used by: Backup Payment Processor outage, AI Chatbot Disclosure, Payment Caution Acknowledgment. Do: keep copy concise and persistent when required. Don't: auto-dismiss compliance alerts.)
 - component Badge = Small soft-radius pill, muted base with a thin stripe edge accent, non-animated, subtle contrast for visibility without alarm. (Used by: Cross-house Alert Badges, Invitation Tiers. Do: keep badge count visible but low-contrast. Don't: use motion or pulsing to draw attention.)
@@ -97,24 +77,21 @@ Follow these; they override assumptions in earlier work.
 <!-- sage7:audit:start -->
 ## Valid audit evidence
 
-Audit run: 2026-11-04T09:35:45.220974+00:00 against a confirmed target.
+Audit run: 2026-11-06T12:25:47.751338+00:00 against a confirmed target.
 
-- F-2 Become a Vendor Empty State: unverified - Not assessed yet.
-- F-3 Cross-house Alert Badges: unverified - Possible evidence in supabase/tests/f77_data_model.test.sql; not counted as missing. No cross-house alert badges found in header or route files.
-- F-4 Unicode-normalized Search Alias: missing - No Unicode-normalized search alias implementation found.
-- F-5 Unified Vendor House (Single Vendor Type): partial - Single unified /vendor workspace route and HouseSummary kind ('host' | 'vendor') defined.
-- F-6 Vendor Team Structure: partial - HouseSummary defines owner/staff roles and capabilities array for house memberships.
-- F-1 Dual Workspace Switcher (Host/Vendor Houses): partial - Host and Vendor house routes and my_houses RPC wiring exist; HouseLayout switcher not in read excerpts.
-- F-7 AI Intent Capture: partial - Hero search captures celebration intent and popular searches, routing to /host/plan?q=.
-- F-8 Personalised Dashboard: unverified - Not assessed yet.
-- F-9 Media Section & Event of the Week: unverified - Possible evidence in src/routes/host/$section.tsx; not counted as missing. No media section or Event of the Week component found.
-- F-10 Vendor Vetting at Sign-up: unverified - Possible evidence in src/lib/auth/AuthProvider.tsx; not counted as missing. Sign-up delegates directly to Auth0 without vendor vetting steps.
-- F-11 Payment Caution Acknowledgment: unverified - Not assessed yet.
-- F-12 AI-Assisted Event Planning (OwanbePlanner): partial - Hero search and nav link to /host/plan, but planner route renders generic HousePage.
-- F-13 Direct Search & Book Flow: partial - Category 
+- F-4 Unicode-normalized Search Alias: unverified - Possible evidence in src/features/holds/VendorCalendarPanel.test.tsx; not counted as missing. No unicode-normalized search alias implementation found in read files.
+- F-2 Become a Vendor Empty State: built - OpenVendorHouse component provides onboarding empty state to become a vendor.
+- F-6 Vendor Team Structure: partial - Vendor house supports owner/staff roles and capabilities in schema/auth, but lacks team management UI.
+- F-3 Cross-house Alert Badges: built - Cross-house alert badges and unread counts implemented in HouseAlerts.
+- F-5 Unified Vendor House (Single Vendor Type): built - Unified vendor house model and routes implemented.
+- F-1 Dual Workspace Switcher (Host/Vendor Houses): built - Host and vendor houses with layout and house switching support implemented.
+- F-7 AI Intent Capture: unverified - Possible evidence in supabase/migrations/20261104160000_f38_vendor_calendar_soft_hold.sql; not counted as missing. No AI intent capture onboarding flow found.
+- F-8 Personalised Dashboard: unverified - Possible evidence in supabase/migrations/20261104160000_f38_vendor_calendar_soft_hold.sql; not counted as missing. No personalised onboarding dashboard found.
+- F-9 Media Section & Event of the Week: unverified - Possible evidence in src/routes/host/$section.tsx; not counted as missing. No media section or Event of the Week feature found.
+- F-11 Payment Caution Acknowledgment: unverified - Possible evidence in supabase/migrations/20261104160000_f38_vendor_calendar_soft_hold.sql; not counted as missing. No payment caution acknowledgment UI found.
 
 [Audit evidence truncated to the context budget.]
 
 <!-- sage7:audit:end -->
 
-> Trimmed to the 2500-token context budget: 51 lower-priority items left out from Project summary (2), Current batch (1), Plan (9), Decisions (6), Engineering guardrails (2), Active design tokens (31). The linked source documents have the full detail.
+> Trimmed to the 2500-token context budget: 56 lower-priority items left out from Project summary (1), Waiting for the owner (3), Built out of order (1), Plan (6), Decisions (11), Engineering guardrails (1), Active design tokens (33). The linked source documents have the full detail.
