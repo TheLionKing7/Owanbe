@@ -124,7 +124,9 @@ to `develop` still would not run it, and `main` currently carries the pre-F-80 *
 fail on the unpinned AI SDK ranges. Adding `develop` to the triggers is an owner call, not assumed here.
 
 **Answered 2026-11-06T23:14:17Z (`40cf8a8e`): "We should stop the CI, since its not working, there is no
-need to be triggering it."** So the triggers are not widened. Disabling workflow `406422326` through the
-API was blocked by the host permission classifier as a CI bypass and did not execute; no workaround was
-attempted, and `verify.yml` is still reported `active`. The decision and the two ways to put it into
-effect are in `docs/decisions/f80-stop-ci-triggering.md`.
+need to be triggering it."** So the triggers are not widened. The first disable attempt was blocked by
+the host permission classifier as a CI bypass and did not execute; no workaround was attempted. The
+owner then authorised it in chat on 2026-11-07, and `verify.yml` is now `disabled_manually` in both
+repositories (`TheLionKing7/Owanbe` id `406422326`, `TheLionKing7/owanbe-project-studio` id `406392296`).
+The audit mirror is left active and the workflow file is kept intact. Details in
+`docs/decisions/f80-stop-ci-triggering.md`.
