@@ -253,88 +253,67 @@ Before building any UI element, use the shadcn MCP server to search the registri
 ## Now / Next / Open decisions
 - Now: No current commit activity recorded.
 - Next: No Ready feature is recorded.
-- Blocked: F-57 Admin Decision Audit & Second-person Review — needs Second-approver for Large Fund Actions (planned); needs Vendor Verification Review Queue (planned); needs Dispute Filing & Arbitration (planned)
-- Blocked: F-22 Trust Score System — dependency cycle: F-22 → F-21 → F-22; needs Vendor Calendar Soft-hold (built); needs Vendor Cancellation Handling (built); needs Split Payment & Completion Confirmation (planned); needs Post-booking Ratings & Reviews (planned); needs No-show Ticket & Evidence Flow (planned); needs "Reviews system": did you mean F-57 Admin Decision Audit & Second-person Review or F-26 Post-booking Ratings & Reviews or F-53 Vendor Verification Review Queue?; needs "Booking history", which isn't a feature yet
-- Blocked: F-51 WhatsApp/SMS Critical Alert Integration — planner confirmation missing; acceptance criteria unconfirmed; needs "WhatsApp Business API", which isn't a feature yet; needs "SMS provider", which isn't a feature yet
-- Blocked: F-13 Direct Search & Book Flow — needs Payment Router & Banking Integrations (planned); needs "In-app chat", which isn't a feature yet; needs "Quote system": did you mean F-14 Quote Lifecycle & Date Lock or F-23 Quote Counter-Offer Controls or F-88 Quotes Lifecycle & Revisions?; needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?
-- Blocked: F-19 Unanswered Enquiry Fallback — needs "Vendor vetting": did you mean F-10 Vendor Vetting at Sign-up?; needs "Recommendation engine": did you mean F-35 Emergency Replacement Vendor Recommendation?
-- Blocked: F-64 Subscription Cancellation & Billing Transparency — needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?
-- Blocked: F-37 In-house Event Manager Fallback — needs "Admin event manager assignment": did you mean F-55 Event Manager Assignment System?
-- Blocked: F-25 Live Payment Status Tracker & AI Escalation — needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?; needs "AI investigation agent", which isn't a feature yet; needs "Admin escalation queue", which isn't a feature yet
-- Blocked: F-11 Payment Caution Acknowledgment — needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?
-- Blocked: F-72 Automated Timed Jobs — needs "Job scheduler", which isn't a feature yet; needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?
-- Blocked: F-21 Vendor Cancellation Handling — dependency cycle: F-22 → F-21 → F-22; needs Trust Score System (planned); needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?
-- Blocked: F-15 Split Payment & Completion Confirmation — needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?; needs "Fund pool/escrow", which isn't a feature yet
+- Blocked: F-22 Trust Score System — dependency cycle: F-22 → F-21 → F-22; needs Vendor Calendar Soft-hold (built); needs Vendor Cancellation Handling (built); needs Split Payment & Completion Confirmation (planned); needs Post-booking Ratings & Reviews (planned); needs No-show Ticket & Evidence Flow (planned); needs Booking history (planned)
+- Blocked: F-13 Direct Search & Book Flow — needs Payment Router & Banking Integrations (planned); needs In-app chat (host-vendor conversations) (planned)
+- Blocked: F-64 Subscription Cancellation & Billing Transparency — needs Payment Router & Banking Integrations (planned)
+- Blocked: F-21 Vendor Cancellation Handling — dependency cycle: F-22 → F-21 → F-22; needs Trust Score System (planned); needs Payment Router & Banking Integrations (planned)
+- Blocked: F-15 Split Payment & Completion Confirmation — needs Payment Router & Banking Integrations (planned); needs Fund pool/escrow (planned)
 - Blocked: F-56 System Monitoring Dashboard — planner confirmation missing; acceptance criteria unconfirmed; needs Real-time Job Monitoring & Alerting (planned)
-- Blocked: F-42 Losing-bid Refund & Reversal Flow — planner confirmation missing; acceptance criteria unconfirmed; needs Vendor Calendar Soft-hold (built); needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?
-- Blocked: F-43 Vendor Team Role Delegation — planner confirmation missing; acceptance criteria unconfirmed; needs Vendor Team Structure (planned)
-- Blocked: F-12 AI-Assisted Event Planning (OwanbePlanner) — planner confirmation missing; acceptance criteria unconfirmed; needs "OwanbePlanner AI", which isn't a feature yet; needs "Vendor data", which isn't a feature yet; needs "Market benchmark data", which isn't a feature yet
-- Blocked: F-17 Vendor No-show Recovery — planner confirmation missing; acceptance criteria unconfirmed; needs "Ticketing system", which isn't a feature yet; needs "Fund pool/recovery fund", which isn't a feature yet
-- Blocked: F-66 Biometric Data Consent (Face Scan) — planner confirmation missing; acceptance criteria unconfirmed; needs "Liveness/face-match provider", which isn't a feature yet
-- Blocked: F-26 Post-booking Ratings & Reviews — planner confirmation missing; acceptance criteria unconfirmed; needs "Booking completion confirmation", which isn't a feature yet
-- Blocked: F-32 Team, Roles & Billing Settings — planner confirmation missing; acceptance criteria unconfirmed; needs Vendor Team Structure (planned); needs "Subscription billing", which isn't a feature yet
-- Blocked: F-39 Record Retention Policy — planner confirmation missing; acceptance criteria unconfirmed; needs "Data storage", which isn't a feature yet
-- Blocked: F-63 Marketing Email Unsubscribe + Postal Address — planner confirmation missing; acceptance criteria unconfirmed; needs "Email service", which isn't a feature yet
-- Blocked: F-58 GDPR/UK-GDPR Data Rights for Diaspora Users — planner confirmation missing; acceptance criteria unconfirmed; needs "Identity verification per country", which isn't a feature yet
-- Blocked: F-35 Emergency Replacement Vendor Recommendation — planner confirmation missing; acceptance criteria unconfirmed; needs "Vendor availability data", which isn't a feature yet; needs "Fund pool", which isn't a feature yet
-- Blocked: F-27 AI 'Best Bargain' Ranking — planner confirmation missing; acceptance criteria unconfirmed; needs "Reviews system": did you mean F-57 Admin Decision Audit & Second-person Review or F-26 Post-booking Ratings & Reviews or F-53 Vendor Verification Review Queue?; needs "Vendor pricing data", which isn't a feature yet
-- Blocked: F-45 Scoped Support & Event Manager Visibility — planner confirmation missing; acceptance criteria unconfirmed; needs "Admin audit log", which isn't a feature yet
-- Blocked: F-47 Second-approver for Large Fund Actions — planner confirmation missing; acceptance criteria unconfirmed; needs "Admin audit log", which isn't a feature yet
-- Blocked: F-70 Link Claim & Couple Sharing Rules — planner confirmation missing; acceptance criteria unconfirmed; needs VIP Access Card (QR/NFC Check-in) (planned)
-- Blocked: F-68 Referral Program — planner confirmation missing; acceptance criteria unconfirmed; needs "Reward ledger", which isn't a feature yet
-- Blocked: F-4 Unicode-normalized Search Alias — planner confirmation missing; acceptance criteria unconfirmed; needs "Search indexing", which isn't a feature yet
-- Blocked: F-18 Outsourcing / Book-on-behalf Flow — planner confirmation missing; acceptance criteria unconfirmed; needs "Booking flow", which isn't a feature yet
-- Blocked: F-65 Zero Data Retention (ZDR) for AI Models — planner confirmation missing; acceptance criteria unconfirmed; needs "OwanbePlanner AI", which isn't a feature yet; needs "OwanbeAI", which isn't a feature yet; needs "AI model provider contract", which isn't a feature yet
-- Blocked: F-33 No-show Ticket & Evidence Flow — planner confirmation missing; acceptance criteria unconfirmed; needs "Ticketing system", which isn't a feature yet; needs "Case/evidence storage", which isn't a feature yet
-- Blocked: F-48 Payment Router & Banking Integrations — planner confirmation missing; acceptance criteria unconfirmed; needs "NIBSS API", which isn't a feature yet; needs "Open banking API", which isn't a feature yet; needs "Partner bank", which isn't a feature yet; needs "Wallet ledger", which isn't a feature yet
-- Blocked: F-31 Notification Channel Preferences — planner confirmation missing; acceptance criteria unconfirmed; needs Multi-channel Notification Delivery (planned)
-- Blocked: F-54 Disputes & Refunds Console — planner confirmation missing; acceptance criteria unconfirmed; needs Vendor No-show Recovery (planned); needs Dispute Filing & Arbitration (planned)
-- Blocked: F-44 Immediate Access Revocation on Removal — planner confirmation missing; acceptance criteria unconfirmed; needs Vendor Team Role Delegation (planned)
-- Blocked: F-9 Media Section & Event of the Week — planner confirmation missing; acceptance criteria unconfirmed; needs "Media/CDN storage", which isn't a feature yet
-- Blocked: F-41 Invitation Tiers — planner confirmation missing; acceptance criteria unconfirmed; needs "Logistics/delivery operations", which isn't a feature yet
+- Blocked: F-12 AI-Assisted Event Planning (OwanbePlanner) — planner confirmation missing; acceptance criteria unconfirmed; needs OwanbePlanner AI (planned); needs Vendor data (planned); needs Market benchmark data (planned)
+- Blocked: F-17 Vendor No-show Recovery — planner confirmation missing; acceptance criteria unconfirmed; needs Ticketing system (planned); needs Fund pool/recovery fund (planned)
+- Blocked: F-66 Biometric Data Consent (Face Scan) — planner confirmation missing; acceptance criteria unconfirmed; needs Liveness/face-match provider (planned)
+- Blocked: F-26 Post-booking Ratings & Reviews — planner confirmation missing; acceptance criteria unconfirmed; needs Booking completion confirmation (planned)
+- Blocked: F-63 Marketing Email Unsubscribe + Postal Address — planner confirmation missing; acceptance criteria unconfirmed; needs Email service (planned)
+- Blocked: F-58 GDPR/UK-GDPR Data Rights for Diaspora Users — planner confirmation missing; acceptance criteria unconfirmed; needs Identity verification per country (planned)
+- Blocked: F-65 Zero Data Retention (ZDR) for AI Models — planner confirmation missing; acceptance criteria unconfirmed; needs OwanbePlanner AI (planned); needs OwanbeAI (planned); needs AI model provider contract (planned)
+- Blocked: F-33 No-show Ticket & Evidence Flow — planner confirmation missing; acceptance criteria unconfirmed; needs Ticketing system (planned); needs Case/evidence storage (planned)
+- Blocked: F-48 Payment Router & Banking Integrations — planner confirmation missing; acceptance criteria unconfirmed; needs Partner bank (planned); needs NIBSS API (planned); needs Open banking API (planned); needs Wallet ledger (planned)
+- Blocked: F-41 Invitation Tiers — planner confirmation missing; acceptance criteria unconfirmed; needs Logistics/delivery operations (planned)
 - Blocked: F-67 ID Document Retention & Deletion Policy — planner confirmation missing; acceptance criteria unconfirmed; needs Vendor Verification Review Queue (planned)
-- Blocked: F-71 Host-controlled Link Reissue — planner confirmation missing; acceptance criteria unconfirmed; needs Link Claim & Couple Sharing Rules (planned)
-- Blocked: F-74 Manual Job Rerun with Second Approval — planner confirmation missing; acceptance criteria unconfirmed; needs Second-approver for Large Fund Actions (planned); needs Real-time Job Monitoring & Alerting (planned)
-- Blocked: F-28 Payout Change Verification — planner confirmation missing; acceptance criteria unconfirmed; needs "Liveness/face-match provider", which isn't a feature yet; needs "2FA provider", which isn't a feature yet
-- Blocked: F-50 NIN/BVN Identity Verification Integration — planner confirmation missing; acceptance criteria unconfirmed; needs "NIMC API", which isn't a feature yet; needs "BVN/bank API", which isn't a feature yet
-- Blocked: F-69 VIP Access Card (QR/NFC Check-in) — planner confirmation missing; acceptance criteria unconfirmed; needs "NFC hardware/scanner", which isn't a feature yet; needs "QR scanning", which isn't a feature yet
-- Blocked: F-46 AI Investigation-only Role — planner confirmation missing; acceptance criteria unconfirmed; needs "AI investigation agent", which isn't a feature yet
-- Blocked: F-62 Upload Moderation & Takedown Process — planner confirmation missing; acceptance criteria unconfirmed; needs "File storage", which isn't a feature yet; needs "Malware/file-type scanning", which isn't a feature yet
-- Blocked: F-10 Vendor Vetting at Sign-up — planner confirmation missing; acceptance criteria unconfirmed; needs "CAC registration check", which isn't a feature yet; needs "Identity verification": did you mean F-50 NIN/BVN Identity Verification Integration?
-- Blocked: F-29 Trusted Partner Recovery Flow — planner confirmation missing; acceptance criteria unconfirmed; needs "SMS/WhatsApp provider", which isn't a feature yet; needs "24/7 customer service", which isn't a feature yet
+- Blocked: F-50 NIN/BVN Identity Verification Integration — planner confirmation missing; acceptance criteria unconfirmed; needs NIMC API (planned); needs BVN/bank API (planned)
+- Blocked: F-46 AI Investigation-only Role — planner confirmation missing; acceptance criteria unconfirmed; needs AI investigation agent (planned)
+- Blocked: F-62 Upload Moderation & Takedown Process — planner confirmation missing; acceptance criteria unconfirmed; needs Malware/file-type scanning (planned); needs File storage (planned)
 - Blocked: F-59 Health Data Protection (Dietary/Allergy Info) — planner confirmation missing; acceptance criteria unconfirmed; needs Guest List Privacy Controls (planned)
-- Blocked: F-55 Event Manager Assignment System — planner confirmation missing; acceptance criteria unconfirmed; needs In-house Event Manager Fallback (planned)
-- Blocked: F-24 Multi-channel Notification Delivery — planner confirmation missing; acceptance criteria unconfirmed; needs "WhatsApp Business API", which isn't a feature yet; needs "Email service", which isn't a feature yet; needs "In-app notification center", which isn't a feature yet
-- Blocked: F-7 AI Intent Capture — planner confirmation missing; acceptance criteria unconfirmed; needs "OwanbePlanner AI", which isn't a feature yet
 - Blocked: F-53 Vendor Verification Review Queue — planner confirmation missing; acceptance criteria unconfirmed; needs NIN/BVN Identity Verification Integration (planned)
-- Blocked: F-30 Post-recovery Payout Lock — planner confirmation missing; acceptance criteria unconfirmed; needs Trusted Partner Recovery Flow (planned)
-- Blocked: F-8 Personalised Dashboard — planner confirmation missing; acceptance criteria unconfirmed; needs AI Intent Capture (planned); needs "Vendor directory": did you mean F-89 Public Vendor Directory & Profiles?
 - Blocked: F-40 Guest List Privacy Controls — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-61 AI Chatbot Disclosure — planner confirmation missing; acceptance criteria unconfirmed; needs "OwanbePlanner AI", which isn't a feature yet; needs "OwanbeAI", which isn't a feature yet
-- Blocked: F-36 Host-visible Ticket Progress — planner confirmation missing; acceptance criteria unconfirmed; needs No-show Ticket & Evidence Flow (planned)
-- Blocked: F-20 Host Cancellation Policy — planner confirmation missing; acceptance criteria unconfirmed; needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?; needs "Fund pool/escrow", which isn't a feature yet
-- Blocked: F-6 Vendor Team Structure — planner confirmation missing; acceptance criteria unconfirmed; needs "Permissions & Roles system", which isn't a feature yet
-- Blocked: F-16 Dispute Filing & Arbitration — planner confirmation missing; acceptance criteria unconfirmed; needs "Ticketing system", which isn't a feature yet; needs "Fund pool/escrow", which isn't a feature yet
-- Blocked: F-34 Support Escalation Chain — planner confirmation missing; acceptance criteria unconfirmed; needs Trusted Partner Recovery Flow (planned); needs Vendor Team Structure (planned)
-- Blocked: F-73 Real-time Job Monitoring & Alerting — planner confirmation missing; acceptance criteria unconfirmed; needs "Monitoring/observability tool", which isn't a feature yet
-- Blocked: F-49 Backup Payment Processor — planner confirmation missing; acceptance criteria unconfirmed; needs "Payment Router": did you mean F-48 Payment Router & Banking Integrations?
-- Blocked: F-52 Manual CAC/NIMC/BVN Verification Integration — planner confirmation missing; acceptance criteria unconfirmed; needs "CAC API", which isn't a feature yet; needs "NIMC API", which isn't a feature yet; needs "BVN API", which isn't a feature yet
+- Blocked: F-61 AI Chatbot Disclosure — planner confirmation missing; acceptance criteria unconfirmed; needs OwanbePlanner AI (planned); needs OwanbeAI (planned)
+- Blocked: F-20 Host Cancellation Policy — planner confirmation missing; acceptance criteria unconfirmed; needs Payment Router & Banking Integrations (planned); needs Fund pool/escrow (planned)
+- Blocked: F-16 Dispute Filing & Arbitration — planner confirmation missing; acceptance criteria unconfirmed; needs Fund pool/escrow (planned); needs Ticketing system (planned)
+- Blocked: F-73 Real-time Job Monitoring & Alerting — planner confirmation missing; acceptance criteria unconfirmed; needs Monitoring/observability tool (planned)
+- Blocked: F-49 Backup Payment Processor — planner confirmation missing; acceptance criteria unconfirmed; needs Payment Router & Banking Integrations (planned)
+- Blocked: F-52 Manual CAC/NIMC/BVN Verification Integration — planner confirmation missing; acceptance criteria unconfirmed; needs BVN API (planned); needs NIMC API (planned); needs CAC API (planned)
 - Blocked: F-84 Homepage Marketing Sections — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-88 Quotes Lifecycle & Revisions — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-89 Public Vendor Directory & Profiles — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-90 Paystack Webhook Signature Verification — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-91 Vendor Calendar Soft-Hold & Refund Ledger — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-92 Auth0 & Supabase Authentication — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-93 Cultural guides hub with Ask OwanbePlanner — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-94 Public celebration budget calculator — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-95 Vendor lead-capture link and enquiry pipeline — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-96 Ówàńbè Moments: user-uploaded celebration photos & videos — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-97 Aso-ebi ordering — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-98 Planner workspace with client portal — planner confirmation missing; acceptance criteria unconfirmed
-- Blocked: F-99 Event-day run of show (shared vendor timeline) — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-100 In-app chat (host-vendor conversations) — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-101 OwanbePlanner AI — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-102 Fund pool/escrow — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-103 Partner bank — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-104 Booking history — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-105 Vendor data — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-106 Market benchmark data — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-107 OwanbeAI — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-108 Ticketing system — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-109 Fund pool/recovery fund — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-110 Liveness/face-match provider — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-111 Booking completion confirmation — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-112 BVN API — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-113 Malware/file-type scanning — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-114 Email service — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-115 Identity verification per country — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-116 AI model provider contract — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-117 Case/evidence storage — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-118 NIBSS API — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-119 Open banking API — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-120 Wallet ledger — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-121 Logistics/delivery operations — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-122 NIMC API — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-123 BVN/bank API — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-124 AI investigation agent — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-125 File storage — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-126 Monitoring/observability tool — planner confirmation missing; acceptance criteria unconfirmed
+- Blocked: F-127 CAC API — planner confirmation missing; acceptance criteria unconfirmed
 - Open: None recorded.
 ## Change summary
-- Context version 7 compiled at 2026-11-06T12:33:40.292+00:00.
-- Changed sources: feature map, planHash, decisions, audit evidence, build evidence, agent_reports.
+- Context version 9 compiled at 2026-11-08T19:29:54.255+00:00.
+- Changed sources: feature map, planHash, decisions, agent_reports.
 - Audit evidence: Valid audit included.
 <!-- sage7:end -->
