@@ -99,6 +99,23 @@ from (values
   ('function','public',   'shared_with_me',                          '20261108120000_f40'),
   ('function','public',   'shared_guest_list',                       '20261108120000_f40'),
   ('function','public',   'public_guest_list',                       '20261108120000_f40')
+  -- F-102 fund pool, the double-entry ledger and the money functions
+  ,('table',  'public',    'bookings',                                '20261109140000_f102')
+  ,('table',  'public',    'fund_pool',                               '20261109140000_f102')
+  ,('table',  'public',    'wallet_ledger',                           '20261109140000_f102')
+  ,('table',  'public',    'ledger_accounts',                         '20261109140000_f102')
+  ,('table',  'public',    'journal_entries',                         '20261109140000_f102')
+  ,('table',  'public',    'postings',                                '20261109140000_f102')
+  ,('table',  'public',    'payment_events',                          '20261109140000_f102')
+  ,('function','public',   'allocate_split_payment',                  '20261109140000_f102')
+  ,('function','public',   'record_payment_event',                    '20261109140000_f102')
+  ,('function','public',   'complete_booking',                        '20261109140000_f102')
+  ,('function','public',   'request_fund_refund',                     '20261109140000_f102')
+  ,('function','public',   'freeze_fund_pool',                        '20261109140000_f102')
+  ,('function','public',   'release_due_fund_tranches',               '20261109140000_f102')
+  ,('function','public',   'booking_fund',                            '20261109140000_f102')
+  ,('function','public',   'booking_movements',                       '20261109140000_f102')
+  ,('function','public',   'my_bookings',                             '20261109140000_f102')
 ) as w(kind, schema, name, migration)
 order by w.migration, w.kind, w.name;
 

@@ -10,6 +10,9 @@
 | ~~F-78/F-79 audit~~ | **Closed 2026-11-04:** `get_answers` (05:09 UTC) shows both were received (`report_progress` 00:09:15 UTC) and **audited built at 03:50:37 UTC**. What remains is evidence, not audit: the F-78 migration is still unapplied and F-79's env isolation runs only in tests, so neither is demonstrated against a live project | wiring F-1 / F-43 call sites, live RLS verification |
 | Quote date lock vs soft hold | Proposal: a sent quote creates an advisory date lock; an accepted quote creates competing 24-hour payment holds. Needs approval. | booking rollout |
 | "Large" fund threshold | Monetary threshold for second-approver actions is undefined | refunds, job reruns |
+| F-102 booking table vs F-13's | F-102 created `public.bookings` because the tracker names a booking payment route; F-13 (Direct Search & Book Flow) also plans a booking table. Two tables with two shapes would leave the fund pool, the refunds and the disputes pointing at one of them. Owner to decide whether F-13 extends F-102's table or replaces it (`docs/open-questions.md` Q15) | F-13, F-20, F-42, F-54 |
+| Host cancellation: 80/20 forfeit | The PRD says a host cancelling within 24 hours of payment gets 80% back and forfeits 20% of the quote. F-102 refunds only the money still held — the 70% released at booking stays the vendor's claim, because recovering it would assume partner recovery is available. The penalty split is F-20's policy and was not invented here (`docs/open-questions.md` Q16) | F-20, F-42, F-15 |
+| F-102 tax rate | The owner set the commission (2.5% from the vendor) but not the tax: `tax_bps` is 0 and `tax_base` is `commission`. The code path exists; nothing is taken until the rate and the base are set | F-102, F-48, the finance report |
 | Diamond invitation tier logistics | Scheduling and proof of delivery | invitations |
 | Full table list | Owner chose tables per feature (F-77 decision); the planned list is in `04` | — |
 

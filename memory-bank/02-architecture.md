@@ -46,7 +46,12 @@ Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
 | `src/routes/_public/$.tsx` | `/*` | splat: `discover, vendors, culture, about, help, get-started` → `PlaceholderPage`, anything else → `NotFound` |
 | `src/routes/host.tsx` + `host/index.tsx` + `host/$section.tsx` | `/host`, `/host/:section` | `RequireAuth` → `OnboardingGate` (F-7: unfinished onboarding redirects to `/welcome?role=host&next=…`; staff of another house and a missing migration pass through) inside `HouseLayout houseId="host"` |
 | `src/routes/vendor.tsx` + `vendor/*` | `/vendor`, `/vendor/:section` | same for the Vendor house |
-| `src/routes/api/public/paystack/webhook.ts` | `/api/public/paystack/webhook` | POST only; rejects a bad signature with 401 |
+| `src/routes/api/public/paystack/webhook.ts` | `/api/public/paystack/webhook` | POST only; rejects a bad signature with 401; then records the event and allocates once |
+| `src/routes/api/bookings/$id/payments.ts` | `/api/bookings/:id/payments` | GET the caller's fund and movements; POST starts the Paystack charge |
+| `src/routes/api/bookings/$id/complete.ts` | `/api/bookings/:id/complete` | POST the host's completion; releases the final tranche |
+| `src/routes/api/bookings/$id/refund.ts` | `/api/bookings/:id/refund` | POST the host's refund ask for the money still held |
+| `src/routes/api/bookings/$id/freeze.ts` | `/api/bookings/:id/freeze` | POST the staff freeze or unfreeze (arbitrator grant) |
+| `src/routes/api/payments/verify.ts` | `/api/payments/verify` | POST the browser check of a Paystack reference |
 
 Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, `PlaceholderPage`, `NotFound`) even though `src/routes/README.md` says not to create that folder. House sections come from `src/lib/houses.ts`.
 
@@ -55,6 +60,7 @@ Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, 
 - Server-only, listed in `src/config/server-env.ts` `REQUIRED_SERVER_ENV`: `APP_ENV`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `EXTERNAL_SUPABASE_SERVICE_ROLE_KEY` (Lovable reserves the `SUPABASE_` prefix; `src/lib/supabase-admin-env.server.ts` falls back to `SUPABASE_SERVICE_ROLE_KEY`), `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `SENTRY_DSN`, `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`.
 - `checkEnvIsolation()` requires `sk_live_`/`pk_live_` in production and rejects them in every other environment — but nothing calls it yet.
 - Also read ad hoc: `LOVABLE_CRON_SECRET`, `LOVABLE_CRON_SECRET_PREVIOUS`, `INITIAL_JS_BUDGET_KB`, and `AUTH0_TENANT` / `AUTH0_TENANT_REGION` in `supabase/config.toml`.
+- F-102 added `PAYMENT_ROUTER_KEY`: the platform's own gate on `src/lib/payments/router.server.ts`, the only module that may move money. It is not a third-party credential, it is never logged, and the module refuses to run without it (`unconfigured`). The Paystack secret stays in `PAYSTACK_SECRET_KEY` and is read inside the call.
 - `docs/deployment.md` is the release runbook: one hosted Supabase project (owner's decision), env matrix, migrations-before-app order, backup/restore rehearsal, Paystack and Sentry setup per environment.
 
 ## Performance / bundle

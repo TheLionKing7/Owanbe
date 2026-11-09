@@ -192,4 +192,36 @@ affected feature, the status and the release impact. Approved answers move to
   keep 100 and accept one whole-tree rewrap commit that touches every feature's files. Related and
   smaller: `.prettierignore` omits Markdown, so documentation files are flagged too.
 
+## F-102 Fund Pool / Escrow
+
+### Q15. Which booking table is the real one — F-102's or F-13's?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — sequencing, must be settled before F-13 is built
+- **Affected:** F-102 (built), F-13 Direct Search & Book Flow (`blocked`), F-20 Host Cancellation
+  Policy, F-42 Losing-bid Refund, F-54 Disputes & Refunds Console
+- **Release impact:** F-102's tracker names a booking payment route (`api POST
+  /bookings/:id/payments`), so `public.bookings` was created in
+  `supabase/migrations/20261109140000_f102_fund_pool.sql` — one row per accepted quote, with the
+  host house, the vendor house, the service date, the total and the status. F-13 also plans a
+  booking table for the direct search and book flow. If F-13 builds its own, two booking tables
+  will exist with two different shapes, and the fund pool, the refunds and the disputes will point
+  at one of them. Whoever builds F-13 must extend this table rather than create a second one, or
+  the owner decides which table is dropped.
+
+### Q16. What does a host who cancels within 24 hours actually get back?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — policy, and it is the PRD's rule against F-102's conservative behaviour
+- **Affected:** F-102 (built, conservatively), F-20 Host Cancellation Policy, F-42 Losing-bid
+  Refund & Reversal Flow, F-15 Split Payment & Completion Confirmation
+- **Release impact:** the PRD says a host cancelling within 24 hours of payment gets 80% back and
+  forfeits 20% of the full quote. F-102 refunds only the money the platform still holds: the 70%
+  released to the vendor at booking stays the vendor's claim, because clawing it back would assume
+  the vendor gives money back — which the platform cannot promise (AGENTS.md: "Reconcile refund
+  obligations with already-released funds; do not assume partner recovery is available"). The
+  forfeited 20% and the 80% figure are F-20's policy and were not invented here. A host who
+  cancels therefore gets the still-held 30% back, not 80% of the quote. The panel says so in plain
+  language rather than promising the PRD's number.
+
 

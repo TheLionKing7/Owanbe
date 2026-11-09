@@ -8,6 +8,7 @@ import { ProfileCopyStudio } from "@/features/vendor-profile/ProfileCopyStudio";
 import { GuestListPanel } from "@/features/guest-lists/GuestListPanel";
 import { ChatPanel } from "@/features/chat/ChatPanel";
 import { PlannerPanel } from "@/features/planner/PlannerPanel";
+import { PaymentsPanel } from "@/features/payments/PaymentsPanel";
 import { WelcomePlanCard } from "@/features/onboarding/WelcomePlanCard";
 import NotFound from "./NotFound";
 
@@ -84,12 +85,22 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
           <ChatPanel house={myHouse} getAccessToken={getAccessToken} />
         </div>
       )}
+      {item.slug === "payments" && houseId === "host" && myHouse && (
+        <div className="mt-8">
+          <PaymentsPanel
+            house={myHouse}
+            getAccessToken={getAccessToken}
+            returnedReference={params.get("reference") ?? undefined}
+          />
+        </div>
+      )}
       {item.slug !== "quotes" &&
         item.slug !== "calendar" &&
         item.slug !== "profile" &&
         item.slug !== "guests" &&
         item.slug !== "enquiries" &&
-        item.slug !== "plan" && (
+        item.slug !== "plan" &&
+        item.slug !== "payments" && (
           <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
             This workspace is scaffolded; its tools arrive with later features.
           </p>

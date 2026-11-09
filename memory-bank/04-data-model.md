@@ -34,6 +34,14 @@ Applied migrations: `supabase/migrations/` (filename order). **Pending** (not ye
 | `conversations`, `messages` | F-100 (`20261109020000_f100_in_app_chat.sql`) | one conversation per host-house/vendor-house pair; `messages` are append-only (trigger) and carry `sender_side` | the two houses of the conversation only, through the chat projections |
 | `message_attachments` | F-100 (`20261109040000_f100_chat_attachments.sql`) | FK **(message_id, conversation_id) → messages(id, conversation_id)**; file_name ≤200, content_type ≤120, `size_bytes` 1..10485760, unique `storage_path` | both houses of the conversation only, through the attachment projections |
 | `ai_planner_interactions` | F-101 (`20261109120000_f101_ai_planner.sql`) | one row per planner generation (a failed attempt is logged too); FK **(house_id, house_kind) → houses(id, kind)** with `house_kind` pinned to `host`; `budget_minor` bigint + `budget_currency`; `status` ok/error; `option_count` 0..6; `plan_summary` jsonb array; one report per row (check: `reported_at` and `report_category` are both null or both set) | the host reads their own rows only; no direct writes |
+| `app_private.payment_settings` | F-102 | single row: `commission_bps` 250, `tax_bps` 0 (the owner has not set the tax), `tax_base` commission\|gross, `completion_window_hours` 24, `payments_paused`, `large_amount_threshold_minor` null | none (no client access) |
+| `ledger_accounts` | F-102 | one account per code, owner and currency; `owner_kind` platform/user/house/booking; `normal_side` debit\|credit; unique on (code, owner, currency) | **no client access**; read through the ledger views and the projections |
+| `journal_entries` | F-102 | one entry per step; `idempotency_key` **unique**; `kind` booking_hold/release_70/release_30/fee/refund/reversal/payout; `reverses_id` for a correction | **no client access**; append-only trigger blocks update/delete/truncate |
+| `postings` | F-102 | the lines of an entry; `ledger_account_id` → ledger_accounts (named that way because the F-60 credential guard reserves `account_*`); `amount_minor` <> 0, positive is a debit and negative a credit; a deferred constraint trigger refuses an entry that does not balance per currency (`unbalanced_entry`) | **no client access**; append-only trigger |
+| `bookings` | F-102 | one row per accepted quote (`quote_id` unique); FK **(host_house_id, host_house_kind) → houses(id, kind)** and the same for the vendor house; `total_minor` + `currency`; `status` awaiting_payment/paid/completed/cancelled/refunded with a `bookings_state_shape` check | read own house's bookings only, through `my_bookings()` |
+| `fund_pool` | F-102 | the money for one booking: `held_minor`, `released_70_minor`, `released_30_minor`, `commission_minor`, `tax_minor`, `vendor_net_minor`, `refunded_minor`; check `fund_pool_balances` (held + released + refunded = paid) and `fund_pool_state_shape`; `payment_reference`; `release_30_due_at` is the server deadline; `frozen` + `frozen_reason` + `frozen_by` for the dispute freeze | the two houses of the booking only, through `booking_fund()` |
+| `wallet_ledger` | F-102 | the append-only trail of what moved for one booking; `movement`, `direction`, `amount_minor`, `idempotency_key` **unique** | the two houses of the booking only, through `booking_movements()`; append-only trigger |
+| `payment_events` | F-102 | one row per provider event; **unique (event_type, reference)** so a retried webhook is recognised; `outcome` allocated/refund_required/settled/ignored/duplicate | **no client access**; the webhook's own idempotency |
 | `app_private.auth_settings` | F-76 | single row: issuer `https://<domain>/`, audience | none (set via `configure_auth0`) |
 
 ## Functions
@@ -89,6 +97,27 @@ The plan itself is built in the app (`src/features/planner`) and checked there a
 Pending note: the migration is unapplied and `f101_ai_planner.test.sql` has never been executed on this machine (no Postgres 16 binaries, Docker does not run here), so the database side of F-101 is **unverified**.
 
 Pending-F-78 note: nothing in the app calls these yet (`src/lib/permissions.ts` is a UI mirror only), and the migration is unapplied — so staff scoping is **enforced in code that is not deployed**, not in the live database **(unverified)**.
+
+## F-102 fund pool and ledger
+The double-entry ledger is the accounting truth (`ledger_accounts`, `journal_entries`, `postings`); `fund_pool` and `wallet_ledger` are the pool-scoped standing and the readable trail. Money moves only through the `service_role` functions below; the projections are `authenticated` and scope by house.
+
+| Function | Who calls | Does |
+|---|---|---|
+| `public.allocate_split_payment(booking, reference, amount, currency)` | payment router (service role) | posts the payment as a `booking_hold` entry and releases 70% (vendor net + commission), keeping 30% in escrow with `release_30_due_at`; idempotent on the reference (`allocated`), and refuses a second reference (`payment_already_recorded`), an amount under the quote total (`payment_below_quote_total`) and a wrong currency (`currency_mismatch`) |
+| `public.record_payment_event(provider, event_type, reference, amount, currency, payload)` | payment router (service role) | one row per provider event, unique on `(event_type, reference)`, so a retried webhook returns `duplicate` and changes nothing |
+| `public.booking_for_payment_reference(reference)` | payment router (service role) | the booking a reference belongs to, or null |
+| `public.complete_booking(booking)` | host (authenticated) | the host confirms the event; releases the final 30% tranche |
+| `public.request_fund_refund(booking, reason)` | host (authenticated) | records the refund obligation for the money still held; refuses a frozen pool (`fund_pool_frozen`) and a missing or credential-shaped reason |
+| `public.settle_refund(booking, reference)` | payment router (service role) | closes the refund against the ledger; `settled` on a replay |
+| `public.freeze_fund_pool(booking, reason)` / `public.unfreeze_fund_pool(booking)` | staff with an `arbitrator` grant | the dispute freeze; a host or a vendor is refused (`forbidden: arbitrator grant required`) |
+| `public.release_due_fund_tranches()` | job or operator | releases the 30% tranche whose 24-hour window has passed; a frozen pool is skipped |
+| `public.booking_fund(booking)` / `public.booking_movements(booking)` / `public.booking_payment_request(booking)` | host (authenticated) | the fund breakdown, the movement trail and what the host still owes |
+| `public.my_bookings(house)` | browser | the house's own bookings with their pool standing |
+| `app_private.post_entry(...)` / `app_private.entry_lines(...)` / `app_private.ledger_account(code, currency)` | the money functions | the posting helper: an entry with its lines, the account lookup by code, and the balance check |
+| `app_private.tranche_split(total)` / `app_private.tranche_fees(gross, settings)` | the money functions | the 70/30 split and the commission/tax on a tranche |
+| `app_private.on_quote_accepted_booking()` | trigger on quotes | creates the booking and its pool when a quote is accepted, so no path accepts a quote without a booking to pay for |
+
+Pending note: the migration is unapplied and `f102_fund_pool.test.sql` has never been executed on this machine (no Postgres 16 binaries, Docker does not run here), so the database side of F-102 is **unverified**.
 
 ## Planned tables (from `blueprint/tech-spec.md` §4; built by their own features)
 vendor_profiles, services, verification_cases · events, plans, tasks, budget_lines, shortlists · conversations, messages · quotes, quote_items, calendar_holds, allocations · bookings, payments, payment_events · ledger_accounts, ledger_entries, refunds, outages · approvals, payout_references, recovery_locks · subscriptions, fee_entries, trust_events, reviews · disputes, no_show_tickets, case_updates, evidence · guests, guest_shares, health_details, consents · invitations, claims, scanner_grants, admissions · files, access_grants, ai_reports · notifications, deliveries, preferences · jobs, outbox, idempotency_keys, privacy_requests, sessions.

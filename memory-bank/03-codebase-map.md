@@ -66,6 +66,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-08-F-100-in-app-chat.md` | Journal: F-100 in-app chat — the WhatsApp-style thread and document sharing. |
 | `docs/journal/2026-11-08-F-101-ai-planner.md` | Journal: F-101 OwanbePlanner AI — the grounded plan, the unknown prices and the interaction log. |
 | `docs/journal/2026-11-08-F-40-guest-list-privacy.md` | Journal: F-40 guest list privacy — private by default, masked shares, revocable grants. |
+| `docs/journal/2026-11-09-F-102-fund-pool-escrow.md` | Journal: F-102 fund pool and escrow — the ledger, the 70/30 split, the dispute freeze, the refunds and what was never executed. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
 | `docs/Ówàńbè Compliance, KYC & Payments Spec.md` | Owner-supplied compliance, KYC and payments specification (untracked owner document). |
 
@@ -153,6 +154,14 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/onboarding/contracts.test.ts` | Tests for the F-7 rules. |
 | `src/features/onboarding/contracts.ts` | F-7 rules: steps, resume step, E.164 phone normalisation (local Nigerian numbers), field validation, OwanbePlanner opener, safe next path. |
 | `src/features/onboarding/gate-cache.ts` | F-7: remembers per page load that the signed-in user finished onboarding. |
+| `src/features/payments/PaymentsPanel.test.tsx` | F-102 tests: the host payment panel — the fund breakdown, the release deadline, the frozen notice, the payment link and the refund ask. |
+| `src/features/payments/PaymentsPanel.tsx` | F-102 UI: the host payments panel — the breakdown, the deadline, the payment link, the completion, the refund ask and the movements. |
+| `src/features/payments/api.test.ts` | F-102 tests: the browser boundary — the caller's token, the refusals and the payment calls. |
+| `src/features/payments/api.ts` | F-102 browser boundary: the signed-in person's RPC calls and the app routes for bookings, payment, verification, completion and refunds. |
+| `src/features/payments/contracts.test.ts` | F-102 tests: the request schemas, the refusal copy and the status labels. |
+| `src/features/payments/contracts.ts` | F-102 contracts: the payment request schemas, the refusal copy, the fund status labels and the movement labels. |
+| `src/features/payments/server.test.ts` | F-102 tests: the server handlers — the token forwarding, the refusals and the payment reference. |
+| `src/features/payments/server.ts` | F-102 server handlers: the caller's token is forwarded to the database for the fund, the movements, the payment, the completion and the refund. |
 | `src/features/planner/PlannerPanel.test.tsx` | F-101 tests: the planner form, the disclosure, the options and the report control. |
 | `src/features/planner/PlannerPanel.tsx` | F-101 UI: the planner form, the disclosed answer, the vendor prices and the report control. |
 | `src/features/planner/api.test.ts` | F-101 tests: the planner browser boundary — the token, the refusals and the report call. |
@@ -224,7 +233,12 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/lib/monitoring/privacy.ts` | Sentry event sanitizer: allowlist fields, redacted message, no user/request/breadcrumbs/contexts. |
 | `src/lib/payments/credential-guard.test.ts` | F-60 tests: raw card and bank credentials are refused. |
 | `src/lib/payments/credential-guard.ts` | F-60 guard that refuses raw card and bank credentials in code, logs and payloads. |
+| `src/lib/payments/currency.test.ts` | F-102 tests: the minor-unit table, the money formatting and the unknown currency. |
+| `src/lib/payments/currency.ts` | F-102 money helpers: the minor-unit table, the format and the major-unit conversion; no float money. |
+| `src/lib/payments/paystack.server.test.ts` | F-102 tests: the Paystack signature, the initialise, the verify and the refund calls; the provider message is never leaked. |
 | `src/lib/payments/paystack.server.ts` | Paystack HMAC-SHA512 sign/verify for webhook payloads; secret stays server-side. |
+| `src/lib/payments/router.server.test.ts` | F-102 tests: the router key gate, the service-role call, the SQLSTATE mapping and the provider events. |
+| `src/lib/payments/router.server.ts` | F-102 payment router: the only module that may move money; the allocate, the provider event, the refund settlement and the due-tranche sweep behind PAYMENT_ROUTER_KEY. |
 | `src/lib/permissions.ts` | UI mirror of the F-78 role matrix: houseCan(), validateStaffCapabilities(), isValidAccessPurpose(); not wired. |
 | `src/lib/router.tsx` | React-Router-shaped adapter over the TanStack router (Link, useNavigate, useParams, Navigate) for ported components. |
 | `src/lib/supabase-admin-env.server.ts` | Resolves the service-role key (EXTERNAL_SUPABASE_SERVICE_ROLE_KEY, then SUPABASE_SERVICE_ROLE_KEY). |
@@ -264,11 +278,16 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/_public/sign-up.tsx` | Route for /sign-up rendering SignIn in signup mode. |
 | `src/routes/_public/vendors.$slug.tsx` | Public vendor profile page. |
 | `src/routes/_public/vendors.index.tsx` | Public vendor directory. |
+| `src/routes/api/bookings/$id/complete.ts` | POST /api/bookings/:id/complete — the host confirms the event and the final tranche is released. |
+| `src/routes/api/bookings/$id/freeze.ts` | POST /api/bookings/:id/freeze — a staff arbitrator freezes or unfreezes the money on a booking. |
+| `src/routes/api/bookings/$id/payments.ts` | GET /api/bookings/:id/payments — the caller's fund breakdown and movements, and POST starts the payment. |
+| `src/routes/api/bookings/$id/refund.ts` | POST /api/bookings/:id/refund — the host asks for the money still held on the booking back. |
 | `src/routes/api/chats/$id.ts` | GET /api/chats/:id — the caller's thread, read with their own token. |
 | `src/routes/api/chats/$id/attachments.ts` | POST /api/chats/:id/attachments — upload a document or photo for the thread. |
 | `src/routes/api/chats/$id/attachments/$attachmentId.ts` | GET /api/chats/:id/attachments/:attachmentId — mint a signed link for a shared file. |
 | `src/routes/api/chats/$id/messages.ts` | POST /api/chats/:id/messages — send a message or a document into the thread. |
 | `src/routes/api/guest-lists/$id/share.ts` | POST /api/guest-lists/:id/share — the host shares a list with one platform user. |
+| `src/routes/api/payments/verify.ts` | POST /api/payments/verify — the browser check of a Paystack reference; the allocation happens on the webhook or here, never twice. |
 | `src/routes/api/planner/generate.ts` | POST /api/planner/generate — the grounded answer, logged as the caller's own interaction. |
 | `src/routes/api/planner/report.ts` | POST /api/planner/report — report one answer against the caller's own interaction. |
 | `src/routes/api/public/paystack/webhook.ts` | POST /api/public/paystack/webhook: verifies the signature and logs the event name only. |
@@ -341,6 +360,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261109020000_f100_in_app_chat.sql` | F-100: conversations, append-only messages and the projections both sides read. |
 | `supabase/migrations/20261109040000_f100_chat_attachments.sql` | F-100: message attachments, the private chat-attachments bucket and the document send/read path. |
 | `supabase/migrations/20261109120000_f101_ai_planner.sql` | F-101: the planner interaction log, the 30-second cooldown and the report. |
+| `supabase/migrations/20261109140000_f102_fund_pool.sql` | F-102: the ledger (ledger_accounts, journal_entries, postings), the fund pool, the wallet ledger, the 70/30 split, the refunds, the dispute freeze and the projections. |
 
 #### supabase/tests/
 
@@ -350,6 +370,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f100_attachments.test.sql` | F-100 SQL tests: document sharing, refusals, isolation and the private bucket. |
 | `supabase/tests/f100_chat.test.sql` | F-100 SQL tests: starting a conversation, sending messages, house scoping and the chat capability. |
 | `supabase/tests/f101_ai_planner.test.sql` | F-101 SQL tests: logging an interaction, the cooldown, the host check and the report. |
+| `supabase/tests/f102_fund_pool.test.sql` | F-102 SQL tests: the allocation, the replay, the completion, the refund, the freeze, the append-only ledger and the house isolation. |
 | `supabase/tests/f14_quotes.test.sql` | F-14 SQL tests: quote revisions, transitions and vendor-only authoring. |
 | `supabase/tests/f38_soft_hold.test.sql` | F-38 SQL tests: hold creation, the payment window and release. |
 | `supabase/tests/f40_guest_privacy.test.sql` | F-40 SQL tests: default privacy, masking, sharing and revocation. |
