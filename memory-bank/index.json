@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-09T22:54:35.192Z",
+  "updatedAt": "2026-11-09T23:05:37.251Z",
   "docs": [
     {
       "file": "README.md",
@@ -175,7 +175,7 @@
     "docs/journal/2026-11-08-F-101-ai-planner.md": "799f05e23ce86701",
     "docs/journal/2026-11-08-F-40-guest-list-privacy.md": "a753513a5ac2bcf0",
     "docs/journal/2026-11-09-F-102-fund-pool-escrow.md": "1e9cdbcf6eeebfd7",
-    "docs/journal/2026-11-09-F-106-market-benchmark-data.md": "f05184bf194e9cc2",
+    "docs/journal/2026-11-09-F-106-market-benchmark-data.md": "6e7910ad0c9a0308",
     "docs/open-questions.md": "613bfd7ead047c80",
     "docs/Ówàńbè Compliance, KYC & Payments Spec.md": "104e121442ee70d3",
     "eslint.config.js": "3266245a1ff610a0",

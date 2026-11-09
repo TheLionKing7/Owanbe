@@ -111,6 +111,9 @@
   `initdb`/`pg_ctl`/`psql`, or `PG_BIN` pointing at them.
 - CI is **disabled** in both repositories on the owner's instruction (2026-11-06, `40cf8a8e`), so
   no workflow has run for this feature.
+- The work is committed as `09a242e` and pushed to both remotes; Sage 7 `report_progress`
+  `50850d50-02a4-4b03-b55b-04d80a6d74ca` records F-106 as **awaiting audit**. Only an audit marks
+  a feature built.
 
 ## Not done / limits
 
