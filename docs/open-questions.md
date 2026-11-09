@@ -224,4 +224,25 @@ affected feature, the status and the release impact. Approved answers move to
   cancels therefore gets the still-held 30% back, not 80% of the quote. The panel says so in plain
   language rather than promising the PRD's number.
 
+## F-106 Market benchmark data
+
+### Q17. Where do benchmark prices come from once the quotes are not enough?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — the owner chose the derived path for F-106; an external provider is still a
+  policy gate
+- **Affected:** F-106 (built, derived from quotes), F-27 AI 'Best Bargain' Ranking, F-8 Personalised
+  Dashboard, F-46 AI Investigation-only Role, the PRD's benchmark-provenance gate
+- **Release impact:** the PRD treats "benchmark provenance" as a policy gate and the tech spec
+  lists "benchmark sources" as an open question. F-106 therefore derives every benchmark from a
+  quote a vendor actually sent (owner decision 2026-11-09: "Provenance = quote id + vendor +
+  observed_at = quote sent date. Nothing fabricated, no new service needed"), and publishes a range
+  only when two or more vendors hold a current price in the same place and category. That means a
+  new market shows "Not enough published prices yet" for a long while, and no external price feed
+  is used. If the owner later wants an outside benchmark — a scraped or paid market index, a
+  category price guide — it needs a provider decision, a licence and its own provenance rules
+  (who may see the raw feed, how it is refreshed, what happens when the feed disagrees with the
+  quotes), and it must not be blended into the quote-derived range without saying which is which.
+
+
 

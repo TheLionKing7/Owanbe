@@ -7,6 +7,8 @@ import {
   type PlannerInput,
   type ReportCategory,
 } from "./contracts";
+import { BenchmarkPanel } from "@/features/benchmarks/BenchmarkPanel";
+import type { BenchmarkApi } from "@/features/benchmarks/api";
 
 const NO_TOKEN = async (): Promise<string | null> => null;
 
@@ -30,6 +32,8 @@ const REPORT_CATEGORY_LABEL: Record<ReportCategory, string> = {
 interface PlannerPanelProps {
   /** Injected in tests; defaults to the app's own planner routes. */
   api?: PlannerApi | undefined;
+  /** Injected in tests; defaults to the app's own benchmark route. */
+  benchmarkApi?: BenchmarkApi | undefined;
   /** The caller's own token decides what the database lets them do. */
   getAccessToken?: (() => Promise<string | null>) | undefined;
   /** The F-7 hand-off arrives as a question the host asked at sign-up. */
@@ -41,7 +45,12 @@ interface PlannerPanelProps {
  * options built only from published vendor profiles, and every answer carries the disclosure
  * label and a way to report it.
  */
-export function PlannerPanel({ api, getAccessToken, initialBrief }: PlannerPanelProps) {
+export function PlannerPanel({
+  api,
+  benchmarkApi,
+  getAccessToken,
+  initialBrief,
+}: PlannerPanelProps) {
   const readToken = getAccessToken ?? NO_TOKEN;
   const client = useMemo(() => api ?? createPlannerApi(readToken), [api, readToken]);
 
@@ -300,29 +309,38 @@ export function PlannerPanel({ api, getAccessToken, initialBrief }: PlannerPanel
                   <p className="mt-1 text-sm text-ink-muted">{option.summary}</p>
 
                   {option.vendors.length > 0 && (
-                    <ul className="mt-4 space-y-2">
-                      {option.vendors.map((vendor) => (
-                        <li
-                          key={vendor.slug}
-                          className="rounded-2xl bg-white p-3 text-sm"
-                          data-testid="planner-vendor"
-                        >
-                          <span className="font-semibold text-plum-950">
-                            {vendor.business_name}
-                          </span>
-                          {vendor.category ? (
-                            <span className="text-ink-muted"> · {vendor.category}</span>
-                          ) : null}
-                          <span className="mt-1 block text-ink-muted">{vendor.price_label}</span>
-                          <span className="mt-1 block text-ink-subtle">
-                            {vendor.availability_label}
-                          </span>
-                          <span className="mt-1 block text-xs text-ink-subtle">
-                            {BUDGET_FIT_LABEL[vendor.budget_fit]}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                    <>
+                      <ul className="mt-4 space-y-2">
+                        {option.vendors.map((vendor) => (
+                          <li
+                            key={vendor.slug}
+                            className="rounded-2xl bg-white p-3 text-sm"
+                            data-testid="planner-vendor"
+                          >
+                            <span className="font-semibold text-plum-950">
+                              {vendor.business_name}
+                            </span>
+                            {vendor.category ? (
+                              <span className="text-ink-muted"> · {vendor.category}</span>
+                            ) : null}
+                            <span className="mt-1 block text-ink-muted">{vendor.price_label}</span>
+                            <span className="mt-1 block text-ink-subtle">
+                              {vendor.availability_label}
+                            </span>
+                            <span className="mt-1 block text-xs text-ink-subtle">
+                              {BUDGET_FIT_LABEL[vendor.budget_fit]}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <BenchmarkPanel
+                        categories={option.vendors.map((vendor) => vendor.category)}
+                        location={city.trim()}
+                        api={benchmarkApi}
+                        getAccessToken={getAccessToken}
+                      />
+                    </>
                   )}
 
                   {option.steps.length > 0 && (

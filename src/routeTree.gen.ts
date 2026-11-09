@@ -18,6 +18,7 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicSplatRouteImport } from './routes/_public/$'
 import { Route as PublicSignInRouteImport } from './routes/_public/sign-in'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
+import { Route as ApiBenchmarksRouteImport } from './routes/api/benchmarks'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as HostIndexRouteImport } from './routes/host/index'
 import { Route as HostSectionRouteImport } from './routes/host/$section'
@@ -84,6 +85,11 @@ const PublicSignUpRoute = PublicSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
   getParentRoute: () => PublicRoute,
+} as any)
+const ApiBenchmarksRoute = ApiBenchmarksRouteImport.update({
+  id: '/api/benchmarks',
+  path: '/api/benchmarks',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ChatIdRoute = ChatIdRouteImport.update({
   id: '/chat/$id',
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/api/benchmarks': typeof ApiBenchmarksRoute
   '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/api/benchmarks': typeof ApiBenchmarksRoute
   '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/_public/$': typeof PublicSplatRoute
   '/_public/sign-in': typeof PublicSignInRoute
   '/_public/sign-up': typeof PublicSignUpRoute
+  '/api/benchmarks': typeof ApiBenchmarksRoute
   '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
@@ -305,6 +314,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/sign-in'
     | '/sign-up'
+    | '/api/benchmarks'
     | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/sign-in'
     | '/sign-up'
+    | '/api/benchmarks'
     | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/_public/$'
     | '/_public/sign-in'
     | '/_public/sign-up'
+    | '/api/benchmarks'
     | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
@@ -398,6 +410,7 @@ export interface RootRouteChildren {
   PlannerRoute: typeof PlannerRoute
   VendorRoute: typeof VendorRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
+  ApiBenchmarksRoute: typeof ApiBenchmarksRoute
   ChatIdRoute: typeof ChatIdRoute
   ApiChatsIdRoute: typeof ApiChatsIdRouteWithChildren
   ApiPaymentsVerifyRoute: typeof ApiPaymentsVerifyRoute
@@ -475,6 +488,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sign-up'
       preLoaderRoute: typeof PublicSignUpRouteImport
       parentRoute: typeof PublicRoute
+    }
+    '/api/benchmarks': {
+      id: '/api/benchmarks'
+      path: '/api/benchmarks'
+      fullPath: '/api/benchmarks'
+      preLoaderRoute: typeof ApiBenchmarksRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/chat/$id': {
       id: '/chat/$id'
@@ -717,6 +737,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlannerRoute: PlannerRoute,
   VendorRoute: VendorRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
+  ApiBenchmarksRoute: ApiBenchmarksRoute,
   ChatIdRoute: ChatIdRoute,
   ApiChatsIdRoute: ApiChatsIdRouteWithChildren,
   ApiPaymentsVerifyRoute: ApiPaymentsVerifyRoute,

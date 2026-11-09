@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { PlannerError, type PlannerApi } from "./api";
 import { PlannerPanel } from "./PlannerPanel";
 import { AVAILABILITY_UNKNOWN_LABEL, PLANNER_DISCLOSURE } from "./contracts";
+import type { BenchmarkApi } from "@/features/benchmarks/api";
 
 const INTERACTION_ID = "6f1e9c4a-2b3d-4e5f-8a7b-1c2d3e4f5a6b";
 
@@ -185,5 +186,16 @@ describe("PlannerPanel", () => {
     expect(await screen.findByTestId("planner-no-options")).toHaveTextContent(
       "There is nothing to build on yet",
     );
+  });
+
+  it("shows the market range beside the vendors an option names", async () => {
+    const benchmarkApi: BenchmarkApi = { read: vi.fn(async () => ({ ranges: [] })) };
+    render(<PlannerPanel api={stubApi()} benchmarkApi={benchmarkApi} />);
+    fillForm();
+    fireEvent.click(screen.getByTestId("planner-submit"));
+
+    expect(await screen.findByTestId("planner-result")).toBeInTheDocument();
+    expect(await screen.findByTestId("benchmark-panel")).toBeInTheDocument();
+    expect(benchmarkApi.read).toHaveBeenCalledWith({ categories: ["Cakes"], location: "Lagos" });
   });
 });

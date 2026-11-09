@@ -42,6 +42,7 @@ Applied migrations: `supabase/migrations/` (filename order). **Pending** (not ye
 | `fund_pool` | F-102 | the money for one booking: `held_minor`, `released_70_minor`, `released_30_minor`, `commission_minor`, `tax_minor`, `vendor_net_minor`, `refunded_minor`; check `fund_pool_balances` (held + released + refunded = paid) and `fund_pool_state_shape`; `payment_reference`; `release_30_due_at` is the server deadline; `frozen` + `frozen_reason` + `frozen_by` for the dispute freeze | the two houses of the booking only, through `booking_fund()` |
 | `wallet_ledger` | F-102 | the append-only trail of what moved for one booking; `movement`, `direction`, `amount_minor`, `idempotency_key` **unique** | the two houses of the booking only, through `booking_movements()`; append-only trigger |
 | `payment_events` | F-102 | one row per provider event; **unique (event_type, reference)** so a retried webhook is recognised; `outcome` allocated/refund_required/settled/ignored/duplicate | **no client access**; the webhook's own idempotency |
+| `market_benchmarks` | F-106 (`20261109160000_f106_market_benchmarks.sql`) | one observed market price: FK **(vendor_house_id, vendor_house_kind) → houses(id, kind)** with `vendor_house_kind` pinned to `vendor`; `category` + `location` + `location_key`; `price_minor` bigint + `currency`; `source` is always `vendor_quote`; `source_ref` → quotes(id) and `source_revision`; `observed_at` is when the quote was sent; `verification_status` verified/unverified; unique (source_ref, source_revision, category, location_key) | **no client access at all** (RLS enabled and forced, no policies, `revoke all`); read only through the two F-106 functions; append-only trigger |
 | `app_private.auth_settings` | F-76 | single row: issuer `https://<domain>/`, audience | none (set via `configure_auth0`) |
 
 ## Functions
@@ -118,6 +119,21 @@ The double-entry ledger is the accounting truth (`ledger_accounts`, `journal_ent
 | `app_private.on_quote_accepted_booking()` | trigger on quotes | creates the booking and its pool when a quote is accepted, so no path accepts a quote without a booking to pay for |
 
 Pending note: the migration is unapplied and `f102_fund_pool.test.sql` has never been executed on this machine (no Postgres 16 binaries, Docker does not run here), so the database side of F-102 is **unverified**.
+
+## F-106 market benchmarks
+A benchmark is a price a vendor actually asked for. The only price statement the platform can prove is a quote a vendor sent, so the observation is written by a trigger on `public.quotes` — there is no function that can write a price. A range is published only when two or more vendors hold a current price, so one vendor's private quote is never handed back to the market.
+
+| Function | Who calls | Does |
+|---|---|---|
+| `public.read_market_benchmarks(categories, location)` | the planner's Host houses and staff with an `analytics` grant (authenticated) | the range per category and currency: the count, the vendor count, and the min/median/max **only when two or more vendors hold a current price**; the observation window (`oldest_observed_at`/`newest_observed_at`); refuses a caller in neither (`forbidden: market benchmarks`, 42501) and audits `benchmark.range_read` |
+| `public.read_market_benchmark_sources(category, location)` | staff with an `analytics` grant only (authenticated) | the provenance behind a category: the vendor, the quote (`source_ref`, `source_revision`), the price, when it was seen and whether it is still current; refuses anyone without the grant (`forbidden: analytics grant required`, 42501) and audits `benchmark.sources_read` |
+| `app_private.capture_market_benchmark()` | trigger on `public.quotes` (`after update … sent_at changed`) | records one observation per place the vendor serves, with the vendor's own price, the quote behind it and the moment it was seen; audits `benchmark.observed`, and audits `benchmark.superseded` for the price it replaces |
+| `app_private.current_market_benchmarks(categories, location_key)` | the two read functions | the verified, not-withdrawn, still-current observations |
+| `app_private.benchmark_locations(locations)` | the trigger | the places a vendor serves, split out of the profile's own line |
+
+The `analytics` staff capability is **new in F-106**: it is added to the `staff_grants_capability_check` constraint, and it is what opens the provenance read. The six capabilities that already existed keep their meaning.
+
+Pending note: the migration is unapplied and `f106_market_benchmarks.test.sql` has never been executed on this machine (no Postgres 16 binaries, Docker does not run here), so the database side of F-106 is **unverified**.
 
 ## Planned tables (from `blueprint/tech-spec.md` §4; built by their own features)
 vendor_profiles, services, verification_cases · events, plans, tasks, budget_lines, shortlists · conversations, messages · quotes, quote_items, calendar_holds, allocations · bookings, payments, payment_events · ledger_accounts, ledger_entries, refunds, outages · approvals, payout_references, recovery_locks · subscriptions, fee_entries, trust_events, reviews · disputes, no_show_tickets, case_updates, evidence · guests, guest_shares, health_details, consents · invitations, claims, scanner_grants, admissions · files, access_grants, ai_reports · notifications, deliveries, preferences · jobs, outbox, idempotency_keys, privacy_requests, sessions.

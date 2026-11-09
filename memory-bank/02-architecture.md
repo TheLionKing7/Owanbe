@@ -52,6 +52,10 @@ Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
 | `src/routes/api/bookings/$id/refund.ts` | `/api/bookings/:id/refund` | POST the host's refund ask for the money still held |
 | `src/routes/api/bookings/$id/freeze.ts` | `/api/bookings/:id/freeze` | POST the staff freeze or unfreeze (arbitrator grant) |
 | `src/routes/api/payments/verify.ts` | `/api/payments/verify` | POST the browser check of a Paystack reference |
+| `src/routes/planner.tsx` | `/planner` | `RequireAuth`; the F-101 planner page (the database decides whether the caller is in a Host house) |
+| `src/routes/api/planner/generate.ts` | `/api/planner/generate` | POST the planner's grounded answer; the caller's token is forwarded to the database |
+| `src/routes/api/planner/report.ts` | `/api/planner/report` | POST one report on the caller's own answer |
+| `src/routes/api/benchmarks.ts` | `/api/benchmarks` | POST the market range for the categories a host is comparing; the caller's token is forwarded to the database |
 
 Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, `PlaceholderPage`, `NotFound`) even though `src/routes/README.md` says not to create that folder. House sections come from `src/lib/houses.ts`.
 

@@ -67,6 +67,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-08-F-101-ai-planner.md` | Journal: F-101 OwanbePlanner AI — the grounded plan, the unknown prices and the interaction log. |
 | `docs/journal/2026-11-08-F-40-guest-list-privacy.md` | Journal: F-40 guest list privacy — private by default, masked shares, revocable grants. |
 | `docs/journal/2026-11-09-F-102-fund-pool-escrow.md` | Journal: F-102 fund pool and escrow — the ledger, the 70/30 split, the dispute freeze, the refunds and what was never executed. |
+| `docs/journal/2026-11-09-F-106-market-benchmark-data.md` | Journal: F-106 market benchmark data — the observed price, the two-vendor rule, the provenance gate, the audit trail and what was never executed. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
 | `docs/Ówàńbè Compliance, KYC & Payments Spec.md` | Owner-supplied compliance, KYC and payments specification (untracked owner document). |
 
@@ -120,6 +121,14 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 
 | File | Purpose |
 |---|---|
+| `src/features/benchmarks/BenchmarkPanel.test.tsx` | F-106 tests: the market range beside the vendors, the source, the freshness window and the empty and refused states. |
+| `src/features/benchmarks/BenchmarkPanel.tsx` | F-106 UI: the market range beside a plan's vendors — the price band, the source, the freshness window, and the "not enough published prices yet" line. |
+| `src/features/benchmarks/api.test.ts` | F-106 tests: the browser boundary — the token, the refusal copy and the unreadable answer. |
+| `src/features/benchmarks/api.ts` | F-106 browser boundary: the benchmark route, the refusal copy and the range shapes. |
+| `src/features/benchmarks/contracts.test.ts` | F-106 tests: the request schema, the published ranges and the freshness label. |
+| `src/features/benchmarks/contracts.ts` | F-106 contracts: the request schema, the range shape, the source and disclosure labels and the freshness wording. |
+| `src/features/benchmarks/server.test.ts` | F-106 server tests: the token forwarding, the request validation and the refusal mapping. |
+| `src/features/benchmarks/server.ts` | F-106 server boundary: the caller's token is forwarded to the database for the market range. |
 | `src/features/chat/ChatPanel.test.tsx` | F-100 tests: the conversation list rows and their previews. |
 | `src/features/chat/ChatPanel.tsx` | F-100 UI: the house's conversation list as messaging-style rows. |
 | `src/features/chat/ChatThread.test.tsx` | F-100 tests: the chat thread, the attach menu and shared documents. |
@@ -278,6 +287,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/_public/sign-up.tsx` | Route for /sign-up rendering SignIn in signup mode. |
 | `src/routes/_public/vendors.$slug.tsx` | Public vendor profile page. |
 | `src/routes/_public/vendors.index.tsx` | Public vendor directory. |
+| `src/routes/api/benchmarks.ts` | F-106 route: `POST /api/benchmarks` — the market range for the categories a host is comparing. |
 | `src/routes/api/bookings/$id/complete.ts` | POST /api/bookings/:id/complete — the host confirms the event and the final tranche is released. |
 | `src/routes/api/bookings/$id/freeze.ts` | POST /api/bookings/:id/freeze — a staff arbitrator freezes or unfreezes the money on a booking. |
 | `src/routes/api/bookings/$id/payments.ts` | GET /api/bookings/:id/payments — the caller's fund breakdown and movements, and POST starts the payment. |
@@ -361,6 +371,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261109040000_f100_chat_attachments.sql` | F-100: message attachments, the private chat-attachments bucket and the document send/read path. |
 | `supabase/migrations/20261109120000_f101_ai_planner.sql` | F-101: the planner interaction log, the 30-second cooldown and the report. |
 | `supabase/migrations/20261109140000_f102_fund_pool.sql` | F-102: the ledger (ledger_accounts, journal_entries, postings), the fund pool, the wallet ledger, the 70/30 split, the refunds, the dispute freeze and the projections. |
+| `supabase/migrations/20261109160000_f106_market_benchmarks.sql` | F-106 migration: the `market_benchmarks` table (one observed price per place, from a sent quote), the `analytics` staff capability, the observation trigger on `public.quotes`, and the two read functions — the published range and the provenance. |
 
 #### supabase/tests/
 
@@ -371,6 +382,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f100_chat.test.sql` | F-100 SQL tests: starting a conversation, sending messages, house scoping and the chat capability. |
 | `supabase/tests/f101_ai_planner.test.sql` | F-101 SQL tests: logging an interaction, the cooldown, the host check and the report. |
 | `supabase/tests/f102_fund_pool.test.sql` | F-102 SQL tests: the allocation, the replay, the completion, the refund, the freeze, the append-only ledger and the house isolation. |
+| `supabase/tests/f106_market_benchmarks.test.sql` | F-106 SQL suite: a sent quote becomes an observed price with its provenance, a new price supersedes the old one, an unverified or withdrawn quote never reaches the market, one vendor is not a range, and only the planner's Host houses and the `analytics` capability may read. |
 | `supabase/tests/f14_quotes.test.sql` | F-14 SQL tests: quote revisions, transitions and vendor-only authoring. |
 | `supabase/tests/f38_soft_hold.test.sql` | F-38 SQL tests: hold creation, the payment window and release. |
 | `supabase/tests/f40_guest_privacy.test.sql` | F-40 SQL tests: default privacy, masking, sharing and revocation. |
