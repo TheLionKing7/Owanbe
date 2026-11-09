@@ -22,8 +22,10 @@ import { Route as HostSectionRouteImport } from './routes/host/$section'
 import { Route as VendorIndexRouteImport } from './routes/vendor/index'
 import { Route as VendorSectionRouteImport } from './routes/vendor/$section'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth.callback'
+import { Route as PublicGuestListsIdRouteImport } from './routes/_public/guest-lists.$id'
 import { Route as PublicVendorsIndexRouteImport } from './routes/_public/vendors.index'
 import { Route as PublicVendorsSlugRouteImport } from './routes/_public/vendors.$slug'
+import { Route as ApiGuestListsIdShareRouteImport } from './routes/api/guest-lists/$id/share'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack/webhook'
 
 const PublicRoute = PublicRouteImport.update({
@@ -90,6 +92,11 @@ const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicGuestListsIdRoute = PublicGuestListsIdRouteImport.update({
+  id: '/guest-lists/$id',
+  path: '/guest-lists/$id',
+  getParentRoute: () => PublicRoute,
+} as any)
 const PublicVendorsIndexRoute = PublicVendorsIndexRouteImport.update({
   id: '/vendors/',
   path: '/vendors/',
@@ -99,6 +106,11 @@ const PublicVendorsSlugRoute = PublicVendorsSlugRouteImport.update({
   id: '/vendors/$slug',
   path: '/vendors/$slug',
   getParentRoute: () => PublicRoute,
+} as any)
+const ApiGuestListsIdShareRoute = ApiGuestListsIdShareRouteImport.update({
+  id: '/api/guest-lists/$id/share',
+  path: '/api/guest-lists/$id/share',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicPaystackWebhookRoute =
   ApiPublicPaystackWebhookRouteImport.update({
@@ -120,8 +132,10 @@ export interface FileRoutesByFullPath {
   '/host/': typeof HostIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
   '/vendors/': typeof PublicVendorsIndexRoute
+  '/api/guest-lists/$id/share': typeof ApiGuestListsIdShareRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -135,8 +149,10 @@ export interface FileRoutesByTo {
   '/host': typeof HostIndexRoute
   '/vendor': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
   '/vendors': typeof PublicVendorsIndexRoute
+  '/api/guest-lists/$id/share': typeof ApiGuestListsIdShareRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesById {
@@ -154,8 +170,10 @@ export interface FileRoutesById {
   '/host/': typeof HostIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
+  '/_public/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/_public/vendors/$slug': typeof PublicVendorsSlugRoute
   '/_public/vendors/': typeof PublicVendorsIndexRoute
+  '/api/guest-lists/$id/share': typeof ApiGuestListsIdShareRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
@@ -173,8 +191,10 @@ export interface FileRouteTypes {
     | '/host/'
     | '/vendor/'
     | '/auth/callback'
+    | '/guest-lists/$id'
     | '/vendors/$slug'
     | '/vendors/'
+    | '/api/guest-lists/$id/share'
     | '/api/public/paystack/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -188,8 +208,10 @@ export interface FileRouteTypes {
     | '/host'
     | '/vendor'
     | '/auth/callback'
+    | '/guest-lists/$id'
     | '/vendors/$slug'
     | '/vendors'
+    | '/api/guest-lists/$id/share'
     | '/api/public/paystack/webhook'
   id:
     | '__root__'
@@ -206,8 +228,10 @@ export interface FileRouteTypes {
     | '/host/'
     | '/vendor/'
     | '/_public/auth/callback'
+    | '/_public/guest-lists/$id'
     | '/_public/vendors/$slug'
     | '/_public/vendors/'
+    | '/api/guest-lists/$id/share'
     | '/api/public/paystack/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -216,6 +240,7 @@ export interface RootRouteChildren {
   HostRoute: typeof HostRouteWithChildren
   VendorRoute: typeof VendorRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
+  ApiGuestListsIdShareRoute: typeof ApiGuestListsIdShareRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
@@ -312,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicAuthCallbackRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/guest-lists/$id': {
+      id: '/_public/guest-lists/$id'
+      path: '/guest-lists/$id'
+      fullPath: '/guest-lists/$id'
+      preLoaderRoute: typeof PublicGuestListsIdRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/vendors/': {
       id: '/_public/vendors/'
       path: '/vendors'
@@ -325,6 +357,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vendors/$slug'
       preLoaderRoute: typeof PublicVendorsSlugRouteImport
       parentRoute: typeof PublicRoute
+    }
+    '/api/guest-lists/$id/share': {
+      id: '/api/guest-lists/$id/share'
+      path: '/api/guest-lists/$id/share'
+      fullPath: '/api/guest-lists/$id/share'
+      preLoaderRoute: typeof ApiGuestListsIdShareRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/paystack/webhook': {
       id: '/api/public/paystack/webhook'
@@ -342,6 +381,7 @@ interface PublicRouteChildren {
   PublicSignUpRoute: typeof PublicSignUpRoute
   PublicIndexRoute: typeof PublicIndexRoute
   PublicAuthCallbackRoute: typeof PublicAuthCallbackRoute
+  PublicGuestListsIdRoute: typeof PublicGuestListsIdRoute
   PublicVendorsSlugRoute: typeof PublicVendorsSlugRoute
   PublicVendorsIndexRoute: typeof PublicVendorsIndexRoute
 }
@@ -352,6 +392,7 @@ const PublicRouteChildren: PublicRouteChildren = {
   PublicSignUpRoute: PublicSignUpRoute,
   PublicIndexRoute: PublicIndexRoute,
   PublicAuthCallbackRoute: PublicAuthCallbackRoute,
+  PublicGuestListsIdRoute: PublicGuestListsIdRoute,
   PublicVendorsSlugRoute: PublicVendorsSlugRoute,
   PublicVendorsIndexRoute: PublicVendorsIndexRoute,
 }
@@ -389,6 +430,7 @@ const rootRouteChildren: RootRouteChildren = {
   HostRoute: HostRouteWithChildren,
   VendorRoute: VendorRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
+  ApiGuestListsIdShareRoute: ApiGuestListsIdShareRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport

@@ -83,7 +83,22 @@ from (values
   ('table',  'public',    'onboarding_profiles',                     '20261107090000_f7'),
   ('function','public',   'my_onboarding',                           '20261107090000_f7'),
   ('function','public',   'save_onboarding',                         '20261107090000_f7'),
-  ('function','public',   'complete_onboarding',                     '20261107090000_f7')
+  ('function','public',   'complete_onboarding',                     '20261107090000_f7'),
+  -- F-40 guest list privacy
+  ('table',  'public',    'guest_lists',                             '20261108120000_f40'),
+  ('table',  'public',    'rsvps',                                   '20261108120000_f40'),
+  ('table',  'public',    'guest_list_shares',                       '20261108120000_f40'),
+  ('function','public',   'create_guest_list',                       '20261108120000_f40'),
+  ('function','public',   'add_guest_rsvp',                          '20261108120000_f40'),
+  ('function','public',   'set_guest_list_visibility',               '20261108120000_f40'),
+  ('function','public',   'share_guest_list',                        '20261108120000_f40'),
+  ('function','public',   'revoke_guest_list_share',                 '20261108120000_f40'),
+  ('function','public',   'my_guest_lists',                          '20261108120000_f40'),
+  ('function','public',   'guest_list_rsvps',                        '20261108120000_f40'),
+  ('function','public',   'guest_list_recipients',                   '20261108120000_f40'),
+  ('function','public',   'shared_with_me',                          '20261108120000_f40'),
+  ('function','public',   'shared_guest_list',                       '20261108120000_f40'),
+  ('function','public',   'public_guest_list',                       '20261108120000_f40')
 ) as w(kind, schema, name, migration)
 order by w.migration, w.kind, w.name;
 

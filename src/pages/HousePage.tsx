@@ -5,6 +5,7 @@ import { QuotesPanel } from "@/features/quotes/QuotesPanel";
 import { VendorCalendarPanel } from "@/features/holds/VendorCalendarPanel";
 import { HouseAlerts } from "@/features/holds/HouseAlerts";
 import { ProfileCopyStudio } from "@/features/vendor-profile/ProfileCopyStudio";
+import { GuestListPanel } from "@/features/guest-lists/GuestListPanel";
 import { WelcomePlanCard } from "@/features/onboarding/WelcomePlanCard";
 import NotFound from "./NotFound";
 
@@ -13,7 +14,7 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
   const { section } = useParams();
   const [params] = useSearchParams();
   const { pathname } = useLocation();
-  const { houses } = useAuth();
+  const { houses, getAccessToken } = useAuth();
   const item = findNavItem(house, section);
   if (!item) return <NotFound />;
 
@@ -60,14 +61,25 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
       )}
       {item.slug === "profile" && houseId === "vendor" && (
         <div className="mt-8">
-          <ProfileCopyStudio defaultName={myHouse?.display_name ?? ""} houseId={myHouse?.house_id} />
+          <ProfileCopyStudio
+            defaultName={myHouse?.display_name ?? ""}
+            houseId={myHouse?.house_id}
+          />
         </div>
       )}
-      {item.slug !== "quotes" && item.slug !== "calendar" && item.slug !== "profile" && (
-        <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
-          This workspace is scaffolded; its tools arrive with later features.
-        </p>
+      {item.slug === "guests" && houseId === "host" && myHouse && (
+        <div className="mt-8">
+          <GuestListPanel house={myHouse} getAccessToken={getAccessToken} />
+        </div>
       )}
+      {item.slug !== "quotes" &&
+        item.slug !== "calendar" &&
+        item.slug !== "profile" &&
+        item.slug !== "guests" && (
+          <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
+            This workspace is scaffolded; its tools arrive with later features.
+          </p>
+        )}
     </section>
   );
 }
