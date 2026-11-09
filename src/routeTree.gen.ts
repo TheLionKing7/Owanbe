@@ -17,6 +17,7 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicSplatRouteImport } from './routes/_public/$'
 import { Route as PublicSignInRouteImport } from './routes/_public/sign-in'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
+import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as HostIndexRouteImport } from './routes/host/index'
 import { Route as HostSectionRouteImport } from './routes/host/$section'
 import { Route as VendorIndexRouteImport } from './routes/vendor/index'
@@ -25,8 +26,12 @@ import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth.ca
 import { Route as PublicGuestListsIdRouteImport } from './routes/_public/guest-lists.$id'
 import { Route as PublicVendorsIndexRouteImport } from './routes/_public/vendors.index'
 import { Route as PublicVendorsSlugRouteImport } from './routes/_public/vendors.$slug'
+import { Route as ApiChatsIdRouteImport } from './routes/api/chats/$id'
+import { Route as ApiChatsIdAttachmentsRouteImport } from './routes/api/chats/$id/attachments'
+import { Route as ApiChatsIdMessagesRouteImport } from './routes/api/chats/$id/messages'
 import { Route as ApiGuestListsIdShareRouteImport } from './routes/api/guest-lists/$id/share'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack/webhook'
+import { Route as ApiChatsIdAttachmentsAttachmentIdRouteImport } from './routes/api/chats/$id/attachments/$attachmentId'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -66,6 +71,11 @@ const PublicSignUpRoute = PublicSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
   getParentRoute: () => PublicRoute,
+} as any)
+const ChatIdRoute = ChatIdRouteImport.update({
+  id: '/chat/$id',
+  path: '/chat/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const HostIndexRoute = HostIndexRouteImport.update({
   id: '/',
@@ -107,6 +117,21 @@ const PublicVendorsSlugRoute = PublicVendorsSlugRouteImport.update({
   path: '/vendors/$slug',
   getParentRoute: () => PublicRoute,
 } as any)
+const ApiChatsIdRoute = ApiChatsIdRouteImport.update({
+  id: '/api/chats/$id',
+  path: '/api/chats/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatsIdAttachmentsRoute = ApiChatsIdAttachmentsRouteImport.update({
+  id: '/attachments',
+  path: '/attachments',
+  getParentRoute: () => ApiChatsIdRoute,
+} as any)
+const ApiChatsIdMessagesRoute = ApiChatsIdMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => ApiChatsIdRoute,
+} as any)
 const ApiGuestListsIdShareRoute = ApiGuestListsIdShareRouteImport.update({
   id: '/api/guest-lists/$id/share',
   path: '/api/guest-lists/$id/share',
@@ -118,6 +143,12 @@ const ApiPublicPaystackWebhookRoute =
     path: '/api/public/paystack/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiChatsIdAttachmentsAttachmentIdRoute =
+  ApiChatsIdAttachmentsAttachmentIdRouteImport.update({
+    id: '/$attachmentId',
+    path: '/$attachmentId',
+    getParentRoute: () => ApiChatsIdAttachmentsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
@@ -127,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
   '/host/': typeof HostIndexRoute
@@ -134,15 +166,20 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
   '/vendors/': typeof PublicVendorsIndexRoute
+  '/api/chats/$id/attachments': typeof ApiChatsIdAttachmentsRouteWithChildren
+  '/api/chats/$id/messages': typeof ApiChatsIdMessagesRoute
   '/api/guest-lists/$id/share': typeof ApiGuestListsIdShareRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRoutesByTo {
   '/welcome': typeof WelcomeRoute
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
   '/': typeof PublicIndexRoute
@@ -151,9 +188,13 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
   '/vendors': typeof PublicVendorsIndexRoute
+  '/api/chats/$id/attachments': typeof ApiChatsIdAttachmentsRouteWithChildren
+  '/api/chats/$id/messages': typeof ApiChatsIdMessagesRoute
   '/api/guest-lists/$id/share': typeof ApiGuestListsIdShareRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -164,6 +205,7 @@ export interface FileRoutesById {
   '/_public/$': typeof PublicSplatRoute
   '/_public/sign-in': typeof PublicSignInRoute
   '/_public/sign-up': typeof PublicSignUpRoute
+  '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
   '/_public/': typeof PublicIndexRoute
@@ -172,9 +214,13 @@ export interface FileRoutesById {
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/_public/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
   '/_public/vendors/': typeof PublicVendorsIndexRoute
+  '/api/chats/$id/attachments': typeof ApiChatsIdAttachmentsRouteWithChildren
+  '/api/chats/$id/messages': typeof ApiChatsIdMessagesRoute
   '/api/guest-lists/$id/share': typeof ApiGuestListsIdShareRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -186,6 +232,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/sign-in'
     | '/sign-up'
+    | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
     | '/host/'
@@ -193,15 +240,20 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/guest-lists/$id'
     | '/vendors/$slug'
+    | '/api/chats/$id'
     | '/vendors/'
+    | '/api/chats/$id/attachments'
+    | '/api/chats/$id/messages'
     | '/api/guest-lists/$id/share'
     | '/api/public/paystack/webhook'
+    | '/api/chats/$id/attachments/$attachmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/welcome'
     | '/$'
     | '/sign-in'
     | '/sign-up'
+    | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
     | '/'
@@ -210,9 +262,13 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/guest-lists/$id'
     | '/vendors/$slug'
+    | '/api/chats/$id'
     | '/vendors'
+    | '/api/chats/$id/attachments'
+    | '/api/chats/$id/messages'
     | '/api/guest-lists/$id/share'
     | '/api/public/paystack/webhook'
+    | '/api/chats/$id/attachments/$attachmentId'
   id:
     | '__root__'
     | '/_public'
@@ -222,6 +278,7 @@ export interface FileRouteTypes {
     | '/_public/$'
     | '/_public/sign-in'
     | '/_public/sign-up'
+    | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
     | '/_public/'
@@ -230,9 +287,13 @@ export interface FileRouteTypes {
     | '/_public/auth/callback'
     | '/_public/guest-lists/$id'
     | '/_public/vendors/$slug'
+    | '/api/chats/$id'
     | '/_public/vendors/'
+    | '/api/chats/$id/attachments'
+    | '/api/chats/$id/messages'
     | '/api/guest-lists/$id/share'
     | '/api/public/paystack/webhook'
+    | '/api/chats/$id/attachments/$attachmentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -240,6 +301,8 @@ export interface RootRouteChildren {
   HostRoute: typeof HostRouteWithChildren
   VendorRoute: typeof VendorRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
+  ChatIdRoute: typeof ChatIdRoute
+  ApiChatsIdRoute: typeof ApiChatsIdRouteWithChildren
   ApiGuestListsIdShareRoute: typeof ApiGuestListsIdShareRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
@@ -302,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicSignUpRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/chat/$id': {
+      id: '/chat/$id'
+      path: '/chat/$id'
+      fullPath: '/chat/$id'
+      preLoaderRoute: typeof ChatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/host/': {
       id: '/host/'
       path: '/'
@@ -358,6 +428,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicVendorsSlugRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/api/chats/$id': {
+      id: '/api/chats/$id'
+      path: '/api/chats/$id'
+      fullPath: '/api/chats/$id'
+      preLoaderRoute: typeof ApiChatsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chats/$id/attachments': {
+      id: '/api/chats/$id/attachments'
+      path: '/attachments'
+      fullPath: '/api/chats/$id/attachments'
+      preLoaderRoute: typeof ApiChatsIdAttachmentsRouteImport
+      parentRoute: typeof ApiChatsIdRoute
+    }
+    '/api/chats/$id/messages': {
+      id: '/api/chats/$id/messages'
+      path: '/messages'
+      fullPath: '/api/chats/$id/messages'
+      preLoaderRoute: typeof ApiChatsIdMessagesRouteImport
+      parentRoute: typeof ApiChatsIdRoute
+    }
     '/api/guest-lists/$id/share': {
       id: '/api/guest-lists/$id/share'
       path: '/api/guest-lists/$id/share'
@@ -371,6 +462,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/paystack/webhook'
       preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/chats/$id/attachments/$attachmentId': {
+      id: '/api/chats/$id/attachments/$attachmentId'
+      path: '/$attachmentId'
+      fullPath: '/api/chats/$id/attachments/$attachmentId'
+      preLoaderRoute: typeof ApiChatsIdAttachmentsAttachmentIdRouteImport
+      parentRoute: typeof ApiChatsIdAttachmentsRoute
     }
   }
 }
@@ -425,11 +523,41 @@ const VendorRouteChildren: VendorRouteChildren = {
 const VendorRouteWithChildren =
   VendorRoute._addFileChildren(VendorRouteChildren)
 
+interface ApiChatsIdAttachmentsRouteChildren {
+  ApiChatsIdAttachmentsAttachmentIdRoute: typeof ApiChatsIdAttachmentsAttachmentIdRoute
+}
+
+const ApiChatsIdAttachmentsRouteChildren: ApiChatsIdAttachmentsRouteChildren = {
+  ApiChatsIdAttachmentsAttachmentIdRoute:
+    ApiChatsIdAttachmentsAttachmentIdRoute,
+}
+
+const ApiChatsIdAttachmentsRouteWithChildren =
+  ApiChatsIdAttachmentsRoute._addFileChildren(
+    ApiChatsIdAttachmentsRouteChildren,
+  )
+
+interface ApiChatsIdRouteChildren {
+  ApiChatsIdAttachmentsRoute: typeof ApiChatsIdAttachmentsRouteWithChildren
+  ApiChatsIdMessagesRoute: typeof ApiChatsIdMessagesRoute
+}
+
+const ApiChatsIdRouteChildren: ApiChatsIdRouteChildren = {
+  ApiChatsIdAttachmentsRoute: ApiChatsIdAttachmentsRouteWithChildren,
+  ApiChatsIdMessagesRoute: ApiChatsIdMessagesRoute,
+}
+
+const ApiChatsIdRouteWithChildren = ApiChatsIdRoute._addFileChildren(
+  ApiChatsIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
   HostRoute: HostRouteWithChildren,
   VendorRoute: VendorRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
+  ChatIdRoute: ChatIdRoute,
+  ApiChatsIdRoute: ApiChatsIdRouteWithChildren,
   ApiGuestListsIdShareRoute: ApiGuestListsIdShareRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
