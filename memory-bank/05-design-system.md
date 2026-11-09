@@ -30,6 +30,15 @@
 ## Homepage layout (`src/pages/Home.tsx` + `src/components/home/*`)
 `SiteHeader` floats over the hero at wide sizes → `Hero` (photo `public/images/hero.webp` right, left fade mask, preload in the route) → `FeatureStrip` → the three-column band `lg:grid-cols-[minmax(0,290fr)_15fr_minmax(0,793fr)_23fr_minmax(0,351fr)]`, `xl:auto-rows-[318px]` (`ExploreCategories` · `FeaturedVendors` · `DifferenceCard`) → `AnkaraBand` → fixed `HelpButton` pill. Below `lg` it stacks. `src/data/home.ts` holds nav, categories and placeholder vendor copy.
 
+## Messaging UI pattern (F-100, `src/features/chat/`)
+The chat thread follows the familiar messaging-app shape, built only from the tokens above — no new library, no hardcoded colours:
+- The thread is a fixed-height card (`max-h-[calc(100vh-11rem)] min-h-[30rem]`, `rounded-3xl`, `shadow-card`): a header row (avatar initial, counterparty name, privacy line), a scrolling message area on `bg-cream-100`, and a composer pinned to the bottom.
+- The caller's own message is a right-aligned bubble (`ml-auto`, `bg-plum-950 text-cream-50`, `rounded-br-md`); the other side is left-aligned (`bg-white text-ink`, `rounded-bl-md`, hairline border). A `<Check>` marks a message the caller sent.
+- Days are separated by a centred `chat-day` label ("Today", "Yesterday", else the date).
+- The composer auto-grows, sends on Enter (Shift+Enter adds a line) and carries a paperclip menu offering **document** or **photo**. A chosen file waits as a chip above the composer and can be removed before sending.
+- A shared document is a card in the bubble (file name, kind label, size, open action); a shared photo renders inline as an image.
+- The conversation list (`ChatPanel`) uses the same card and radius, one row per conversation with an avatar initial, the counterparty name, the time and a preview. A message that carries only a document previews as "Sent a document".
+
 ## Assets
 - `public/images/`: `hero.webp`, `vendor-1..3.webp`, `cta.webp`, `ankara-band.webp`, `owanbe-logo-wordmark.webp` (brand-kit logo recoloured so the letters after the Ó are plum). These originated as mockup crops at 1536px; the roadmap records a "restore original right-side homepage artwork" pass — confirm the current files are high-resolution before shipping (follow-up in `09`).
 - Icons: `public/icons/app-icon-*.png`, `public/favicon.*` from the brand kit. `public/robots.txt` is served.

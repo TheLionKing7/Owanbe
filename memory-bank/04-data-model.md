@@ -1,6 +1,8 @@
 # 04 · Data model (Supabase Postgres)
 
-Applied migrations: `supabase/migrations/` (filename order). **Pending** (not yet applied because no Supabase project is connected): `supabase/pending/20261104000000_f78_permission_scoping.sql` — `supabase/tests/run-local.sh` applies it after `migrations/`, and it moves into `migrations/` through the migration tool once the project is connected. Tests: `bash supabase/tests/run-local.sh` uses a throwaway Postgres 16 and `supabase_stub.sql` to mimic `auth.jwt()` and the `anon`/`authenticated` roles.
+Applied migrations: `supabase/migrations/` (filename order). **Pending** (not yet applied because no Supabase project is connected): nothing — `supabase/pending/` is empty, and `20261105080000_vendor_profiles.sql` was promoted into `migrations/` on 2026-11-08. Tests: `bash supabase/tests/run-local.sh` uses a throwaway Postgres 16 and `supabase_stub.sql` to mimic `auth.jwt()`, the `anon`/`authenticated` roles and a reduced `storage` schema.
+
+**Nothing here has been applied to a hosted database.** Every migration in `migrations/` and every SQL suite in `supabase/tests/` has never been executed: this machine has no Postgres 16 binaries and Docker does not run here, so the database side of each feature is **unverified** until it runs against a real Postgres 16.
 
 ## Conventions (enforced on every `public` table by `supabase/tests/schema_conventions.test.sql`)
 - `id uuid primary key default gen_random_uuid()`
@@ -25,6 +27,12 @@ Applied migrations: `supabase/migrations/` (filename order). **Pending** (not ye
 | `assignments` | F-77 | FK **(staff_grant_id, target_kind) → staff_grants(id, scope_kind)**; target_id (FK to events/cases added when those tables exist); expires/revoked | read own active assignments of active grants |
 | `audit_events` | F-77 | actor_user_id, `action` (`noun.verb`), target_table, target_id, house_id, purpose, details (identifiers only) | **no client access**; append-only trigger blocks update/delete/truncate |
 | `onboarding_profiles` | F-7 (`20261107090000_f7_onboarding.sql`) | `user_id` **unique** → users; `role` host/vendor; `phone_e164` (E.164 check, `phone_verified` false until F-51 verifies it; a changed number resets it); `city`; `host_intent` hosting/arranging; `event_type`, `event_date`; `business_category`; `completed_at` | **no client access** (RLS forced, all privileges revoked); read and written only through the three F-7 functions |
+| `vendor_profiles` | F-14-era (`20261105080000_vendor_profiles.sql`) | one profile per vendor house (`house_id` **unique**); slug, business_name, category, headline, about, `published` + `published_at` | read only published profiles, through the public projections |
+| `quotes`, `quote_revisions`, `quote_date_locks`, `vendor_availability` | F-14 (`20261104120000_f14_quotes.sql`) | a quote carries immutable revisions; money is `bigint …_minor` + `currency`; a revision can only be sent by the vendor house | read own house's quotes only, through the quote projections |
+| `quote_payment_holds`, `notifications`, `refund_obligations` | F-38 (`20261104160000_f38_vendor_calendar_soft_hold.sql`) | the advisory hold on a dated quote; `payment_due_at` is the server deadline the countdown is derived from | read own house's holds and notifications, through the F-38 projections |
+| `guest_lists`, `rsvps`, `guest_list_shares` | F-40 (`20261108120000_f40_guest_list_privacy.sql`) | a list is house-scoped with a title and `visibility` private/shared/public; `rsvps` holds phone and address; a share is a revocable grant to one verified account | active members of the owning house only; shared and public projections declare no `phone` or `address` column at all |
+| `conversations`, `messages` | F-100 (`20261109020000_f100_in_app_chat.sql`) | one conversation per host-house/vendor-house pair; `messages` are append-only (trigger) and carry `sender_side` | the two houses of the conversation only, through the chat projections |
+| `message_attachments` | F-100 (`20261109040000_f100_chat_attachments.sql`) | FK **(message_id, conversation_id) → messages(id, conversation_id)**; file_name ≤200, content_type ≤120, `size_bytes` 1..10485760, unique `storage_path` | both houses of the conversation only, through the attachment projections |
 | `app_private.auth_settings` | F-76 | single row: issuer `https://<domain>/`, audience | none (set via `configure_auth0`) |
 
 ## Functions
@@ -51,6 +59,20 @@ Applied migrations: `supabase/migrations/` (filename order). **Pending** (not ye
 | `app_private.log_sensitive_read(actor, grant, table, target, house, purpose)` | staff RPCs (pending F-78) | inserts `audit_events` row `action='sensitive.read'` with `purpose = left(trim(purpose),500)` and `details={'staff_grant_id'}`; raises `purpose_required` (22023) when the purpose is shorter than 10 characters |
 | `public.support_house_members(house, purpose)` | support RPC (pending F-78) | read-only projection of a house's team; requires an active `support` grant, always logs the read |
 | `public.authorize_sensitive_read(capability, target_kind, target, purpose)` | later sensitive reads (pending F-78) | gate for `support`, `event_manager`, `arbitrator`, `verification_reviewer`, `finance`; returns the grant id and logs the read |
+
+## F-100 chat
+| Function | Who calls | Does |
+|---|---|---|
+| `public.start_conversation(vendor_slug)` | browser | opens the single conversation between the caller's host house and that vendor house; refuses `invalid_vendor` and `vendor_not_found` |
+| `public.send_message(conversation, body)` | browser | appends a message; refuses `invalid_message` (empty or >4000 characters) and `forbidden` for a non-participant |
+| `public.send_document(conversation, body, file_name, content_type, size_bytes, storage_path)` | browser | appends a message plus its attachment row; refuses `invalid_attachment_type`, `invalid_attachment_size` and `forbidden: attachment path` when the path belongs to another conversation; audits `message.attachment_shared` |
+| `public.my_conversations()` | browser | the caller's conversations with their counterparty, last message and message count |
+| `public.conversation_messages(conversation)` | browser | the thread, each message marked for its own reader |
+| `public.conversation_attachments(conversation)` / `public.conversation_attachment(conversation, attachment)` | browser | the attachments of a conversation, or one of them; the single-attachment call raises `attachment_not_found` |
+| `app_private.can_chat_in(conversation)` | RLS, storage policies | true when the caller may speak in that conversation (participant, `chat` capability, membership not revoked) |
+| `app_private.conversation_id_from_path(name)` | storage policies | parses `conversations/<uuid>/<file>` into the conversation id |
+
+Storage bucket `chat-attachments` is **private** (`public = false`), `file_size_limit = 10485760`, with an allowlist of image and document types. Its `storage.objects` policies call `app_private.can_chat_in(app_private.conversation_id_from_path(name))`, so a file can only be read by a house that may speak in that conversation. Files are fetched through a short-lived signed URL minted with the caller's own token; the app never holds a service-role key.
 
 Pending-F-78 note: nothing in the app calls these yet (`src/lib/permissions.ts` is a UI mirror only), and the migration is unapplied — so staff scoping is **enforced in code that is not deployed**, not in the live database **(unverified)**.
 
