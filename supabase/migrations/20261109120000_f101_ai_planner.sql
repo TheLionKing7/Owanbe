@@ -100,7 +100,7 @@ set search_path = ''
 as $$
   select case
     when max(i.created_at) is null then 0
-    else greatest(0, ceil(extract(epoch from (interval '30 seconds' - (now() - max(i.created_at))))))::integer)
+    else greatest(0, ceil(extract(epoch from (interval '30 seconds' - (now() - max(i.created_at)))))::integer)
   end
     from public.ai_planner_interactions i
    where i.user_id = app_private.current_user_id()
