@@ -39,6 +39,15 @@ The chat thread follows the familiar messaging-app shape, built only from the to
 - A shared document is a card in the bubble (file name, kind label, size, open action); a shared photo renders inline as an image.
 - The conversation list (`ChatPanel`) uses the same card and radius, one row per conversation with an avatar initial, the counterparty name, the time and a preview. A message that carries only a document previews as "Sent a document".
 
+## Planner UI pattern (F-101, `src/features/planner/PlannerPanel.tsx`)
+The planner is a form that becomes an answer, built only from the tokens above — no new library, no hardcoded colours:
+- The form is a `surface` card: celebration type, city, guest count, budget with a currency select (NGN, GBP, USD, EUR), and the brief. A **persistent** `AI-generated plan` badge sits on the form itself, so the disclosure is on the page before any answer exists.
+- Each option carries its own disclosure line (`Option 1 · AI-generated plan`) next to the title, so a screenshot of one option still shows the label.
+- Grounding is stated, not hidden: a note under the plan says how many vendors could not be confirmed and were left out, and how many prices could not be read from the vendor's own note.
+- Every vendor line shows the price label (`PRICE_UNKNOWN_LABEL` = "Price unknown — request a quote" when the vendor published no readable price), the availability label (always unknown — the platform holds no per-date calendar) and the budget fit ("Within your budget" / "Above your budget" / "Budget fit unknown", unknown when the currencies differ).
+- The answer ends with "This is a starting point, not a quote." and a **Report this answer** control: a category select (wrong facts, not relevant, missing vendor, price or availability, harmful, other), an optional note, submit and cancel, and a thank-you state once the report is recorded.
+- States: `planner-loading` (button busy), `planner-error` (the brief stays in the form so the host can retry), `planner-no-options` ("nothing to build on yet" with the empty-plan copy).
+
 ## Assets
 - `public/images/`: `hero.webp`, `vendor-1..3.webp`, `cta.webp`, `ankara-band.webp`, `owanbe-logo-wordmark.webp` (brand-kit logo recoloured so the letters after the Ó are plum). These originated as mockup crops at 1536px; the roadmap records a "restore original right-side homepage artwork" pass — confirm the current files are high-resolution before shipping (follow-up in `09`).
 - Icons: `public/icons/app-icon-*.png`, `public/favicon.*` from the brand kit. `public/robots.txt` is served.

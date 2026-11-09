@@ -64,6 +64,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-05-vendor-profiles-saved.md` | Journal: vendor profiles saved — schema, public page and the migration promotion. |
 | `docs/journal/2026-11-07-F-7-onboarding.md` | Journal: F-7 sign-up onboarding — Host or Vendor, then setup in the right house. |
 | `docs/journal/2026-11-08-F-100-in-app-chat.md` | Journal: F-100 in-app chat — the WhatsApp-style thread and document sharing. |
+| `docs/journal/2026-11-08-F-101-ai-planner.md` | Journal: F-101 OwanbePlanner AI — the grounded plan, the unknown prices and the interaction log. |
 | `docs/journal/2026-11-08-F-40-guest-list-privacy.md` | Journal: F-40 guest list privacy — private by default, masked shares, revocable grants. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
 | `docs/Ówàńbè Compliance, KYC & Payments Spec.md` | Owner-supplied compliance, KYC and payments specification (untracked owner document). |
@@ -152,6 +153,16 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/onboarding/contracts.test.ts` | Tests for the F-7 rules. |
 | `src/features/onboarding/contracts.ts` | F-7 rules: steps, resume step, E.164 phone normalisation (local Nigerian numbers), field validation, OwanbePlanner opener, safe next path. |
 | `src/features/onboarding/gate-cache.ts` | F-7: remembers per page load that the signed-in user finished onboarding. |
+| `src/features/planner/PlannerPanel.test.tsx` | F-101 tests: the planner form, the disclosure, the options and the report control. |
+| `src/features/planner/PlannerPanel.tsx` | F-101 UI: the planner form, the disclosed answer, the vendor prices and the report control. |
+| `src/features/planner/api.test.ts` | F-101 tests: the planner browser boundary — the token, the refusals and the report call. |
+| `src/features/planner/api.ts` | F-101 browser boundary: the planner routes, the error copy and the result shapes. |
+| `src/features/planner/contracts.test.ts` | F-101 tests: reading a price note, the budget fit, the scrubbing and the grounding. |
+| `src/features/planner/contracts.ts` | F-101 contracts: the planner input, the plan shapes, the price reading and the grounding rules. |
+| `src/features/planner/planner.server.test.ts` | F-101 tests: the model call, the grounded answer and the unconfigured planner. |
+| `src/features/planner/planner.server.ts` | F-101 server boundary: the Lovable AI Gateway call and generatePlanOptions, which grounds the answer. |
+| `src/features/planner/server.test.ts` | F-101 server tests: the host check, the cooldown, the logging and the report. |
+| `src/features/planner/server.ts` | F-101 server boundary: token-forwarding handlers for the plan and the report. |
 | `src/features/quotes/QuoteBuilder.tsx` | F-14 UI: the vendor's quote editor with integer minor-unit lines. |
 | `src/features/quotes/QuoteCard.tsx` | F-14 UI: one quote revision with the actions its side may take. |
 | `src/features/quotes/QuotesPanel.test.tsx` | F-14 tests: the quote list, the actions offered and the error copy. |
@@ -258,11 +269,14 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/api/chats/$id/attachments/$attachmentId.ts` | GET /api/chats/:id/attachments/:attachmentId — mint a signed link for a shared file. |
 | `src/routes/api/chats/$id/messages.ts` | POST /api/chats/:id/messages — send a message or a document into the thread. |
 | `src/routes/api/guest-lists/$id/share.ts` | POST /api/guest-lists/:id/share — the host shares a list with one platform user. |
+| `src/routes/api/planner/generate.ts` | POST /api/planner/generate — the grounded answer, logged as the caller's own interaction. |
+| `src/routes/api/planner/report.ts` | POST /api/planner/report — report one answer against the caller's own interaction. |
 | `src/routes/api/public/paystack/webhook.ts` | POST /api/public/paystack/webhook: verifies the signature and logs the event name only. |
 | `src/routes/chat.$id.tsx` | The /chat/:id page: one conversation between a host house and a vendor house. |
 | `src/routes/host.tsx` | /host layout: RequireAuth inside HouseLayout houseId=host. |
 | `src/routes/host/$section.tsx` | /host/:section route. |
 | `src/routes/host/index.tsx` | /host index route. |
+| `src/routes/planner.tsx` | The /planner page: OwanbePlanner outside either house shell. |
 | `src/routes/vendor.tsx` | /vendor layout: RequireAuth inside HouseLayout houseId=vendor. |
 | `src/routes/vendor/$section.tsx` | /vendor/:section route. |
 | `src/routes/vendor/index.tsx` | /vendor index route. |
@@ -326,6 +340,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261108120000_f40_guest_list_privacy.sql` | F-40: guest lists, rsvps and shares — private by default and masked when shared. |
 | `supabase/migrations/20261109020000_f100_in_app_chat.sql` | F-100: conversations, append-only messages and the projections both sides read. |
 | `supabase/migrations/20261109040000_f100_chat_attachments.sql` | F-100: message attachments, the private chat-attachments bucket and the document send/read path. |
+| `supabase/migrations/20261109120000_f101_ai_planner.sql` | F-101: the planner interaction log, the 30-second cooldown and the report. |
 
 #### supabase/tests/
 
@@ -334,6 +349,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/db_state_check.sql` | Read-only report of which feature objects are present in a given database. |
 | `supabase/tests/f100_attachments.test.sql` | F-100 SQL tests: document sharing, refusals, isolation and the private bucket. |
 | `supabase/tests/f100_chat.test.sql` | F-100 SQL tests: starting a conversation, sending messages, house scoping and the chat capability. |
+| `supabase/tests/f101_ai_planner.test.sql` | F-101 SQL tests: logging an interaction, the cooldown, the host check and the report. |
 | `supabase/tests/f14_quotes.test.sql` | F-14 SQL tests: quote revisions, transitions and vendor-only authoring. |
 | `supabase/tests/f38_soft_hold.test.sql` | F-38 SQL tests: hold creation, the payment window and release. |
 | `supabase/tests/f40_guest_privacy.test.sql` | F-40 SQL tests: default privacy, masking, sharing and revocation. |

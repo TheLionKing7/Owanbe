@@ -33,6 +33,7 @@ Applied migrations: `supabase/migrations/` (filename order). **Pending** (not ye
 | `guest_lists`, `rsvps`, `guest_list_shares` | F-40 (`20261108120000_f40_guest_list_privacy.sql`) | a list is house-scoped with a title and `visibility` private/shared/public; `rsvps` holds phone and address; a share is a revocable grant to one verified account | active members of the owning house only; shared and public projections declare no `phone` or `address` column at all |
 | `conversations`, `messages` | F-100 (`20261109020000_f100_in_app_chat.sql`) | one conversation per host-house/vendor-house pair; `messages` are append-only (trigger) and carry `sender_side` | the two houses of the conversation only, through the chat projections |
 | `message_attachments` | F-100 (`20261109040000_f100_chat_attachments.sql`) | FK **(message_id, conversation_id) → messages(id, conversation_id)**; file_name ≤200, content_type ≤120, `size_bytes` 1..10485760, unique `storage_path` | both houses of the conversation only, through the attachment projections |
+| `ai_planner_interactions` | F-101 (`20261109120000_f101_ai_planner.sql`) | one row per planner generation (a failed attempt is logged too); FK **(house_id, house_kind) → houses(id, kind)** with `house_kind` pinned to `host`; `budget_minor` bigint + `budget_currency`; `status` ok/error; `option_count` 0..6; `plan_summary` jsonb array; one report per row (check: `reported_at` and `report_category` are both null or both set) | the host reads their own rows only; no direct writes |
 | `app_private.auth_settings` | F-76 | single row: issuer `https://<domain>/`, audience | none (set via `configure_auth0`) |
 
 ## Functions
@@ -73,6 +74,19 @@ Applied migrations: `supabase/migrations/` (filename order). **Pending** (not ye
 | `app_private.conversation_id_from_path(name)` | storage policies | parses `conversations/<uuid>/<file>` into the conversation id |
 
 Storage bucket `chat-attachments` is **private** (`public = false`), `file_size_limit = 10485760`, with an allowlist of image and document types. Its `storage.objects` policies call `app_private.can_chat_in(app_private.conversation_id_from_path(name))`, so a file can only be read by a house that may speak in that conversation. Files are fetched through a short-lived signed URL minted with the caller's own token; the app never holds a service-role key.
+
+## F-101 planner
+The plan itself is built in the app (`src/features/planner`) and checked there against the published vendor profiles — the database cannot tell whether a price is real. This file stores the interaction and the reports.
+
+| Function | Who calls | Does |
+|---|---|---|
+| `public.log_ai_planner_interaction(event_type, city, guest_count, budget_minor, budget_currency, brief, model, status, option_count, plan_summary)` | app server (F-101) | writes one interaction row and audits `planner.interaction`; requires an active member of a Host house (`forbidden: planner`, 42501); validates every field (22023 `invalid_planner_input`); refuses a second call inside 30 seconds (`rate_limited: planner`); keeps at most six options and resolves the vendor names from `public.vendor_profiles` where `published`, so a caller cannot log a business that is not on the platform |
+| `public.report_ai_planner_response(interaction, category, note)` | browser (F-101) | records one report on the caller's own interaction; refuses an unknown category or a note over 500 characters (22023), an interaction that is not the caller's (`interaction_not_found`, P0002) and a second report (`already_reported`, 22023); audits `planner.response_reported` |
+| `public.ai_planner_cooldown_seconds()` | app server (F-101) | seconds left of the 30-second per-user cooldown, 0 when none |
+| `public.my_ai_planner_interactions()` | browser (F-101) | the caller's last 20 interactions, newest first |
+| `app_private.planner_host_house(user)` | F-101 functions | the user's active Host house, or null |
+
+Pending note: the migration is unapplied and `f101_ai_planner.test.sql` has never been executed on this machine (no Postgres 16 binaries, Docker does not run here), so the database side of F-101 is **unverified**.
 
 Pending-F-78 note: nothing in the app calls these yet (`src/lib/permissions.ts` is a UI mirror only), and the migration is unapplied — so staff scoping is **enforced in code that is not deployed**, not in the live database **(unverified)**.
 

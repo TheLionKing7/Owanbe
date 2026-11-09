@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as HostRouteImport } from './routes/host'
+import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as VendorRouteImport } from './routes/vendor'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
@@ -27,6 +28,8 @@ import { Route as PublicGuestListsIdRouteImport } from './routes/_public/guest-l
 import { Route as PublicVendorsIndexRouteImport } from './routes/_public/vendors.index'
 import { Route as PublicVendorsSlugRouteImport } from './routes/_public/vendors.$slug'
 import { Route as ApiChatsIdRouteImport } from './routes/api/chats/$id'
+import { Route as ApiPlannerGenerateRouteImport } from './routes/api/planner/generate'
+import { Route as ApiPlannerReportRouteImport } from './routes/api/planner/report'
 import { Route as ApiChatsIdAttachmentsRouteImport } from './routes/api/chats/$id/attachments'
 import { Route as ApiChatsIdMessagesRouteImport } from './routes/api/chats/$id/messages'
 import { Route as ApiGuestListsIdShareRouteImport } from './routes/api/guest-lists/$id/share'
@@ -40,6 +43,11 @@ const PublicRoute = PublicRouteImport.update({
 const HostRoute = HostRouteImport.update({
   id: '/host',
   path: '/host',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlannerRoute = PlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VendorRoute = VendorRouteImport.update({
@@ -122,6 +130,16 @@ const ApiChatsIdRoute = ApiChatsIdRouteImport.update({
   path: '/api/chats/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPlannerGenerateRoute = ApiPlannerGenerateRouteImport.update({
+  id: '/api/planner/generate',
+  path: '/api/planner/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlannerReportRoute = ApiPlannerReportRouteImport.update({
+  id: '/api/planner/report',
+  path: '/api/planner/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatsIdAttachmentsRoute = ApiChatsIdAttachmentsRouteImport.update({
   id: '/attachments',
   path: '/attachments',
@@ -153,6 +171,7 @@ const ApiChatsIdAttachmentsAttachmentIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/host': typeof HostRouteWithChildren
+  '/planner': typeof PlannerRoute
   '/vendor': typeof VendorRouteWithChildren
   '/welcome': typeof WelcomeRoute
   '/$': typeof PublicSplatRoute
@@ -167,6 +186,8 @@ export interface FileRoutesByFullPath {
   '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/planner/generate': typeof ApiPlannerGenerateRoute
+  '/api/planner/report': typeof ApiPlannerReportRoute
   '/vendors/': typeof PublicVendorsIndexRoute
   '/api/chats/$id/attachments': typeof ApiChatsIdAttachmentsRouteWithChildren
   '/api/chats/$id/messages': typeof ApiChatsIdMessagesRoute
@@ -175,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRoutesByTo {
+  '/planner': typeof PlannerRoute
   '/welcome': typeof WelcomeRoute
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
@@ -189,6 +211,8 @@ export interface FileRoutesByTo {
   '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/planner/generate': typeof ApiPlannerGenerateRoute
+  '/api/planner/report': typeof ApiPlannerReportRoute
   '/vendors': typeof PublicVendorsIndexRoute
   '/api/chats/$id/attachments': typeof ApiChatsIdAttachmentsRouteWithChildren
   '/api/chats/$id/messages': typeof ApiChatsIdMessagesRoute
@@ -200,6 +224,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteWithChildren
   '/host': typeof HostRouteWithChildren
+  '/planner': typeof PlannerRoute
   '/vendor': typeof VendorRouteWithChildren
   '/welcome': typeof WelcomeRoute
   '/_public/$': typeof PublicSplatRoute
@@ -215,6 +240,8 @@ export interface FileRoutesById {
   '/_public/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/_public/vendors/$slug': typeof PublicVendorsSlugRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/planner/generate': typeof ApiPlannerGenerateRoute
+  '/api/planner/report': typeof ApiPlannerReportRoute
   '/_public/vendors/': typeof PublicVendorsIndexRoute
   '/api/chats/$id/attachments': typeof ApiChatsIdAttachmentsRouteWithChildren
   '/api/chats/$id/messages': typeof ApiChatsIdMessagesRoute
@@ -227,6 +254,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/host'
+    | '/planner'
     | '/vendor'
     | '/welcome'
     | '/$'
@@ -241,6 +269,8 @@ export interface FileRouteTypes {
     | '/guest-lists/$id'
     | '/vendors/$slug'
     | '/api/chats/$id'
+    | '/api/planner/generate'
+    | '/api/planner/report'
     | '/vendors/'
     | '/api/chats/$id/attachments'
     | '/api/chats/$id/messages'
@@ -249,6 +279,7 @@ export interface FileRouteTypes {
     | '/api/chats/$id/attachments/$attachmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/planner'
     | '/welcome'
     | '/$'
     | '/sign-in'
@@ -263,6 +294,8 @@ export interface FileRouteTypes {
     | '/guest-lists/$id'
     | '/vendors/$slug'
     | '/api/chats/$id'
+    | '/api/planner/generate'
+    | '/api/planner/report'
     | '/vendors'
     | '/api/chats/$id/attachments'
     | '/api/chats/$id/messages'
@@ -273,6 +306,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_public'
     | '/host'
+    | '/planner'
     | '/vendor'
     | '/welcome'
     | '/_public/$'
@@ -288,6 +322,8 @@ export interface FileRouteTypes {
     | '/_public/guest-lists/$id'
     | '/_public/vendors/$slug'
     | '/api/chats/$id'
+    | '/api/planner/generate'
+    | '/api/planner/report'
     | '/_public/vendors/'
     | '/api/chats/$id/attachments'
     | '/api/chats/$id/messages'
@@ -299,10 +335,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
   HostRoute: typeof HostRouteWithChildren
+  PlannerRoute: typeof PlannerRoute
   VendorRoute: typeof VendorRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
   ChatIdRoute: typeof ChatIdRoute
   ApiChatsIdRoute: typeof ApiChatsIdRouteWithChildren
+  ApiPlannerGenerateRoute: typeof ApiPlannerGenerateRoute
+  ApiPlannerReportRoute: typeof ApiPlannerReportRoute
   ApiGuestListsIdShareRoute: typeof ApiGuestListsIdShareRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
@@ -321,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/host'
       fullPath: '/host'
       preLoaderRoute: typeof HostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planner': {
+      id: '/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof PlannerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/vendor': {
@@ -433,6 +479,20 @@ declare module '@tanstack/react-router' {
       path: '/api/chats/$id'
       fullPath: '/api/chats/$id'
       preLoaderRoute: typeof ApiChatsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/planner/generate': {
+      id: '/api/planner/generate'
+      path: '/api/planner/generate'
+      fullPath: '/api/planner/generate'
+      preLoaderRoute: typeof ApiPlannerGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/planner/report': {
+      id: '/api/planner/report'
+      path: '/api/planner/report'
+      fullPath: '/api/planner/report'
+      preLoaderRoute: typeof ApiPlannerReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chats/$id/attachments': {
@@ -554,10 +614,13 @@ const ApiChatsIdRouteWithChildren = ApiChatsIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
   HostRoute: HostRouteWithChildren,
+  PlannerRoute: PlannerRoute,
   VendorRoute: VendorRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
   ChatIdRoute: ChatIdRoute,
   ApiChatsIdRoute: ApiChatsIdRouteWithChildren,
+  ApiPlannerGenerateRoute: ApiPlannerGenerateRoute,
+  ApiPlannerReportRoute: ApiPlannerReportRoute,
   ApiGuestListsIdShareRoute: ApiGuestListsIdShareRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
