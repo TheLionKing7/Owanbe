@@ -71,7 +71,7 @@ export function PaymentsPanel({
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
   const [refundReason, setRefundReason] = useState("");
   const [askingRefund, setAskingRefund] = useState(false);
-  const [transferAccount, setTransferAccount] = useState<PaymentStart["transfer_account"]>(null);
+  const [transferAccount, setTransferAccount] = useState<NonNullable<PaymentStart["transfer_account"]> | null>(null);
   const [askingCancel, setAskingCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelNotice, setCancelNotice] = useState<string | null>(null);

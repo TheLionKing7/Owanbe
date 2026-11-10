@@ -167,7 +167,7 @@ export async function startBookingPayment(
   };
 }
 
-function transferAccountFrom(raw: unknown): PaymentStart["transfer_account"] {
+function transferAccountFrom(raw: unknown): NonNullable<PaymentStart["transfer_account"]> | null {
   if (!raw || typeof raw !== "object") return null;
   const a = raw as Record<string, unknown>;
   if (typeof a["account_number"] !== "string" || !/^\d{10}$/.test(a["account_number"])) return null;
