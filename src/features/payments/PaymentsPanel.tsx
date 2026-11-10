@@ -9,6 +9,7 @@ import {
   type BookingSummary,
   type FundMovement,
 } from "./contracts";
+import { AiInvestigationPanel } from "@/features/ai/AiInvestigationPanel";
 
 interface PaymentsPanelProps {
   house: HouseSummary;
@@ -465,6 +466,11 @@ export function PaymentsPanel({
                         )}
                       </div>
                     )}
+
+                    <AiInvestigationPanel
+                      bookingId={booking.booking_id}
+                      getAccessToken={getAccessToken}
+                    />
                   </div>
                 )}
               </li>

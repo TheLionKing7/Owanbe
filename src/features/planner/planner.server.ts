@@ -4,9 +4,10 @@
  * The model is given the published vendor profiles and the host's own words, and nothing else.
  * Its answer is then grounded in code (see groundPlan in ./contracts): a vendor it invented is
  * dropped, a price it made up never reaches the host, and availability is always unknown.
+ *
+ * The gateway itself belongs to the platform, not to this feature: see @/lib/ai/provider.server.
  */
-import { createOpenAI } from "@ai-sdk/openai";
-import { APICallError, NoObjectGeneratedError, Output, streamText } from "ai";
+import { AI_MODELS, generateStructured, type AiFailure } from "@/lib/ai/provider.server";
 import {
   groundPlan,
   rawPlanSchema,
@@ -15,7 +16,7 @@ import {
   type VendorFact,
 } from "./contracts";
 
-export const PLANNER_MODEL = "openai/gpt-6-astra";
+export const PLANNER_MODEL = AI_MODELS.planner;
 
 const SYSTEM = `You plan celebrations for Ówàńbè, a marketplace for Yoruba and Nigerian celebrations (weddings, engagements, birthdays, naming ceremonies, funerals) used by hosts in Nigeria and the diaspora.
 
@@ -74,6 +75,64 @@ function emptyPlan(reason: string): GroundedPlan {
 }
 
 /**
+ * The provider's failure, said in the planner's own words. A refusal is never reported as a
+ * plain error: if the zero-retention gate ever refuses this surface, the host is told so.
+ */
+function plannerFailure(failure: AiFailure): PlannerOutcome {
+  switch (failure.code) {
+    case "unconfigured":
+      return {
+        ok: false,
+        code: "unconfigured",
+        error: "The planner is not set up in this environment yet.",
+        retryable: false,
+      };
+    case "rate_limited":
+      return {
+        ok: false,
+        code: "rate_limited",
+        error: "Too many requests right now. Wait a minute and try again.",
+        retryable: true,
+      };
+    case "credits":
+      return {
+        ok: false,
+        code: "credits",
+        error: "AI credits have run out. The workspace owner needs to top up.",
+        retryable: false,
+      };
+    case "unavailable":
+      return {
+        ok: false,
+        code: "unavailable",
+        error: "The planner is not available for this workspace.",
+        retryable: false,
+      };
+    case "incomplete":
+      return {
+        ok: false,
+        code: "incomplete",
+        error: "The planner's answer came back incomplete. Please try again.",
+        retryable: true,
+      };
+    case "zdr_required":
+      return {
+        ok: false,
+        code: "unconfigured",
+        error: "The planner cannot run while the platform's AI agreement is being confirmed.",
+        retryable: false,
+      };
+    default:
+      return {
+        ok: false,
+        code: "unknown",
+        error: "We could not plan that just now. Please try again.",
+        retryable: true,
+      };
+  }
+}
+
+/**
  * F-101 wiring: the assistant's answer. The facts are the published vendor profiles; the model
  * arranges them, and the answer is grounded before it is returned.
  */
@@ -90,75 +149,13 @@ export async function generatePlanOptions(
     };
   }
 
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) {
-    return {
-      ok: false,
-      code: "unconfigured",
-      error: "The planner is not set up in this environment yet.",
-      retryable: false,
-    };
-  }
-
-  const openai = createOpenAI({
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+  const outcome = await generateStructured({
+    model: "planner",
+    system: SYSTEM,
+    prompt: `The host's celebration:\n${hostPrompt(input)}\n\nThe vendors on the platform:\n${factsPrompt(facts)}`,
+    schema: rawPlanSchema,
   });
 
-  try {
-    const result = streamText({
-      model: openai.responses(PLANNER_MODEL),
-      system: SYSTEM,
-      prompt: `The host's celebration:\n${hostPrompt(input)}\n\nThe vendors on the platform:\n${factsPrompt(facts)}`,
-      output: Output.object({ schema: rawPlanSchema }),
-      maxRetries: 0,
-      providerOptions: {
-        openai: { forceReasoning: true, reasoningEffort: "low", store: false },
-      },
-    });
-    const raw = await result.output;
-    return { ok: true, plan: groundPlan(raw, facts, input) };
-  } catch (error) {
-    if (NoObjectGeneratedError.isInstance(error)) {
-      return {
-        ok: false,
-        code: "incomplete",
-        error: "The planner's answer came back incomplete. Please try again.",
-        retryable: true,
-      };
-    }
-    const status = APICallError.isInstance(error) ? error.statusCode : undefined;
-    console.error("[planner] gateway error", status);
-    if (status === 429) {
-      return {
-        ok: false,
-        code: "rate_limited",
-        error: "Too many requests right now. Wait a minute and try again.",
-        retryable: true,
-      };
-    }
-    if (status === 402) {
-      return {
-        ok: false,
-        code: "credits",
-        error: "AI credits have run out. The workspace owner needs to top up.",
-        retryable: false,
-      };
-    }
-    if (status === 403) {
-      return {
-        ok: false,
-        code: "unavailable",
-        error: "The planner is not available for this workspace.",
-        retryable: false,
-      };
-    }
-    return {
-      ok: false,
-      code: "unknown",
-      error: "We could not plan that just now. Please try again.",
-      retryable: true,
-    };
-  }
+  if (!outcome.ok) return plannerFailure(outcome.failure);
+  return { ok: true, plan: groundPlan(outcome.value, facts, input) };
 }

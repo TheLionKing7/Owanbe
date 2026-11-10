@@ -11,19 +11,11 @@ import {
   plannerInputSchema,
   type GroundedPlan,
   type PlannerInput,
-  type ReportCategory,
   type VendorFact,
 } from "./contracts";
+import { REPORT_CATEGORIES, type ReportCategory } from "@/features/ai/contracts";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const REPORT_CATEGORIES: readonly string[] = [
-  "wrong_facts",
-  "not_relevant",
-  "missing_vendor",
-  "price_or_availability",
-  "harmful",
-  "other",
-];
 
 function json(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -282,7 +274,7 @@ export async function reportPlanAsCaller(request: Request): Promise<Response> {
     return json({ error: "validation", message: "That answer could not be found." }, 400);
   }
   const category = typeof payload.category === "string" ? payload.category : "";
-  if (!REPORT_CATEGORIES.includes(category)) {
+  if (!(REPORT_CATEGORIES as readonly string[]).includes(category)) {
     return json({ error: "validation", message: "Choose what was wrong with the answer." }, 400);
   }
   const note = typeof payload.note === "string" ? payload.note.trim().slice(0, 500) : null;

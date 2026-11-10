@@ -48,6 +48,13 @@ The planner is a form that becomes an answer, built only from the tokens above �
 - The answer ends with "This is a starting point, not a quote." and a **Report this answer** control: a category select (wrong facts, not relevant, missing vendor, price or availability, harmful, other), an optional note, submit and cancel, and a thank-you state once the report is recorded.
 - States: `planner-loading` (button busy), `planner-error` (the brief stays in the form so the host can retry), `planner-no-options` ("nothing to build on yet" with the empty-plan copy).
 
+## AI surface pattern (F-107, `src/features/ai/AiDisclosure.tsx`)
+Every surface that shows a model's words uses the same two controls, so the disclosure and the report path are written once:
+- The badge (`AiLabel`) sits on the surface itself, not on the answer, so the disclosure is on the page before any answer exists. The surface supplies its own words — `AI-generated plan` (F-101), `AI-written draft` (vendor profile), `AI investigation` (F-107).
+- The report control (`AiReportControl`) is one category select (wrong facts, not relevant, missing vendor, price or availability, harmful, other), an optional note, submit and cancel, and a thank-you state once the report is recorded.
+- The staff investigation panel (`src/features/ai/AiInvestigationPanel.tsx`) sits on a booking's payments panel and asks before it renders: the database answers whether the zero-retention contract is confirmed and whether the caller holds the `ai_investigation` grant. With the gate closed it renders nothing at all.
+- Finding labels are plain: "Nothing wrong found in this payment trail", "A person needs to look at this", "A case was opened for a person to look at". The AI never says it moved money.
+
 ## Assets
 - `public/images/`: `hero.webp`, `vendor-1..3.webp`, `cta.webp`, `ankara-band.webp`, `owanbe-logo-wordmark.webp` (brand-kit logo recoloured so the letters after the Ó are plum). These originated as mockup crops at 1536px; the roadmap records a "restore original right-side homepage artwork" pass — confirm the current files are high-resolution before shipping (follow-up in `09`).
 - Icons: `public/icons/app-icon-*.png`, `public/favicon.*` from the brand kit. `public/robots.txt` is served.

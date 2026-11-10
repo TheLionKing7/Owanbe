@@ -68,6 +68,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-08-F-40-guest-list-privacy.md` | Journal: F-40 guest list privacy — private by default, masked shares, revocable grants. |
 | `docs/journal/2026-11-09-F-102-fund-pool-escrow.md` | Journal: F-102 fund pool and escrow — the ledger, the 70/30 split, the dispute freeze, the refunds and what was never executed. |
 | `docs/journal/2026-11-09-F-106-market-benchmark-data.md` | Journal: F-106 market benchmark data — the observed price, the two-vendor rule, the provenance gate, the audit trail and what was never executed. |
+| `docs/journal/2026-11-09-F-107-owanbeai.md` | F-107 journal: the four owner decisions, what OwanbeAI delivers, the database rules, the checks run and the limits. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
 | `docs/Ówàńbè Compliance, KYC & Payments Spec.md` | Owner-supplied compliance, KYC and payments specification (untracked owner document). |
 
@@ -86,6 +87,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `scripts/check-test-files-load.mjs` | Gate: every test file must load and run — catches a suite that silently imports nothing. |
 | `scripts/memory-bank.mjs` | Memory bank indexer: `check`, `update` (map rows + fingerprints), `where <path>`; wired to the memory:* scripts, not to CI. |
 | `scripts/scripts/sage7-scan.ts` | Note file: the Sage 7 scan command; the token is read from the environment, never committed. |
+| `scripts/sql-shape-check.mjs` | Static shape check for a SQL file: balanced parentheses inside bodies, terminated string literals, closed dollar quotes. The only database-side evidence available on a machine with no Postgres binaries. |
 
 #### src/components/
 
@@ -121,6 +123,18 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 
 | File | Purpose |
 |---|---|
+| `src/features/ai/AiDisclosure.test.tsx` | F-107 tests: the label renders, the report form opens, the categories are sent and a refusal is shown. |
+| `src/features/ai/AiDisclosure.tsx` | F-107 the one AI label and the one report control, shared by every AI surface so the disclosure and the report path are written once. |
+| `src/features/ai/AiInvestigationPanel.test.tsx` | F-107 tests: the staff panel — it stays hidden without the grant, forwards the question, shows the finding and the case reference, and shows the closed-gate wording. |
+| `src/features/ai/AiInvestigationPanel.tsx` | F-107 UI: the staff panel on a booking's payments — "Ask OwanbeAI about this payment", the disclosed answer and the report control. Read-only; it can open a case but never move money. |
+| `src/features/ai/api.test.ts` | F-107 tests: the browser boundary — the caller's token, the error codes and the investigation calls. |
+| `src/features/ai/api.ts` | F-107 browser boundary: the AI routes, the error codes and the refusal copy, including the closed-gate wording. |
+| `src/features/ai/contracts.test.ts` | F-107 tests: the disclosure labels, the report categories and the investigation request schema. |
+| `src/features/ai/contracts.ts` | F-107 contracts: the per-surface AI label, the report categories and the investigation request and result shapes. |
+| `src/features/ai/investigation.test.ts` | F-107 tests: the system prompt, the minimised trail, the model answer and the case subject. |
+| `src/features/ai/investigation.ts` | F-107: what OwanbeAI may see (a minimised payment trail — no names, emails, references or payloads) and what it is asked to say (a statement or a case, never a decision). |
+| `src/features/ai/server.test.ts` | F-107 tests: the route boundary — the token forwarding, the refusals, the closed gate, the minimised trail the model sees and the proof that no money-moving function is reachable. |
+| `src/features/ai/server.ts` | F-107 server boundary: the caller's token is forwarded to the database for the status, the investigation and the report; the service-role path is used nowhere here. |
 | `src/features/benchmarks/BenchmarkPanel.test.tsx` | F-106 tests: the market range beside the vendors, the source, the freshness window and the empty and refused states. |
 | `src/features/benchmarks/BenchmarkPanel.tsx` | F-106 UI: the market range beside a plan's vendors — the price band, the source, the freshness window, and the "not enough published prices yet" line. |
 | `src/features/benchmarks/api.test.ts` | F-106 tests: the browser boundary — the token, the refusal copy and the unreadable answer. |
@@ -228,11 +242,14 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 
 | File | Purpose |
 |---|---|
+| `src/lib/ai/provider.server.test.ts` | F-107 tests: the shared provider — the gateway, the model, the store-off rule, the refusals and the sensitive-request gate. |
+| `src/lib/ai/provider.server.ts` | F-107 the platform's one AI provider: the Lovable AI Gateway, the model table, the failure mapping and the gate that refuses a sensitive request while no zero-retention contract is confirmed. |
 | `src/lib/auth/AuthProvider.tsx` | Auth context: idle session restore, admit via ensureAppUser + listHouses, login/logout/completeLogin/retry; `useAuth()` |
 | `src/lib/auth/auth0Client.ts` | LAZY CHUNK: Auth0 SPA client + Supabase client (accessToken = Auth0 token); rpc ensure_user / my_houses; safe returnTo. |
 | `src/lib/auth/config.functions.ts` | Server function that hands the browser only the public Auth0 identifiers. |
 | `src/lib/auth/types.ts` | `AuthClient` boundary, `AppUser`, `HouseSummary`, `AuthStatus`, `AccountBlockedError` |
 | `src/lib/auth/validate-token.server.ts` | Server-side Auth0 JWT verification (jose JWKS, RS256, iss/aud/exp/sub) mapped to one active user; no call sites yet. |
+| `src/lib/db/caller.server.ts` | The one way the app asks the database something as the caller: the caller's own token is forwarded to PostgREST and a secret key is refused, so the database decides what they may read and write. |
 | `src/lib/error-capture.ts` | Wraps console.error to remember the last captured error for the SSR error page. |
 | `src/lib/error-page.ts` | renderErrorPage(): turns h3-swallowed 500 responses into a readable server error. |
 | `src/lib/houses.ts` | Host/Vendor house definitions and nav (`HOUSES`, `findNavItem`); the two never mix |
@@ -287,6 +304,9 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/_public/sign-up.tsx` | Route for /sign-up rendering SignIn in signup mode. |
 | `src/routes/_public/vendors.$slug.tsx` | Public vendor profile page. |
 | `src/routes/_public/vendors.index.tsx` | Public vendor directory. |
+| `src/routes/api/ai/investigate.ts` | POST /api/ai/investigate — the read-only payment investigation, run as the caller and logged as the caller's own interaction. |
+| `src/routes/api/ai/report.ts` | POST /api/ai/report — report one AI answer under a category, against the caller's own interaction. |
+| `src/routes/api/ai/status.ts` | GET /api/ai/status — whether the zero-retention contract is confirmed and whether the caller holds the AI investigation grant; the panel asks before it renders. |
 | `src/routes/api/benchmarks.ts` | F-106 route: `POST /api/benchmarks` — the market range for the categories a host is comparing. |
 | `src/routes/api/bookings/$id/complete.ts` | POST /api/bookings/:id/complete — the host confirms the event and the final tranche is released. |
 | `src/routes/api/bookings/$id/freeze.ts` | POST /api/bookings/:id/freeze — a staff arbitrator freezes or unfreezes the money on a booking. |
@@ -372,6 +392,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261109120000_f101_ai_planner.sql` | F-101: the planner interaction log, the 30-second cooldown and the report. |
 | `supabase/migrations/20261109140000_f102_fund_pool.sql` | F-102: the ledger (ledger_accounts, journal_entries, postings), the fund pool, the wallet ledger, the 70/30 split, the refunds, the dispute freeze and the projections. |
 | `supabase/migrations/20261109160000_f106_market_benchmarks.sql` | F-106 migration: the `market_benchmarks` table (one observed price per place, from a sent quote), the `analytics` staff capability, the observation trigger on `public.quotes`, and the two read functions — the published range and the provenance. |
+| `supabase/migrations/20261109180000_f107_owanbe_ai.sql` | F-107 migration: the `ai_investigation` platform-staff capability, `app_private.ai_settings`, the `cases` and `ai_interactions` tables, the minimised payment-log read, the interaction log and the case opener. |
 
 #### supabase/tests/
 
@@ -383,6 +404,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f101_ai_planner.test.sql` | F-101 SQL tests: logging an interaction, the cooldown, the host check and the report. |
 | `supabase/tests/f102_fund_pool.test.sql` | F-102 SQL tests: the allocation, the replay, the completion, the refund, the freeze, the append-only ledger and the house isolation. |
 | `supabase/tests/f106_market_benchmarks.test.sql` | F-106 SQL suite: a sent quote becomes an observed price with its provenance, a new price supersedes the old one, an unverified or withdrawn quote never reaches the market, one vendor is not a range, and only the planner's Host houses and the `analytics` capability may read. |
+| `supabase/tests/f107_owanbe_ai.test.sql` | F-107 SQL suite: the closed gate, the grant, the minimised trail, the logged interaction, the opened case and the proof that the AI path cannot allocate, refund, settle, freeze, unfreeze, complete or release. |
 | `supabase/tests/f14_quotes.test.sql` | F-14 SQL tests: quote revisions, transitions and vendor-only authoring. |
 | `supabase/tests/f38_soft_hold.test.sql` | F-38 SQL tests: hold creation, the payment window and release. |
 | `supabase/tests/f40_guest_privacy.test.sql` | F-40 SQL tests: default privacy, masking, sharing and revocation. |

@@ -11,9 +11,10 @@
  *   * a vendor the model invented is dropped rather than shown
  */
 import { z } from "zod";
+import { AI_DISCLOSURE } from "@/features/ai/contracts";
 
 /** The label that sits on every planner output, so a plan is never read as a person's advice. */
-export const PLANNER_DISCLOSURE = "AI-generated plan";
+export const PLANNER_DISCLOSURE = AI_DISCLOSURE.planner;
 
 /** One generation per host per 30 seconds. The database enforces the same backstop. */
 export const PLANNER_COOLDOWN_SECONDS = 30;
@@ -23,17 +24,6 @@ export const PRICE_UNKNOWN_LABEL = "Price unknown — request a quote";
 
 /** The honest answer for every vendor: the platform has no per-date availability. */
 export const AVAILABILITY_UNKNOWN_LABEL = "Availability unknown — ask the vendor";
-
-/** The categories a host can report an answer under. The database holds the same list. */
-export const REPORT_CATEGORIES = [
-  "wrong_facts",
-  "not_relevant",
-  "missing_vendor",
-  "price_or_availability",
-  "harmful",
-  "other",
-] as const;
-export type ReportCategory = (typeof REPORT_CATEGORIES)[number];
 
 export const plannerInputSchema = z.object({
   event_type: z.string().trim().min(1, "Tell us what you are celebrating.").max(60),

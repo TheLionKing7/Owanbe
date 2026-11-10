@@ -1,12 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Sparkles } from "lucide-react";
 import { createPlannerApi, plannerErrorMessage, type PlannerApi, type PlanResult } from "./api";
-import {
-  PLANNER_DISCLOSURE,
-  REPORT_CATEGORIES,
-  type PlannerInput,
-  type ReportCategory,
-} from "./contracts";
+import { PLANNER_DISCLOSURE, type PlannerInput } from "./contracts";
+import { AiLabel, AiReportControl } from "@/features/ai/AiDisclosure";
 import { BenchmarkPanel } from "@/features/benchmarks/BenchmarkPanel";
 import type { BenchmarkApi } from "@/features/benchmarks/api";
 
@@ -18,15 +13,6 @@ const BUDGET_FIT_LABEL: Record<string, string> = {
   within_budget: "Within your budget",
   above_budget: "Above your budget",
   unknown: "Budget fit unknown",
-};
-
-const REPORT_CATEGORY_LABEL: Record<ReportCategory, string> = {
-  wrong_facts: "The facts are wrong",
-  not_relevant: "Not relevant to my celebration",
-  missing_vendor: "A vendor was missing",
-  price_or_availability: "Price or availability is wrong",
-  harmful: "Something harmful or offensive",
-  other: "Something else",
 };
 
 interface PlannerPanelProps {
@@ -64,12 +50,6 @@ export function PlannerPanel({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PlanResult | null>(null);
 
-  const [reporting, setReporting] = useState(false);
-  const [category, setCategory] = useState<ReportCategory>("wrong_facts");
-  const [note, setNote] = useState("");
-  const [reportError, setReportError] = useState<string | null>(null);
-  const [reported, setReported] = useState(false);
-
   useEffect(() => {
     setBrief((current) => (current.trim() ? current : (initialBrief ?? "")));
   }, [initialBrief]);
@@ -97,9 +77,6 @@ export function PlannerPanel({
     try {
       const answer = await client.generate(input);
       setResult(answer);
-      setReported(false);
-      setReporting(false);
-      setReportError(null);
     } catch (caught) {
       setError(plannerErrorMessage(caught));
     } finally {
@@ -107,24 +84,10 @@ export function PlannerPanel({
     }
   }
 
-  async function sendReport() {
-    if (!result) return;
-    setReportError(null);
-    try {
-      await client.report(result.interaction_id, category, note.trim() || undefined);
-      setReported(true);
-      setReporting(false);
-    } catch (caught) {
-      setReportError(plannerErrorMessage(caught));
-    }
-  }
-
   return (
     <div className="space-y-6" data-testid="planner-panel">
       <section aria-labelledby="planner-form" className="surface p-5 sm:p-6">
-        <p className="inline-flex items-center gap-2 rounded-full bg-plum-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-plum-800">
-          <Sparkles aria-hidden className="h-3.5 w-3.5" /> {PLANNER_DISCLOSURE}
-        </p>
+        <AiLabel label={PLANNER_DISCLOSURE} testId="planner-form-disclosure" />
         <h2 id="planner-form" className="mt-3 font-display text-2xl font-bold text-plum-950">
           Tell OwanbePlanner what you are planning
         </h2>
@@ -262,12 +225,7 @@ export function PlannerPanel({
           className="surface p-5 sm:p-6"
           data-testid="planner-result"
         >
-          <p
-            className="inline-flex items-center gap-2 rounded-full bg-plum-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-plum-800"
-            data-testid="planner-disclosure"
-          >
-            <Sparkles aria-hidden className="h-3.5 w-3.5" /> {result.disclosure}
-          </p>
+          <AiLabel label={result.disclosure} testId="planner-disclosure" />
           <h2 id="planner-answer" className="mt-3 font-display text-2xl font-bold text-plum-950">
             Your plan
           </h2>
@@ -365,82 +323,14 @@ export function PlannerPanel({
           </p>
 
           <div className="mt-4">
-            {reported ? (
-              <p className="text-sm text-owanbe-emerald-green" data-testid="planner-reported">
-                Thank you. We have logged your report and will look at that answer.
-              </p>
-            ) : reporting ? (
-              <div className="space-y-3" data-testid="planner-report-form">
-                <label
-                  htmlFor="planner-report-category"
-                  className="block text-sm font-semibold text-ink"
-                >
-                  What was wrong with this answer?
-                </label>
-                <select
-                  id="planner-report-category"
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value as ReportCategory)}
-                  className="min-h-[44px] w-full rounded-2xl border border-plum-900/10 bg-white px-3 py-2 text-sm text-ink"
-                  data-testid="planner-report-category"
-                >
-                  {REPORT_CATEGORIES.map((value) => (
-                    <option key={value} value={value}>
-                      {REPORT_CATEGORY_LABEL[value]}
-                    </option>
-                  ))}
-                </select>
-                <label
-                  htmlFor="planner-report-note"
-                  className="block text-sm font-semibold text-ink"
-                >
-                  Anything else we should know? (optional)
-                </label>
-                <textarea
-                  id="planner-report-note"
-                  rows={3}
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                  className="w-full rounded-2xl border border-plum-900/10 bg-white px-3 py-2 text-sm text-ink"
-                  data-testid="planner-report-note"
-                />
-                {reportError && (
-                  <p
-                    role="alert"
-                    className="text-sm font-semibold text-owanbe-vibrant-red"
-                    data-testid="planner-report-error"
-                  >
-                    {reportError}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    className="btn-primary min-h-[44px] px-5 py-2 text-sm"
-                    onClick={() => void sendReport()}
-                    data-testid="planner-report-submit"
-                  >
-                    Send the report
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-outline min-h-[44px] px-5 py-2 text-sm"
-                    onClick={() => setReporting(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="btn-outline min-h-[44px] px-5 py-2 text-sm"
-                onClick={() => setReporting(true)}
-                data-testid="planner-report-open"
-              >
-                Report this answer
-              </button>
-            )}
+            <AiReportControl
+              interactionId={result.interaction_id}
+              onReport={(interactionId, category, note) =>
+                client.report(interactionId, category, note)
+              }
+              errorMessage={plannerErrorMessage}
+              testIdPrefix="planner"
+            />
           </div>
         </section>
       )}

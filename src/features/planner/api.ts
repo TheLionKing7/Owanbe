@@ -2,12 +2,8 @@
  * F-101 browser boundary. The browser talks to the app's own routes; the routes forward the
  * caller's token to the database, which decides what the host may do.
  */
-import {
-  PLANNER_DISCLOSURE,
-  type GroundedPlan,
-  type PlannerInput,
-  type ReportCategory,
-} from "./contracts";
+import { PLANNER_DISCLOSURE, type GroundedPlan, type PlannerInput } from "./contracts";
+import type { ReportCategory } from "@/features/ai/contracts";
 
 export type PlannerErrorCode =
   | "forbidden"

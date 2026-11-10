@@ -56,6 +56,9 @@ Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
 | `src/routes/api/planner/generate.ts` | `/api/planner/generate` | POST the planner's grounded answer; the caller's token is forwarded to the database |
 | `src/routes/api/planner/report.ts` | `/api/planner/report` | POST one report on the caller's own answer |
 | `src/routes/api/benchmarks.ts` | `/api/benchmarks` | POST the market range for the categories a host is comparing; the caller's token is forwarded to the database |
+| `src/routes/api/ai/status.ts` | `/api/ai/status` | GET whether this caller may use OwanbeAI (the grant **and** the zero-retention contract); the caller's token is forwarded to the database |
+| `src/routes/api/ai/investigate.ts` | `/api/ai/investigate` | POST OwanbeAI's reading of one booking's payment trail; the trail is read from the database first, and the model is called only after the read succeeded |
+| `src/routes/api/ai/report.ts` | `/api/ai/report` | POST one report on the caller's own answer; the shared route for every AI surface (planner, vendor copy, OwanbeAI) |
 
 Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, `PlaceholderPage`, `NotFound`) even though `src/routes/README.md` says not to create that folder. House sections come from `src/lib/houses.ts`.
 
@@ -64,6 +67,7 @@ Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, 
 - Server-only, listed in `src/config/server-env.ts` `REQUIRED_SERVER_ENV`: `APP_ENV`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `EXTERNAL_SUPABASE_SERVICE_ROLE_KEY` (Lovable reserves the `SUPABASE_` prefix; `src/lib/supabase-admin-env.server.ts` falls back to `SUPABASE_SERVICE_ROLE_KEY`), `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `SENTRY_DSN`, `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`.
 - `checkEnvIsolation()` requires `sk_live_`/`pk_live_` in production and rejects them in every other environment — but nothing calls it yet.
 - Also read ad hoc: `LOVABLE_CRON_SECRET`, `LOVABLE_CRON_SECRET_PREVIOUS`, `INITIAL_JS_BUDGET_KB`, and `AUTH0_TENANT` / `AUTH0_TENANT_REGION` in `supabase/config.toml`.
+- F-107 added **`LOVABLE_API_KEY`** as the one key for every AI surface. It is read only by `src/lib/ai/provider.server.ts` (and by the older vendor copy path), never by the browser, and never logged. Without it the platform says "not set up in this environment" rather than failing silently.
 - F-102 added `PAYMENT_ROUTER_KEY`: the platform's own gate on `src/lib/payments/router.server.ts`, the only module that may move money. It is not a third-party credential, it is never logged, and the module refuses to run without it (`unconfigured`). The Paystack secret stays in `PAYSTACK_SECRET_KEY` and is read inside the call.
 - `docs/deployment.md` is the release runbook: one hosted Supabase project (owner's decision), env matrix, migrations-before-app order, backup/restore rehearsal, Paystack and Sentry setup per environment.
 
