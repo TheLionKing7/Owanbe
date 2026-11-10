@@ -157,6 +157,46 @@ export async function recordProviderEvent(input: {
   return typeof outcome === "string" ? outcome : "unknown";
 }
 
+/** F-60: keep the reusable Paystack reference for the host who paid. Never a card number. */
+export async function savePaymentAuthorization(input: {
+  bookingId: string;
+  authorizationCode: string;
+  cardBrand: string | null;
+  last4: string | null;
+  expMonth: string | null;
+  expYear: string | null;
+  reusable: boolean;
+}): Promise<string> {
+  const outcome = await callAsService("save_payment_authorization", {
+    p_booking: input.bookingId,
+    p_code: input.authorizationCode,
+    p_brand: input.cardBrand,
+    p_last4: input.last4,
+    p_exp_month: input.expMonth,
+    p_exp_year: input.expYear,
+    p_reusable: input.reusable,
+  });
+  return typeof outcome === "string" ? outcome : "unknown";
+}
+
+/** F-48: remember the Dedicated Virtual Account Paystack created for this user. */
+export async function storeDedicatedAccount(input: {
+  userId: string;
+  customerCode: string;
+  accountNumber: string;
+  accountName: string;
+  bankName: string;
+}): Promise<string> {
+  const outcome = await callAsService("store_dedicated_account", {
+    p_user: input.userId,
+    p_customer: input.customerCode,
+    p_number: input.accountNumber,
+    p_name: input.accountName,
+    p_bank: input.bankName,
+  });
+  return typeof outcome === "string" ? outcome : "unknown";
+}
+
 /** The provider has sent the money back, so the ledger follows. */
 export async function settleRefund(bookingId: string, reference: string): Promise<string> {
   const outcome = await callAsService("settle_refund", {

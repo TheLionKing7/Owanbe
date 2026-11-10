@@ -1,8 +1,10 @@
 # Roadmap
 
 - [x] Payment owner decisions recorded; cancellation rules, Paystack virtual accounts, saved-card references and multi-model AI added.
-- [ ] Run docs/sql/2026-11-10-cancellation-tokens-dva.sql in the database — blocked: owner runs SQL on their own database.
-- [ ] Cancel buttons on booking screens, webhook saving card references, DVA on checkout — next step.
+- [ ] Run docs/sql/2026-11-10-f13-booking-completion.sql in the database — blocked: owner runs SQL on their own database.
+- [x] Cancel buttons on booking screens, webhook saving card references, DVA on checkout.
+- [x] F-13: host quote request from vendor page → vendor writes quote → accept → booking → pay.
+- [ ] Live Paystack test of DVA/refunds — blocked: SQL above plus live Paystack keys.
 
 - [x] F-76/F-79 repair: load public Auth0 and external database settings from saved runtime secrets; startup, single-use callback and retries tested.
 - [ ] Complete real sign-in verification — blocked: Auth0 rejects the localhost callback URL; owner must allow http://localhost:8080/auth/callback and publish for live verification.

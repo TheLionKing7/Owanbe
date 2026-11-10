@@ -81,6 +81,7 @@ const MOVEMENT: FundMovement = {
 function stubApi(overrides: Partial<PaymentsApi> = {}): PaymentsApi {
   return {
     bookings: vi.fn(async () => [booking()]),
+    cancel: vi.fn(async () => ({ cancelled_by: "host" as const, refund_minor: 0, status: "approved" })),
     money: vi.fn(async () => ({ fund: fund(), movements: [MOVEMENT] })),
     startPayment: vi.fn(async () => ({
       reference: "owanbe-abcd1234",
@@ -188,6 +189,38 @@ describe("PaymentsPanel", () => {
     const link = await screen.findByTestId("payment-link");
     expect(link).toHaveTextContent("Continue to the payment page");
     expect(api.startPayment).toHaveBeenCalledWith(BOOKING_ID);
+  });
+
+  it("shows the host's Paystack transfer account at checkout", async () => {
+    const api = stubApi({
+      money: vi.fn(async () => ({
+        fund: fund({ pool_status: "awaiting_payment", booking_status: "awaiting_payment", paid_minor: 0, held_minor: 0, released_70_minor: 0 }),
+        movements: [],
+      })),
+      startPayment: vi.fn(async () => ({
+        reference: "owanbe-abcd1234",
+        authorization_url: "https://checkout.paystack.com/abc",
+        amount_minor: 100000,
+        currency: "NGN",
+        transfer_account: { account_number: "0123456789", account_name: "Ada Obi", bank_name: "Wema Bank" },
+      })),
+    });
+    render(<PaymentsPanel house={HOUSE} api={api} />);
+    fireEvent.click(await screen.findByTestId("open-payment"));
+    fireEvent.click(await screen.findByTestId("start-payment"));
+    expect(await screen.findByTestId("transfer-account")).toHaveTextContent("0123456789");
+  });
+
+  it("cancels a paid booking with a reason and previews the host refund", async () => {
+    const api = stubApi();
+    render(<PaymentsPanel house={HOUSE} api={api} />);
+    fireEvent.click(await screen.findByTestId("open-payment"));
+    fireEvent.click(await screen.findByTestId("ask-cancel"));
+    expect(await screen.findByTestId("cancel-preview")).toHaveTextContent("%");
+    fireEvent.change(screen.getByTestId("cancel-reason"), { target: { value: "Date moved" } });
+    fireEvent.click(screen.getByTestId("confirm-cancel"));
+    expect(await screen.findByTestId("cancel-notice")).toHaveTextContent("Booking cancelled");
+    expect(api.cancel).toHaveBeenCalledWith(BOOKING_ID, "Date moved");
   });
 
   it("says why a payment could not be started", async () => {

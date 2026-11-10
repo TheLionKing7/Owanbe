@@ -1,3 +1,4 @@
+-- Superseded: run docs/sql/2026-11-10-f13-booking-completion.sql instead (it contains this script plus F-13 quote requests).
 -- Run once in the Supabase SQL editor (external project), after the F-102 fund pool script.
 -- F-20 Host Cancellation Policy, F-21 Vendor Cancellation Handling,
 -- F-60 Paystack authorisation references, F-48 Dedicated Virtual Accounts.

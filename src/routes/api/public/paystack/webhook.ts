@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { safeEventName } from "@/lib/payments/credential-guard";
-import { verifyPaystackSignature } from "@/lib/payments/paystack.server";
-import { recordProviderEvent } from "@/lib/payments/router.server";
+import { safeAuthorization, verifyPaystackSignature } from "@/lib/payments/paystack.server";
+import { recordProviderEvent, savePaymentAuthorization } from "@/lib/payments/router.server";
 
 // Paystack calls this URL. Unsigned or wrongly signed requests are rejected.
 //
@@ -76,6 +76,18 @@ export const Route = createFileRoute("/api/public/paystack/webhook")({
             payload,
             bookingId,
           });
+          // F-60: keep only the reusable reference and display fields of the card.
+          if (event === "charge.success" && bookingId) {
+            const auth = safeAuthorization(data["authorization"]);
+            if (auth) {
+              try {
+                await savePaymentAuthorization({ bookingId, ...auth });
+              } catch {
+                // The payment itself is recorded; a missing saved card is not worth a retry storm.
+                console.error("paystack webhook: card reference could not be saved");
+              }
+            }
+          }
           return Response.json({ status: "recorded", outcome });
         } catch (error) {
           const message = error instanceof Error ? error.message : "unknown";

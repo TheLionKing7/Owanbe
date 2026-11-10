@@ -120,6 +120,14 @@ export interface PaymentsApi {
   verifyPayment(reference: string): Promise<VerifyOutcome>;
   complete(bookingId: string): Promise<void>;
   refund(bookingId: string, reason: string): Promise<void>;
+  /** F-20/F-21: the database decides who cancelled and what comes back. */
+  cancel(bookingId: string, reason: string): Promise<CancellationResult>;
+}
+
+export interface CancellationResult {
+  cancelled_by: "host" | "vendor";
+  refund_minor: number;
+  status: string;
 }
 
 /** What the provider says about a charge the host came back from. */
@@ -155,6 +163,18 @@ export async function startBookingPayment(
     authorization_url: body.authorization_url,
     amount_minor: body.amount_minor,
     currency: body.currency,
+    transfer_account: transferAccountFrom((body as { transfer_account?: unknown }).transfer_account),
+  };
+}
+
+function transferAccountFrom(raw: unknown): NonNullable<PaymentStart["transfer_account"]> | null {
+  if (!raw || typeof raw !== "object") return null;
+  const a = raw as Record<string, unknown>;
+  if (typeof a["account_number"] !== "string" || !/^\d{10}$/.test(a["account_number"])) return null;
+  return {
+    account_number: a["account_number"],
+    account_name: typeof a["account_name"] === "string" ? a["account_name"] : "",
+    bank_name: typeof a["bank_name"] === "string" ? a["bank_name"] : "",
   };
 }
 
@@ -190,6 +210,8 @@ export function createPaymentsApi(getAccessToken: () => Promise<string | null>):
         },
       );
     },
+    cancel: (bookingId, reason) =>
+      rpc<CancellationResult>("cancel_booking", { p_booking: bookingId, p_reason: reason }),
     refund: async (bookingId, reason) => {
       await call(`/api/bookings/${encodeURIComponent(bookingId)}/refund`, await getAccessToken(), {
         method: "POST",

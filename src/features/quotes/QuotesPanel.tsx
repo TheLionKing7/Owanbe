@@ -11,6 +11,8 @@ import {
 } from "./api";
 import { QuoteCard, type QuoteAction, type QuoteActionDetail } from "./QuoteCard";
 import { QuoteBuilder, type BuilderValues } from "./QuoteBuilder";
+import { QuoteRequestsList } from "./QuoteRequestsList";
+import { quoteRequestApi, type QuoteRequest, type QuoteRequestApi } from "./requests";
 import { dailyCapacitySchema, type QuoteSide } from "./contracts";
 import type { HouseSummary } from "@/lib/auth/types";
 
@@ -24,6 +26,8 @@ interface QuotesPanelProps {
   api?: QuoteApi | undefined;
   /** F-38 payment windows for the accepted quotes on this list. */
   holdApi?: HoldsApi | undefined;
+  /** F-13 quote requests from vendor pages. */
+  requestApi?: QuoteRequestApi | undefined;
 }
 
 interface QuoteState {
@@ -55,7 +59,10 @@ export function QuotesPanel({
   dateHint,
   api = quoteApi,
   holdApi = holdsApi,
+  requestApi = quoteRequestApi,
 }: QuotesPanelProps) {
+  const [fromRequest, setFromRequest] = useState<QuoteRequest | null>(null);
+  const [requestsKey, setRequestsKey] = useState(0);
   const [quotes, setQuotes] = useState<QuoteSummary[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
   const [holds, setHolds] = useState<Map<string, HoldSummary> | null>(null);
@@ -178,7 +185,7 @@ export function QuotesPanel({
           message: values.message,
         });
       } else {
-        await api.create({
+        const quoteId = await api.create({
           vendor_house_id: house.house_id,
           host_house_id: values.host_house_id,
           service_date: values.service_date,
@@ -187,6 +194,15 @@ export function QuotesPanel({
           inclusions: values.inclusions,
           extras: values.extras,
         });
+        if (fromRequest && fromRequest.host_house_id === values.host_house_id) {
+          try {
+            await requestApi.respond(fromRequest.request_id, "quoted", quoteId);
+          } catch {
+            // The quote exists either way; the request simply stays open.
+          }
+        }
+        setFromRequest(null);
+        setRequestsKey((k) => k + 1);
       }
       setBuilder(null);
       await load();
@@ -288,12 +304,25 @@ export function QuotesPanel({
         </div>
       )}
 
+      <QuoteRequestsList
+        houseId={house.house_id}
+        side={side}
+        api={requestApi}
+        refreshKey={requestsKey}
+        onWriteQuote={(request) => {
+          setFromRequest(request);
+          setBuilder({ mode: "create" });
+          setBuilderError(null);
+        }}
+      />
+
       {builder?.mode === "create" && (
         <QuoteBuilder
+          key={fromRequest?.request_id ?? "new"}
           vendorHouseId={house.house_id}
           mode="create"
-          hostHint={hostHint}
-          dateHint={dateHint}
+          hostHint={fromRequest?.host_house_id ?? hostHint}
+          dateHint={fromRequest?.service_date ?? dateHint}
           pending={false}
           error={builderError}
           onSubmit={(values) => void submitBuilder(values)}
