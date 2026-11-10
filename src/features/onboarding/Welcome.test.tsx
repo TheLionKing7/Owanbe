@@ -92,7 +92,7 @@ describe("Welcome (F-7)", () => {
 
     expect(await screen.findByText("What are you planning?")).toBeInTheDocument();
     expect(screen.getByText("Step 3 of 3")).toBeInTheDocument();
-    fireEvent.click(screen.getByLabelText(/I'm arranging it for someone/));
+    fireEvent.click(screen.getByLabelText(/arranging it for a client/));
     fireEvent.change(screen.getByLabelText(/What kind of celebration/), {
       target: { value: "Wedding" },
     });

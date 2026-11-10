@@ -26,4 +26,4 @@
 - [ ] Verify Sentry event ingestion — blocked: saved SENTRY_DSN is not yet present in preview runtime
 - [ ] Verify Supabase and apply pending migration — blocked: project connection diagnostics report no linked backend
 
-- [ ] Planner onboarding path at sign-up (waiting on owner choice of approach)
+- [x] Planner onboarding path at sign-up (Host, planning for a client)
