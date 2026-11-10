@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Finish the reported partial payment, cancellation, direct-booking, tokenization and AI features end-to-end — blocked: Sage 7 returned no authorized next task on 2026-11-10; audit and prerequisite holds must be cleared before implementation. Do not rebuild merged work, re-enable disabled CI, or activate unapproved wallet custody. Owner requested no repeated requirement questions.
+
 - [x] F-76/F-79 repair: load public Auth0 and external database settings from saved runtime secrets; startup, single-use callback and retries tested.
 - [ ] Complete real sign-in verification — blocked: Auth0 rejects the localhost callback URL; owner must allow http://localhost:8080/auth/callback and publish for live verification.
 
