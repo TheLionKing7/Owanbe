@@ -63,7 +63,12 @@ export function RequireAuth({ children, signup = false }: { children: ReactNode;
       );
     case "error":
       return (
-        <AuthNotice title="We couldn't sign you in" action={<Button type="button" onClick={retry} className="h-12 px-6">Try again</Button>}>
+        <AuthNotice title="We couldn't sign you in" action={<>
+          <Button type="button" onClick={retry} className="h-12 px-6">Try again</Button>
+          <Button asChild variant="outline" className="h-12 px-6">
+            <a href={standaloneAuthPath(options)} target="_blank" rel="noopener noreferrer">Open sign-in</a>
+          </Button>
+        </>}>
           Something went wrong while checking your session.
         </AuthNotice>
       );
