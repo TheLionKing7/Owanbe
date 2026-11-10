@@ -12,6 +12,10 @@ export const Route = createFileRoute("/planner")({
     meta: [
       { title: "OwanbePlanner — Ówàńbè" },
       { name: "description", content: "Plan your celebration with OwanbePlanner." },
+      { property: "og:title", content: "OwanbePlanner — Ówàńbè" },
+      { property: "og:description", content: "Plan your celebration with OwanbePlanner." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PlannerPage,
