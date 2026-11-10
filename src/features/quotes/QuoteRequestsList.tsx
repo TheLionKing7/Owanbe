@@ -55,7 +55,7 @@ export function QuoteRequestsList({ houseId, side, api = quoteRequestApi, onWrit
       <section role="status" className="surface p-5 text-sm text-ink">
         {error}{" "}
         <button type="button" className="font-semibold text-plum-800 underline" onClick={() => void load()}>
-          Try again
+          Reload requests
         </button>
       </section>
     );
