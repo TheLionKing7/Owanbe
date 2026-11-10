@@ -81,6 +81,7 @@ const MOVEMENT: FundMovement = {
 function stubApi(overrides: Partial<PaymentsApi> = {}): PaymentsApi {
   return {
     bookings: vi.fn(async () => [booking()]),
+    cancel: vi.fn(async () => ({ cancelled_by: "host" as const, refund_minor: 0, status: "approved" })),
     money: vi.fn(async () => ({ fund: fund(), movements: [MOVEMENT] })),
     startPayment: vi.fn(async () => ({
       reference: "owanbe-abcd1234",
