@@ -1,12 +1,15 @@
 -- Superseded: run docs/sql/2026-11-10-f13-booking-completion.sql instead (it contains this script plus F-13 quote requests).
--- Run once in the Supabase SQL editor (external project), after the F-102 fund pool script.
+-- Safe to rerun in the existing SQL editor after the F-102 fund pool script; existing rows are retained.
 -- F-20 Host Cancellation Policy, F-21 Vendor Cancellation Handling,
 -- F-60 Paystack authorisation references, F-48 Dedicated Virtual Accounts.
 -- Owner decisions 2026-11-10: funds stay in Paystack / platform pool accounts; host refund
 -- >30 days 80%, 14-30 days 50%, <14 days 0%; vendor cancel 100%; DVA on first checkout;
 -- refunds above 50,000,000 kobo (NGN 500,000) need two distinct finance approvals.
 
-create function app_private.cancellation_refund_minor(p_by text, p_paid bigint, p_days integer)
+-- Atomic installation: an error rolls back this run, without dropping tables or records.
+begin;
+
+create or replace function app_private.cancellation_refund_minor(p_by text, p_paid bigint, p_days integer)
 returns bigint language sql immutable set search_path = '' as $$
   select (p_paid * case
     when p_by = 'vendor' then 100
@@ -15,7 +18,7 @@ returns bigint language sql immutable set search_path = '' as $$
     else 0 end) / 100
 $$;
 
-create table public.booking_cancellations (
+create table if not exists public.booking_cancellations (
   id                 uuid primary key default gen_random_uuid(),
   booking_id         uuid not null unique references public.bookings (id) on delete cascade,
   cancelled_by       text not null check (cancelled_by in ('host', 'vendor')),
@@ -39,15 +42,17 @@ create table public.booking_cancellations (
 grant select on public.booking_cancellations to authenticated;
 grant all on public.booking_cancellations to service_role;
 alter table public.booking_cancellations enable row level security;
+drop policy if exists booking_cancellations_parties on public.booking_cancellations;
 create policy booking_cancellations_parties on public.booking_cancellations
   for select to authenticated using (exists (
     select 1 from public.bookings b where b.id = booking_id
       and (app_private.member_can(b.host_house_id, 'bookings')
            or app_private.member_can(b.vendor_house_id, 'bookings'))));
+drop policy if exists booking_cancellations_finance on public.booking_cancellations;
 create policy booking_cancellations_finance on public.booking_cancellations
   for select to authenticated using (app_private.staff_grant_for('finance') is not null);
 
-create function public.cancel_booking(p_booking uuid, p_reason text)
+create or replace function public.cancel_booking(p_booking uuid, p_reason text)
 returns public.booking_cancellations
 language plpgsql volatile security definer set search_path = '' as $$
 declare
@@ -109,7 +114,7 @@ end $$;
 revoke all on function public.cancel_booking(uuid, text) from public, anon;
 grant execute on function public.cancel_booking(uuid, text) to authenticated;
 
-create function public.approve_cancellation_refund(p_cancellation uuid)
+create or replace function public.approve_cancellation_refund(p_cancellation uuid)
 returns text language plpgsql volatile security definer set search_path = '' as $$
 declare
   v_actor uuid := app_private.current_user_id();
@@ -138,7 +143,7 @@ revoke all on function public.approve_cancellation_refund(uuid) from public, ano
 grant execute on function public.approve_cancellation_refund(uuid) to authenticated;
 
 -- F-60: Paystack reusable authorisation reference. Never a card number.
-create table public.payment_authorizations (
+create table if not exists public.payment_authorizations (
   id                 uuid primary key default gen_random_uuid(),
   user_id            uuid not null,
   authorization_code text not null unique check (authorization_code ~ '^AUTH_[A-Za-z0-9]+$'),
@@ -154,11 +159,12 @@ grant select (id, user_id, card_brand, last4, exp_month, exp_year, reusable, rev
   on public.payment_authorizations to authenticated;
 grant all on public.payment_authorizations to service_role;
 alter table public.payment_authorizations enable row level security;
+drop policy if exists payment_authorizations_own on public.payment_authorizations;
 create policy payment_authorizations_own on public.payment_authorizations
   for select to authenticated using (user_id = app_private.current_user_id());
 
 -- F-48: one Paystack Dedicated Virtual Account per user, created on first checkout.
-create table public.dedicated_accounts (
+create table if not exists public.dedicated_accounts (
   user_id                uuid primary key,
   paystack_customer_code text not null,
   account_number         text not null check (account_number ~ '^[0-9]{10}$'),
@@ -170,5 +176,9 @@ create table public.dedicated_accounts (
 grant select on public.dedicated_accounts to authenticated;
 grant all on public.dedicated_accounts to service_role;
 alter table public.dedicated_accounts enable row level security;
+drop policy if exists dedicated_accounts_own on public.dedicated_accounts;
 create policy dedicated_accounts_own on public.dedicated_accounts
   for select to authenticated using (user_id = app_private.current_user_id());
+
+
+commit;

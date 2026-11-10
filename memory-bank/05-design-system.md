@@ -60,6 +60,7 @@ Every surface that shows a model's words uses the same two controls, so the disc
 - Icons: `public/icons/app-icon-*.png`, `public/favicon.*` from the brand kit. `public/robots.txt` is served.
 
 ## UI rules
+- Sign-up keeps two choices: Host for personal/client celebrations and Vendor for event businesses, explicitly including event planners/managers. The existing Event Managers business category is unchanged; no third house or new permission is introduced.
 - Prefer lucide-react icons; custom SVG only for brand marks (e.g. `BurstIcon` in `ExploreCategories`).
 - Every interactive element ≥ 44–48px on touch, `:focus-visible` gold outline, aria label when icon-only.
 - Never hardcode a colour — use the tokens above (`AGENTS.md` design rules still bind, even though the token file moved).

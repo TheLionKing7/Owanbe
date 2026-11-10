@@ -23,6 +23,10 @@ export const Route = createFileRoute("/_public/guest-lists/$id")({
     return {
       meta: [
         { title },
+        { property: "og:title", content: title },
+        { property: "og:description", content: "Names and responses shared by the host of this celebration." },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
         // A guest list is personal data even when the host publishes it: keep it out of search.
         { name: "robots", content: "noindex, nofollow" },
         {

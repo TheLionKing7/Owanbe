@@ -28,11 +28,11 @@ export type OnboardingStep = "role" | "about" | "plans" | "business" | "done";
 export const ROLE_COPY: Record<OnboardingRole, { title: string; body: string }> = {
   host: {
     title: "I'm planning a celebration",
-    body: "Weddings, birthdays, naming ceremonies, burials and more: plan it, find vendors and pay safely.",
+    body: "For your own event or a client's celebration: plan, find vendors and request quotes.",
   },
   vendor: {
     title: "I run an events business",
-    body: "Event centres, caterers, MCs, decorators, photographers and more: get found and take bookings.",
+    body: "Event planners & managers, event centers, caterers, MCs, decorators and photographers: get found and take bookings.",
   },
 };
 

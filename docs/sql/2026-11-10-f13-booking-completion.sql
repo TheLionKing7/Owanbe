@@ -6,7 +6,10 @@
 -- >30 days 80%, 14-30 days 50%, <14 days 0%; vendor cancel 100%; DVA on first checkout;
 -- refunds above 50,000,000 kobo (NGN 500,000) need two distinct finance approvals.
 
-create function app_private.cancellation_refund_minor(p_by text, p_paid bigint, p_days integer)
+-- Atomic installation: an error rolls back this run, without dropping tables or records.
+begin;
+
+create or replace function app_private.cancellation_refund_minor(p_by text, p_paid bigint, p_days integer)
 returns bigint language sql immutable set search_path = '' as $$
   select (p_paid * case
     when p_by = 'vendor' then 100
@@ -15,7 +18,7 @@ returns bigint language sql immutable set search_path = '' as $$
     else 0 end) / 100
 $$;
 
-create table public.booking_cancellations (
+create table if not exists public.booking_cancellations (
   id                 uuid primary key default gen_random_uuid(),
   booking_id         uuid not null unique references public.bookings (id) on delete cascade,
   cancelled_by       text not null check (cancelled_by in ('host', 'vendor')),
@@ -39,15 +42,17 @@ create table public.booking_cancellations (
 grant select on public.booking_cancellations to authenticated;
 grant all on public.booking_cancellations to service_role;
 alter table public.booking_cancellations enable row level security;
+drop policy if exists booking_cancellations_parties on public.booking_cancellations;
 create policy booking_cancellations_parties on public.booking_cancellations
   for select to authenticated using (exists (
     select 1 from public.bookings b where b.id = booking_id
       and (app_private.member_can(b.host_house_id, 'bookings')
            or app_private.member_can(b.vendor_house_id, 'bookings'))));
+drop policy if exists booking_cancellations_finance on public.booking_cancellations;
 create policy booking_cancellations_finance on public.booking_cancellations
   for select to authenticated using (app_private.staff_grant_for('finance') is not null);
 
-create function public.cancel_booking(p_booking uuid, p_reason text)
+create or replace function public.cancel_booking(p_booking uuid, p_reason text)
 returns public.booking_cancellations
 language plpgsql volatile security definer set search_path = '' as $$
 declare
@@ -109,7 +114,7 @@ end $$;
 revoke all on function public.cancel_booking(uuid, text) from public, anon;
 grant execute on function public.cancel_booking(uuid, text) to authenticated;
 
-create function public.approve_cancellation_refund(p_cancellation uuid)
+create or replace function public.approve_cancellation_refund(p_cancellation uuid)
 returns text language plpgsql volatile security definer set search_path = '' as $$
 declare
   v_actor uuid := app_private.current_user_id();
@@ -138,7 +143,7 @@ revoke all on function public.approve_cancellation_refund(uuid) from public, ano
 grant execute on function public.approve_cancellation_refund(uuid) to authenticated;
 
 -- F-60: Paystack reusable authorisation reference. Never a card number.
-create table public.payment_authorizations (
+create table if not exists public.payment_authorizations (
   id                 uuid primary key default gen_random_uuid(),
   user_id            uuid not null,
   authorization_code text not null unique check (authorization_code ~ '^AUTH_[A-Za-z0-9]+$'),
@@ -154,11 +159,12 @@ grant select (id, user_id, card_brand, last4, exp_month, exp_year, reusable, rev
   on public.payment_authorizations to authenticated;
 grant all on public.payment_authorizations to service_role;
 alter table public.payment_authorizations enable row level security;
+drop policy if exists payment_authorizations_own on public.payment_authorizations;
 create policy payment_authorizations_own on public.payment_authorizations
   for select to authenticated using (user_id = app_private.current_user_id());
 
 -- F-48: one Paystack Dedicated Virtual Account per user, created on first checkout.
-create table public.dedicated_accounts (
+create table if not exists public.dedicated_accounts (
   user_id                uuid primary key,
   paystack_customer_code text not null,
   account_number         text not null check (account_number ~ '^[0-9]{10}$'),
@@ -170,6 +176,7 @@ create table public.dedicated_accounts (
 grant select on public.dedicated_accounts to authenticated;
 grant all on public.dedicated_accounts to service_role;
 alter table public.dedicated_accounts enable row level security;
+drop policy if exists dedicated_accounts_own on public.dedicated_accounts;
 create policy dedicated_accounts_own on public.dedicated_accounts
   for select to authenticated using (user_id = app_private.current_user_id());
 
@@ -177,7 +184,7 @@ create policy dedicated_accounts_own on public.dedicated_accounts
 -- F-60: the webhook saves a Paystack reusable authorisation reference. Service role only.
 -- The card owner is the host house owner of the booking the charge belongs to.
 -- ---------------------------------------------------------------------------
-create function public.save_payment_authorization(
+create or replace function public.save_payment_authorization(
   p_booking uuid, p_code text, p_brand text, p_last4 text,
   p_exp_month text, p_exp_year text, p_reusable boolean)
 returns text language plpgsql volatile security definer set search_path = '' as $$
@@ -201,7 +208,7 @@ grant execute on function public.save_payment_authorization(uuid, text, text, te
 -- ---------------------------------------------------------------------------
 -- F-48: who is checking out, and their Dedicated Virtual Account if one exists.
 -- ---------------------------------------------------------------------------
-create function public.my_checkout_identity()
+create or replace function public.my_checkout_identity()
 returns table (user_id uuid, email text, display_name text, has_account boolean,
                account_number text, account_name text, bank_name text)
 language plpgsql stable security definer set search_path = '' as $$
@@ -217,7 +224,7 @@ end $$;
 revoke all on function public.my_checkout_identity() from public, anon;
 grant execute on function public.my_checkout_identity() to authenticated;
 
-create function public.store_dedicated_account(
+create or replace function public.store_dedicated_account(
   p_user uuid, p_customer text, p_number text, p_name text, p_bank text)
 returns text language plpgsql volatile security definer set search_path = '' as $$
 begin
@@ -235,7 +242,7 @@ grant execute on function public.store_dedicated_account(uuid, text, text, text,
 -- F-13: a host asks a vendor for a quote from the vendor's public page.
 -- Only vendors author quotes; a request only carries the host's date, size, budget and notes.
 -- ---------------------------------------------------------------------------
-create table public.quote_requests (
+create table if not exists public.quote_requests (
   id              uuid primary key default gen_random_uuid(),
   host_house_id   uuid not null references public.houses (id),
   vendor_house_id uuid not null references public.houses (id),
@@ -250,14 +257,14 @@ create table public.quote_requests (
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now()
 );
-create index quote_requests_vendor on public.quote_requests (vendor_house_id, status);
-create index quote_requests_host on public.quote_requests (host_house_id, status);
+create index if not exists quote_requests_vendor on public.quote_requests (vendor_house_id, status);
+create index if not exists quote_requests_host on public.quote_requests (host_house_id, status);
 revoke all on public.quote_requests from public, anon, authenticated;
 grant all on public.quote_requests to service_role;
 alter table public.quote_requests enable row level security;
 alter table public.quote_requests force row level security;
 
-create function public.request_quote(
+create or replace function public.request_quote(
   p_vendor_slug text, p_service_date date, p_guest_count integer,
   p_budget_minor bigint, p_notes text)
 returns uuid language plpgsql volatile security definer set search_path = '' as $$
@@ -312,7 +319,7 @@ end $$;
 revoke all on function public.request_quote(text, date, integer, bigint, text) from public, anon;
 grant execute on function public.request_quote(text, date, integer, bigint, text) to authenticated;
 
-create function public.my_quote_requests(p_house uuid)
+create or replace function public.my_quote_requests(p_house uuid)
 returns table (request_id uuid, host_house_id uuid, vendor_house_id uuid, service_date date,
                guest_count integer, budget_minor bigint, currency text, notes text, status text,
                quote_id uuid, is_host_side boolean, counterparty_name text, created_at timestamptz)
@@ -335,7 +342,7 @@ revoke all on function public.my_quote_requests(uuid) from public, anon;
 grant execute on function public.my_quote_requests(uuid) to authenticated;
 
 -- The vendor marks a request quoted (with the quote it sent) or declined; the host withdraws.
-create function public.respond_quote_request(p_request uuid, p_status text, p_quote uuid)
+create or replace function public.respond_quote_request(p_request uuid, p_status text, p_quote uuid)
 returns text language plpgsql volatile security definer set search_path = '' as $$
 declare
   v_actor uuid := app_private.current_user_id();
@@ -370,3 +377,6 @@ begin
 end $$;
 revoke all on function public.respond_quote_request(uuid, text, uuid) from public, anon;
 grant execute on function public.respond_quote_request(uuid, text, uuid) to authenticated;
+
+
+commit;

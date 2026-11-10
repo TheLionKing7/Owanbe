@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Repair duplicate-object SQL errors while preserving records and permissions.
-- [ ] Repair embedded-preview Auth0 navigation and clarify professional planner sign-up.
+- [x] Repair duplicate-object SQL errors while preserving records and permissions; repeated installation verified on disposable Postgres.
+- [x] Repair embedded-preview Auth0 navigation and clarify professional planner sign-up; desktop, phone and blocked-tab recovery verified.
 - [ ] Verify Auth0 preview callback configuration — blocked: requires Auth0 application settings access.
 
 - [x] Payment owner decisions recorded; cancellation rules, Paystack virtual accounts, saved-card references and multi-model AI added.

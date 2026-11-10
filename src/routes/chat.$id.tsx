@@ -14,6 +14,10 @@ export const Route = createFileRoute("/chat/$id")({
       // A conversation is private to two parties: keep it out of search engines.
       { name: "robots", content: "noindex, nofollow" },
       { name: "description", content: "A private conversation on Ówàńbè." },
+      { property: "og:title", content: "Conversation — Ówàńbè" },
+      { property: "og:description", content: "A private conversation on Ówàńbè." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ChatPage,
