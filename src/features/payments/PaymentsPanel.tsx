@@ -8,7 +8,9 @@ import {
   type BookingFund,
   type BookingSummary,
   type FundMovement,
+  type PaymentStart,
 } from "./contracts";
+import { daysUntil, quoteCancellation } from "@/lib/payments/cancellation";
 import { AiInvestigationPanel } from "@/features/ai/AiInvestigationPanel";
 
 interface PaymentsPanelProps {
@@ -69,6 +71,31 @@ export function PaymentsPanel({
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
   const [refundReason, setRefundReason] = useState("");
   const [askingRefund, setAskingRefund] = useState(false);
+  const [transferAccount, setTransferAccount] = useState<PaymentStart["transfer_account"]>(null);
+  const [askingCancel, setAskingCancel] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelNotice, setCancelNotice] = useState<string | null>(null);
+
+  async function cancelBooking(bookingId: string) {
+    setActionError(null);
+    setActionPending(true);
+    try {
+      const result = await client.cancel(bookingId, cancelReason);
+      const row = Array.isArray(result) ? result[0] : result;
+      setAskingCancel(false);
+      setCancelReason("");
+      setCancelNotice(
+        row && row.status === "awaiting_approval"
+          ? "Booking cancelled. The refund is above ₦500,000, so two finance staff must approve it before Paystack sends it."
+          : "Booking cancelled. Any refund due is sent back through Paystack.",
+      );
+      await load();
+    } catch (caught) {
+      setActionError(paymentsErrorMessage(caught));
+    } finally {
+      setActionPending(false);
+    }
+  }
 
   const load = useCallback(async () => {
     setListError(null);
@@ -125,6 +152,10 @@ export function PaymentsPanel({
       setPaymentLink(null);
       setAskingRefund(false);
       setRefundReason("");
+      setAskingCancel(false);
+      setCancelReason("");
+      setCancelNotice(null);
+      setTransferAccount(null);
       await loadMoney(bookingId);
     },
     [loadMoney],
@@ -136,6 +167,7 @@ export function PaymentsPanel({
     try {
       const started = await client.startPayment(bookingId);
       setPaymentLink(started.authorization_url);
+      setTransferAccount(started.transfer_account ?? null);
     } catch (caught) {
       setActionError(paymentsErrorMessage(caught));
     } finally {
@@ -364,6 +396,22 @@ export function PaymentsPanel({
                                 </a>
                               </p>
                             )}
+                            {transferAccount && (
+                              <div
+                                className="mt-3 rounded-2xl bg-muted p-4 text-sm text-ink"
+                                data-testid="transfer-account"
+                              >
+                                <p className="font-semibold">Or pay by bank transfer</p>
+                                <p className="mt-1">
+                                  {transferAccount.bank_name} · {transferAccount.account_number}
+                                  {transferAccount.account_name ? ` · ${transferAccount.account_name}` : ""}
+                                </p>
+                                <p className="mt-1 text-ink-subtle">
+                                  This account is yours and is held by Paystack. Ówàńbè never holds
+                                  your money.
+                                </p>
+                              </div>
+                            )}
                           </div>
                         )}
 
@@ -434,6 +482,81 @@ export function PaymentsPanel({
                               </div>
                             )}
                           </div>
+                        )}
+
+                        {(fund.booking_status === "awaiting_payment" ||
+                          fund.booking_status === "paid") && (
+                          <div data-testid="cancel-section">
+                            {!askingCancel ? (
+                              <button
+                                type="button"
+                                className="btn-outline min-h-[44px] px-5 py-2 text-sm"
+                                onClick={() => setAskingCancel(true)}
+                                data-testid="ask-cancel"
+                              >
+                                Cancel this booking
+                              </button>
+                            ) : (
+                              <div>
+                                {(() => {
+                                  const by = fund.is_host_side ? "host" : "vendor";
+                                  const preview = quoteCancellation(
+                                    by,
+                                    fund.paid_minor,
+                                    daysUntil(booking.service_date),
+                                  );
+                                  return (
+                                    <p className="text-sm text-ink" data-testid="cancel-preview">
+                                      {fund.paid_minor === 0
+                                        ? "Nothing has been paid yet, so no money moves."
+                                        : by === "vendor"
+                                          ? `The host gets everything back: ${formatMoney(preview.refundMinor, fund.currency)}.`
+                                          : `With the event ${daysUntil(booking.service_date)} days away, you get ${preview.percent}% back: ${formatMoney(preview.refundMinor, fund.currency)}.`}
+                                      {preview.needsSecondApproval &&
+                                        " Refunds above ₦500,000 need two finance approvals first."}
+                                    </p>
+                                  );
+                                })()}
+                                <label
+                                  htmlFor="cancel-reason"
+                                  className="mt-3 block text-sm font-semibold text-ink"
+                                >
+                                  Why are you cancelling?
+                                </label>
+                                <input
+                                  id="cancel-reason"
+                                  value={cancelReason}
+                                  onChange={(event) => setCancelReason(event.target.value)}
+                                  className="mt-2 w-full rounded-2xl border border-plum-900/10 bg-white px-3 py-2 text-sm text-ink"
+                                  data-testid="cancel-reason"
+                                />
+                                <div className="mt-3 flex flex-wrap gap-3">
+                                  <button
+                                    type="button"
+                                    className="btn-primary min-h-[44px] px-5 py-2 text-sm"
+                                    disabled={actionPending || cancelReason.trim().length < 3}
+                                    onClick={() => void cancelBooking(booking.booking_id)}
+                                    data-testid="confirm-cancel"
+                                  >
+                                    {actionPending ? "Cancelling…" : "Yes, cancel the booking"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn-outline min-h-[44px] px-5 py-2 text-sm"
+                                    onClick={() => setAskingCancel(false)}
+                                  >
+                                    Keep the booking
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {cancelNotice && (
+                          <p role="status" className="text-sm font-semibold text-ink" data-testid="cancel-notice">
+                            {cancelNotice}
+                          </p>
                         )}
 
                         {actionError && (
