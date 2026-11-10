@@ -52,7 +52,7 @@ export function QuoteRequestsList({ houseId, side, api = quoteRequestApi, onWrit
 
   if (error) {
     return (
-      <section role="alert" className="surface p-5 text-sm text-ink">
+      <section role="status" className="surface p-5 text-sm text-ink">
         {error}{" "}
         <button type="button" className="font-semibold text-plum-800 underline" onClick={() => void load()}>
           Try again
