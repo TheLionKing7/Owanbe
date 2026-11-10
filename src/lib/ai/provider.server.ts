@@ -16,11 +16,21 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { APICallError, NoObjectGeneratedError, Output, streamText } from "ai";
 import { z } from "zod";
 
-/** The models the platform runs on. One place, so a change is one line. */
+/**
+ * The models the platform runs on, in the order they are tried. If the first is busy or down
+ * (rate limit, server error, model unavailable) the next one answers. All are zero-retention.
+ */
+export const AI_MODEL_CHAINS = {
+  planner: ["openai/gpt-6-astra", "openai/gpt-6-luna", "openai/gpt-6-sol"],
+  vendorCopy: ["openai/gpt-6-luna", "openai/gpt-6-astra", "openai/gpt-5.5"],
+  investigation: ["openai/gpt-6-astra", "openai/gpt-6.1-sol", "openai/gpt-6-luna"],
+} as const;
+
+/** The first choice per surface; kept for callers that only need one name. */
 export const AI_MODELS = {
-  planner: "openai/gpt-6-astra",
-  vendorCopy: "openai/gpt-6-astra",
-  investigation: "openai/gpt-6-astra",
+  planner: AI_MODEL_CHAINS.planner[0],
+  vendorCopy: AI_MODEL_CHAINS.vendorCopy[0],
+  investigation: AI_MODEL_CHAINS.investigation[0],
 } as const;
 
 export type AiModelName = keyof typeof AI_MODELS;
@@ -79,9 +89,29 @@ export async function generateStructured<S extends z.ZodTypeAny>(
     return { ok: false, failure: { code: "zdr_required", retryable: false } };
   }
 
+  let last: AiFailure = { code: "unknown", retryable: true };
+  for (const model of AI_MODEL_CHAINS[request.model]) {
+    const outcome = await tryModel(apiKey, model, request);
+    if (outcome.ok) return outcome;
+    last = outcome.failure;
+    // Only a busy or broken model is worth handing to the next one. Credits and bad requests end here.
+    if (!shouldFallBack(last.code)) return outcome;
+  }
+  return { ok: false, failure: last };
+}
+
+export function shouldFallBack(code: AiFailureCode): boolean {
+  return code === "rate_limited" || code === "unavailable" || code === "unknown";
+}
+
+async function tryModel<S extends z.ZodTypeAny>(
+  apiKey: string,
+  model: string,
+  request: AiRequest<S>,
+): Promise<AiOutcome<z.infer<S>>> {
   try {
     const result = streamText({
-      model: gateway(apiKey).responses(AI_MODELS[request.model]),
+      model: gateway(apiKey).responses(model),
       system: request.system,
       prompt: request.prompt,
       output: Output.object({ schema: request.schema }),
@@ -97,10 +127,11 @@ export async function generateStructured<S extends z.ZodTypeAny>(
       return { ok: false, failure: { code: "incomplete", retryable: true } };
     }
     const status = APICallError.isInstance(error) ? error.statusCode : undefined;
-    console.error("[ai] gateway error", status);
+    console.error("[ai] gateway error", model, status);
     if (status === 429) return { ok: false, failure: { code: "rate_limited", retryable: true } };
     if (status === 402) return { ok: false, failure: { code: "credits", retryable: false } };
-    if (status === 403) return { ok: false, failure: { code: "unavailable", retryable: false } };
+    if (status === 403 || status === 404) return { ok: false, failure: { code: "unavailable", retryable: false } };
+    if (status === 400) return { ok: false, failure: { code: "incomplete", retryable: false } };
     return { ok: false, failure: { code: "unknown", retryable: true } };
   }
 }
