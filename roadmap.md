@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Repair duplicate-object SQL errors while preserving records and permissions.
+- [ ] Repair embedded-preview Auth0 navigation and clarify professional planner sign-up.
+- [ ] Verify Auth0 preview callback configuration — blocked: requires Auth0 application settings access.
+
 - [x] Payment owner decisions recorded; cancellation rules, Paystack virtual accounts, saved-card references and multi-model AI added.
 - [ ] Run docs/sql/2026-11-10-f13-booking-completion.sql in the database — blocked: owner runs SQL on their own database.
 - [x] Cancel buttons on booking screens, webhook saving card references, DVA on checkout.
