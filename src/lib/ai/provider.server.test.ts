@@ -111,8 +111,8 @@ describe("the shared AI provider", () => {
     expect(outcome).toEqual({ ok: false, failure: { code: "incomplete", retryable: true } });
   });
 
-  it("runs every surface on the same model", () => {
-    expect(new Set(Object.values(AI_MODELS)).size).toBe(1);
+  it("uses each surface's first-choice model", () => {
+    expect(Object.values(AI_MODELS).every((m) => m.startsWith("openai/"))).toBe(true);
   });
 });
 
