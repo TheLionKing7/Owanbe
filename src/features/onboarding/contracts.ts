@@ -28,11 +28,11 @@ export type OnboardingStep = "role" | "about" | "plans" | "business" | "done";
 export const ROLE_COPY: Record<OnboardingRole, { title: string; body: string }> = {
   host: {
     title: "I'm planning a celebration",
-    body: "For your own event or a client's celebration: plan, find vendors and request quotes.",
+    body: "For your own celebration, or as a professional planner for a client: plan, find vendors and request quotes.",
   },
   vendor: {
     title: "I run an events business",
-    body: "Event planners & managers, event centers, caterers, MCs, decorators and photographers: get found and take bookings.",
+    body: "Event centers, caterers, MCs, decorators and photographers: get found and take bookings.",
   },
 };
 
@@ -153,7 +153,7 @@ export function plannerPrompt(
   s: Pick<OnboardingState, "host_intent" | "event_type" | "event_date" | "city">,
 ): string {
   const what = s.event_type ? s.event_type.toLowerCase() : "celebration";
-  const who = s.host_intent === "arranging" ? `a ${what} I'm arranging for someone` : `my ${what}`;
+  const who = s.host_intent === "arranging" ? `a ${what} I'm arranging for a client` : `my ${what}`;
   const when = s.event_date
     ? ` on ${new Date(`${s.event_date}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`
     : "";
