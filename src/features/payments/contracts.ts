@@ -71,6 +71,8 @@ export interface PaymentStart {
   authorization_url: string;
   amount_minor: number;
   currency: string;
+  /** F-48: the host's Paystack transfer account, when Paystack created one. */
+  transfer_account?: { account_number: string; account_name: string; bank_name: string } | null;
 }
 
 /** The pool's status, in the words a host reads. */
