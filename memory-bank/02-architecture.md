@@ -20,6 +20,7 @@
 `drizzle/` (a 2-line schema stub plus an empty migration journal) and the `drizzle-orm` / `drizzle-kit` / `postgres` devDependencies are Lovable template leftovers. The authoritative schema is `supabase/migrations/` + `supabase/pending/`.
 
 ## Request / runtime flow
+- Embedded sign-in uses `src/lib/auth/preview-navigation.ts` to open the same-origin sign-up/sign-in page outside the iframe before initializing a PKCE transaction. Tokens remain in memory; no token or transaction is copied between contexts. Standalone callback allowlisting remains required in Auth0 (unverified).
 ```
 Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
    │ __root.tsx effect → initializeMonitoring()   (Sentry inits only if the server fn returns a DSN)

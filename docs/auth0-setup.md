@@ -56,5 +56,18 @@ For Lovable hosting, save `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_AUDIENCE`, `
 After saving settings and updating the code, publish the app to apply the change to the live site. Auth0's allowed origins and callback URLs must include the published origin and `/auth/callback` respectively. Missing settings fail closed; temporary loading failures can be retried.
 
 ## Checks
+
+### This project's preview allowlist
+In the existing Auth0 SPA application's Settings, retain the production entries and add these exact values:
+
+- **Allowed Callback URLs:** `https://id-preview--abc42661-c8be-4f74-a11c-497338954064.lovable.app/auth/callback`
+- **Allowed Logout URLs:** `https://id-preview--abc42661-c8be-4f74-a11c-497338954064.lovable.app/`
+- **Allowed Web Origins:** `https://id-preview--abc42661-c8be-4f74-a11c-497338954064.lovable.app`
+- Keep the published callback `https://owanbe-vendors.lovable.app/auth/callback` and published origin `https://owanbe-vendors.lovable.app`.
+
+Use exact entries, not `https://*.lovable.app`: a wildcard would trust unrelated apps. The preview opens the same app outside its iframe before starting Auth0, keeping the PKCE transaction and callback in one browsing context. If the browser blocks opening a tab, the sign-in/sign-up page offers an explicit new-tab link. This does not transfer a signed-in session into the editor iframe; continue in the standalone tab.
+
+Auth0 settings have not been changed by these source edits. If Auth0 returns to the published sign-in page instead of Universal Login, verify the callback allowlist and Application Login URI in Auth0 first.
+
 - `npm test`: UI session gate (signed out, signed in, suspended, callback, error/retry, fail-closed).
 - `bash supabase/tests/run-local.sh`: database tests against a throwaway Postgres 16. They cover issuer, audience, expiry and subject checks, the one-user-per-subject mapping, suspended accounts, row-level security, no direct writes, and failing closed when unconfigured.
