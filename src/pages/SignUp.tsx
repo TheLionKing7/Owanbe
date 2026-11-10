@@ -20,11 +20,13 @@ export default function SignUp() {
   const [params] = useSearchParams();
   const requested = params.get("next");
   const chosenRole = requested?.startsWith("/welcome?role=vendor") ? "vendor" : "host";
-  const standalonePath = standaloneAuthPath({ signup: true, returnTo: requested ?? `/welcome?role=${chosenRole}` });
+  const standalonePath = standaloneAuthPath({ signup: true, returnTo: lastRole ? `/welcome?role=${lastRole}` : requested ?? `/welcome?role=${chosenRole}` });
   const [busy, setBusy] = useState<OnboardingRole | null>(null);
+  const [lastRole, setLastRole] = useState<OnboardingRole | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function choose(role: OnboardingRole) {
+    setLastRole(role);
     const returnTo = `/welcome?role=${role}`;
     if (status === "signedIn") {
       navigate(returnTo);
