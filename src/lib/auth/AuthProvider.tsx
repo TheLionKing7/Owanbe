@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { readAuthEnv, type AuthEnv } from "@/config/env";
 import { getPublicClientConfig } from "./config.functions";
+import { openStandaloneAuth } from "./preview-navigation";
 import { AccountBlockedError, type AppUser, type AuthClient, type AuthStatus, type HouseSummary, type LoginOptions } from "./types";
 
 export type AuthClientLoader = (env: AuthEnv) => Promise<AuthClient>;
@@ -124,6 +125,7 @@ export function AuthProvider({ children, loader = defaultLoader, env, configLoad
       houses,
       blockedReason,
       async login(options) {
+        if (openStandaloneAuth(options)) return;
         const client = await getClient();
         await client.login(options);
       },

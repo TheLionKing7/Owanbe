@@ -4,6 +4,9 @@ import { Link, useNavigate } from "@/lib/router";
 import { Logo } from "@/components/site/Logo";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLE_COPY, type OnboardingRole } from "@/features/onboarding/contracts";
+import { Button } from "@/components/ui/button";
+import { useSearchParams } from "@/lib/router";
+import { standaloneAuthPath } from "@/lib/auth/preview-navigation";
 
 const ICONS = { host: CalendarHeart, vendor: Store } as const;
 
@@ -14,6 +17,10 @@ const ICONS = { host: CalendarHeart, vendor: Store } as const;
 export default function SignUp() {
   const { status, login } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const requested = params.get("next");
+  const chosenRole = requested?.startsWith("/welcome?role=vendor") ? "vendor" : "host";
+  const standalonePath = standaloneAuthPath({ signup: true, returnTo: requested ?? `/welcome?role=${chosenRole}` });
   const [busy, setBusy] = useState<OnboardingRole | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,6 +34,7 @@ export default function SignUp() {
     setError(null);
     try {
       await login({ returnTo, signup: true });
+      setBusy(null);
     } catch {
       setError("We couldn't open sign-up. Check your connection and try again.");
       setBusy(null);
@@ -43,7 +51,7 @@ export default function SignUp() {
         Create your account
       </h1>
       <p className="mt-2 text-center text-ink-muted">
-        Tell us how you'll use Ówàńbè. You can open the other house later.
+        Choose your first house. Professional planners can also open the other house later.
       </p>
 
       {status === "unconfigured" ? (
@@ -59,13 +67,14 @@ export default function SignUp() {
           {(Object.keys(ROLE_COPY) as OnboardingRole[]).map((role) => {
             const Icon = ICONS[role];
             return (
-              <button
+              <Button
+                variant="outline"
                 key={role}
                 type="button"
                 onClick={() => void choose(role)}
                 disabled={busy !== null || status === "loading"}
                 data-testid={`signup-${role}`}
-                className="flex min-h-[44px] flex-col items-start rounded-3xl border border-plum-900/10 bg-white p-6 text-left shadow-card transition hover:border-plum-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plum-500 disabled:opacity-60"
+                className="h-auto min-h-[44px] whitespace-normal flex-col items-start rounded-3xl border-plum-900/10 bg-background p-6 text-left shadow-card transition hover:border-plum-500 focus-visible:ring-plum-500"
               >
                 <Icon aria-hidden className="h-8 w-8 text-plum-700" />
                 <span className="mt-4 font-display text-xl font-bold text-plum-950">
@@ -76,7 +85,7 @@ export default function SignUp() {
                   {busy === role && <Loader2 aria-hidden className="h-4 w-4 animate-spin" />}
                   {busy === role ? "Opening sign-up…" : "Continue"}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -86,6 +95,11 @@ export default function SignUp() {
           {error}
         </p>
       )}
+      <p className="mt-4 text-center text-sm text-ink-muted">
+        <a href={standalonePath} target="_blank" rel="noopener noreferrer" className="font-semibold text-plum-800 underline underline-offset-4">
+          Open sign-up in a new tab
+        </a>
+      </p>
       <p className="mt-8 text-sm text-ink-muted">
         Already have an account?{" "}
         <Link
