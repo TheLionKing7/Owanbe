@@ -78,7 +78,44 @@ from (values
   ('function','app_private','staff_grant_for',                       '20261104000000_f78'),
   ('function','app_private','log_sensitive_read',                    '20261104000000_f78'),
   ('function','public',   'support_house_members',                   '20261104000000_f78'),
-  ('function','public',   'authorize_sensitive_read',                '20261104000000_f78')
+  ('function','public',   'authorize_sensitive_read',                '20261104000000_f78'),
+  -- F-7 sign-up onboarding
+  ('table',  'public',    'onboarding_profiles',                     '20261107090000_f7'),
+  ('function','public',   'my_onboarding',                           '20261107090000_f7'),
+  ('function','public',   'save_onboarding',                         '20261107090000_f7'),
+  ('function','public',   'complete_onboarding',                     '20261107090000_f7'),
+  -- F-40 guest list privacy
+  ('table',  'public',    'guest_lists',                             '20261108120000_f40'),
+  ('table',  'public',    'rsvps',                                   '20261108120000_f40'),
+  ('table',  'public',    'guest_list_shares',                       '20261108120000_f40'),
+  ('function','public',   'create_guest_list',                       '20261108120000_f40'),
+  ('function','public',   'add_guest_rsvp',                          '20261108120000_f40'),
+  ('function','public',   'set_guest_list_visibility',               '20261108120000_f40'),
+  ('function','public',   'share_guest_list',                        '20261108120000_f40'),
+  ('function','public',   'revoke_guest_list_share',                 '20261108120000_f40'),
+  ('function','public',   'my_guest_lists',                          '20261108120000_f40'),
+  ('function','public',   'guest_list_rsvps',                        '20261108120000_f40'),
+  ('function','public',   'guest_list_recipients',                   '20261108120000_f40'),
+  ('function','public',   'shared_with_me',                          '20261108120000_f40'),
+  ('function','public',   'shared_guest_list',                       '20261108120000_f40'),
+  ('function','public',   'public_guest_list',                       '20261108120000_f40')
+  -- F-102 fund pool, the double-entry ledger and the money functions
+  ,('table',  'public',    'bookings',                                '20261109140000_f102')
+  ,('table',  'public',    'fund_pool',                               '20261109140000_f102')
+  ,('table',  'public',    'wallet_ledger',                           '20261109140000_f102')
+  ,('table',  'public',    'ledger_accounts',                         '20261109140000_f102')
+  ,('table',  'public',    'journal_entries',                         '20261109140000_f102')
+  ,('table',  'public',    'postings',                                '20261109140000_f102')
+  ,('table',  'public',    'payment_events',                          '20261109140000_f102')
+  ,('function','public',   'allocate_split_payment',                  '20261109140000_f102')
+  ,('function','public',   'record_payment_event',                    '20261109140000_f102')
+  ,('function','public',   'complete_booking',                        '20261109140000_f102')
+  ,('function','public',   'request_fund_refund',                     '20261109140000_f102')
+  ,('function','public',   'freeze_fund_pool',                        '20261109140000_f102')
+  ,('function','public',   'release_due_fund_tranches',               '20261109140000_f102')
+  ,('function','public',   'booking_fund',                            '20261109140000_f102')
+  ,('function','public',   'booking_movements',                       '20261109140000_f102')
+  ,('function','public',   'my_bookings',                             '20261109140000_f102')
 ) as w(kind, schema, name, migration)
 order by w.migration, w.kind, w.name;
 

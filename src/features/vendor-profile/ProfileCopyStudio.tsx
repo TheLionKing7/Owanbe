@@ -9,8 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { draftProfileCopy } from "./copy.functions";
-import { profileBriefSchema, type ProfileCopy } from "./contracts";
+import { profileBriefSchema, profileCopyText, type ProfileCopy } from "./contracts";
 import { findCategory, TONES, VENDOR_CATEGORIES, type Tone } from "./presets";
+import { AiLabel, AiReportControl } from "@/features/ai/AiDisclosure";
+import { AI_DISCLOSURE } from "@/features/ai/contracts";
+import { aiErrorMessage, createAiReportApi } from "@/features/ai/api";
 
 export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?: string; houseId?: string | undefined }) {
   const { getAccessToken, rpc, selectOne } = useAuth();
@@ -34,6 +37,11 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<{ message: string; retryable: boolean } | null>(null);
   const [copy, setCopy] = useState<ProfileCopy | null>(null);
+  /** True when the draft on screen came from the assistant rather than from the vendor. */
+  const [copyIsAi, setCopyIsAi] = useState(false);
+  /** The logged interaction, when the draft could be recorded. A draft without one cannot be reported. */
+  const [aiInteractionId, setAiInteractionId] = useState<string | null>(null);
+  const reportApi = useMemo(() => createAiReportApi(getAccessToken), [getAccessToken]);
 
   useEffect(() => {
     if (!houseId) return;
@@ -55,6 +63,8 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
           if (b.tone && TONES.some((t) => t.value === b.tone)) setTone(b.tone as Tone);
           if (row.headline || row.about) {
             setCopy({ headline: row.headline, tagline: row.tagline, about: row.about, services: row.services ?? [], highlights: row.highlights ?? [] });
+            setCopyIsAi(false);
+            setAiInteractionId(null);
           }
           setSaved({ slug: row.slug, published: row.published, updatedAt: row.updated_at });
         }
@@ -112,6 +122,8 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
 
   function startBlank() {
     setCopy({ headline: "", tagline: "", about: "", services: offerings.map((o) => ({ name: o, description: "" })), highlights: [] });
+    setCopyIsAi(false);
+    setAiInteractionId(null);
   }
 
   const preset = useMemo(() => findCategory(category), [category]);
@@ -158,8 +170,11 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
         return;
       }
       const result = await draftProfileCopy({ data: parsed.data, headers: { authorization: `Bearer ${token}` } });
-      if (result.ok) setCopy(result.copy);
-      else setFailure({ message: result.error, retryable: result.retryable });
+      if (result.ok) {
+        setCopy(result.copy);
+        setCopyIsAi(true);
+        setAiInteractionId(result.interaction_id);
+      } else setFailure({ message: result.error, retryable: result.retryable });
     } catch {
       setFailure({ message: "We couldn't reach the writing assistant. Check your connection and try again.", retryable: true });
     } finally {
@@ -168,7 +183,7 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
   }
 
   function asText(c: ProfileCopy) {
-    return [c.headline, c.tagline, "", c.about, "", "Services", ...c.services.map((s) => `• ${s.name}: ${s.description}`), "", "Why hosts choose us", ...c.highlights.map((h) => `• ${h}`)].join("\n");
+    return profileCopyText(c);
   }
 
   async function copyAll() {
@@ -363,7 +378,7 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
       <section aria-live="polite" aria-busy={busy} className="rounded-2xl bg-card p-6 shadow-card">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-display text-2xl font-bold text-plum-950">Your profile draft</h2>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-ink-muted">AI-written · review before use</span>
+          {copyIsAi && <AiLabel label={AI_DISCLOSURE.vendorCopy} testId="profile-copy-disclosure" />}
         </div>
 
         {failure && (
@@ -445,6 +460,17 @@ export function ProfileCopyStudio({ defaultName = "", houseId }: { defaultName?:
               <Button type="button" variant="outline" onClick={() => void copyAll()}><Copy className="h-4 w-4" /> Copy all</Button>
               <Button type="button" variant="outline" disabled={busy} onClick={() => void generate()}><RefreshCw className="h-4 w-4" /> Rewrite</Button>
             </div>
+            {copyIsAi && aiInteractionId && (
+              <div className="mt-3">
+                <AiReportControl
+                  interactionId={aiInteractionId}
+                  onReport={(interactionId, category, note) => reportApi.report(interactionId, category, note)}
+                  errorMessage={aiErrorMessage}
+                  testIdPrefix="profile-copy"
+                  openLabel="Report this draft"
+                />
+              </div>
+            )}
             {houseId && (
               <div className="space-y-3 border-t border-border pt-4">
                 {saveError && <p role="alert" className="text-sm text-destructive">{saveError}</p>}

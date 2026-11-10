@@ -5,6 +5,11 @@ import { QuotesPanel } from "@/features/quotes/QuotesPanel";
 import { VendorCalendarPanel } from "@/features/holds/VendorCalendarPanel";
 import { HouseAlerts } from "@/features/holds/HouseAlerts";
 import { ProfileCopyStudio } from "@/features/vendor-profile/ProfileCopyStudio";
+import { GuestListPanel } from "@/features/guest-lists/GuestListPanel";
+import { ChatPanel } from "@/features/chat/ChatPanel";
+import { PlannerPanel } from "@/features/planner/PlannerPanel";
+import { PaymentsPanel } from "@/features/payments/PaymentsPanel";
+import { WelcomePlanCard } from "@/features/onboarding/WelcomePlanCard";
 import NotFound from "./NotFound";
 
 export default function HousePage({ houseId }: { houseId: HouseId }) {
@@ -12,7 +17,7 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
   const { section } = useParams();
   const [params] = useSearchParams();
   const { pathname } = useLocation();
-  const { houses } = useAuth();
+  const { houses, getAccessToken } = useAuth();
   const item = findNavItem(house, section);
   if (!item) return <NotFound />;
 
@@ -33,6 +38,7 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
           Planning: <strong className="text-plum-800">{query}</strong>
         </p>
       )}
+      {houseId === "host" && item.slug === "" && <WelcomePlanCard />}
       {item.slug === "quotes" && myHouse && (
         <div className="mt-8 space-y-6">
           <HouseAlerts house={myHouse} />
@@ -58,14 +64,47 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
       )}
       {item.slug === "profile" && houseId === "vendor" && (
         <div className="mt-8">
-          <ProfileCopyStudio defaultName={myHouse?.display_name ?? ""} houseId={myHouse?.house_id} />
+          <ProfileCopyStudio
+            defaultName={myHouse?.display_name ?? ""}
+            houseId={myHouse?.house_id}
+          />
         </div>
       )}
-      {item.slug !== "quotes" && item.slug !== "calendar" && item.slug !== "profile" && (
-        <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
-          This workspace is scaffolded; its tools arrive with later features.
-        </p>
+      {item.slug === "guests" && houseId === "host" && myHouse && (
+        <div className="mt-8">
+          <GuestListPanel house={myHouse} getAccessToken={getAccessToken} />
+        </div>
       )}
+      {item.slug === "plan" && houseId === "host" && (
+        <div className="mt-8">
+          <PlannerPanel getAccessToken={getAccessToken} initialBrief={query ?? undefined} />
+        </div>
+      )}
+      {item.slug === "enquiries" && myHouse && (
+        <div className="mt-8">
+          <ChatPanel house={myHouse} getAccessToken={getAccessToken} />
+        </div>
+      )}
+      {item.slug === "payments" && houseId === "host" && myHouse && (
+        <div className="mt-8">
+          <PaymentsPanel
+            house={myHouse}
+            getAccessToken={getAccessToken}
+            returnedReference={params.get("reference") ?? undefined}
+          />
+        </div>
+      )}
+      {item.slug !== "quotes" &&
+        item.slug !== "calendar" &&
+        item.slug !== "profile" &&
+        item.slug !== "guests" &&
+        item.slug !== "enquiries" &&
+        item.slug !== "plan" &&
+        item.slug !== "payments" && (
+          <p className="mt-8 text-sm text-ink-subtle" data-path={pathname}>
+            This workspace is scaffolded; its tools arrive with later features.
+          </p>
+        )}
     </section>
   );
 }

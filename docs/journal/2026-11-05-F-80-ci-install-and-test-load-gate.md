@@ -80,7 +80,7 @@ The probe file was deleted after the run; it is not in the commit.
 | `npx eslint scripts/check-test-files-load.mjs`, `npx prettier --check` on the changed files | **pass** — the new script was reformatted to the declared config; eslint and prettier run at all only because the owner's install brought them |
 | `npm run build` | **pass** — vite + nitro `.output` built |
 | `npm ci` | **NOT RUN.** The registry is unreachable from this machine through the TLS-intercepting proxy and certificate verification was not disabled. `test:load`, `tsc` and `build` all ran against the tree the owner installed *from this lockfile*, so the package set is proven; a from-scratch `npm ci` is not |
-| GitHub Actions | **not run** — account is behind a billing lock, so the workflow change is unverified until it executes |
+| GitHub Actions | **dispatched 2026-11-06, and the jobs never started** — see "First real CI attempt" below. Still no verified run |
 | `bash supabase/tests/run-local.sh` | **NOT RUN** — still no `initdb`/`psql` here. The F-14 / F-38 / F-60 SQL suites remain unexecuted everywhere |
 
 ## Found while measuring, deliberately not changed
@@ -95,3 +95,38 @@ The probe file was deleted after the run; it is not in the commit.
   CI.
 - `.prettierignore` does not list Markdown, so `prettier --check .` also flags documentation files
   (`src/routes/README.md` among them). Same follow-up.
+
+## First real CI attempt (2026-11-06)
+
+Answering the owner's question "is the CI not a github action which is blocked through billing issue?"
+with measurement rather than the old note.
+
+- `gh api repos/TheLionKing7/Owanbe/actions/permissions` → `{"enabled":true,"allowed_actions":"all",
+  "sha_pinning_required":false}`. The repository has Actions switched on.
+- `gh workflow run "Verify application and database rules" --ref develop` → run
+  [42299060308](https://github.com/TheLionKing7/Owanbe/actions/runs/42299060308) (run_number 46,
+  event `workflow_dispatch`, head branch `develop`). The workflow file parsed and both jobs were
+  created, so the YAML — including the new `npm ci` + `npm run test:load` steps — is accepted.
+- Both jobs ended `failure` after **2 seconds** with zero steps and no retrievable log
+  (`gh run view --log-failed` → `log not found: 128171784442`). The check-run annotation says why:
+  **"The job was not started because your account is locked due to a billing issue."** — on
+  `application` and on `database`.
+
+So the billing lock is real and is the only thing standing between this branch and a verified run.
+Enabled-at-the-repo-level and allowed-to-run-at-the-account-level are different switches. **Nothing in
+`.github/workflows/verify.yml` has executed yet**: `npm ci`, the test-load gate, `npm run build` and
+`bash supabase/tests/run-local.sh` remain unproven in CI, and none of them may be described as green.
+
+Secondary finding, for the same decision: the workflow triggers are `push`/`pull_request` on `main`
+only, while work now lands on `develop` (owner decision `d843e3d7`). Once billing is settled, a commit
+to `develop` still would not run it, and `main` currently carries the pre-F-80 **bun** variant of
+`verify.yml` (`oven-sh/setup-bun@v2`, `bun install --frozen-lockfile`), which is the version known to
+fail on the unpinned AI SDK ranges. Adding `develop` to the triggers is an owner call, not assumed here.
+
+**Answered 2026-11-06T23:14:17Z (`40cf8a8e`): "We should stop the CI, since its not working, there is no
+need to be triggering it."** So the triggers are not widened. The first disable attempt was blocked by
+the host permission classifier as a CI bypass and did not execute; no workaround was attempted. The
+owner then authorised it in chat on 2026-11-07, and `verify.yml` is now `disabled_manually` in both
+repositories (`TheLionKing7/Owanbe` id `406422326`, `TheLionKing7/owanbe-project-studio` id `406392296`).
+The audit mirror is left active and the workflow file is kept intact. Details in
+`docs/decisions/f80-stop-ci-triggering.md`.

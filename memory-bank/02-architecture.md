@@ -39,12 +39,26 @@ Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
 | File | URL | Guard |
 |---|---|---|
 | `src/routes/_public/index.tsx` | `/` | public; SSR on; preloads `/images/hero.webp` |
-| `src/routes/_public/sign-in.tsx` · `sign-up.tsx` | `/sign-in` · `/sign-up` | signed-in users are redirected to `?next=` (default `/host`); `safeReturnTo` rejects `//host` style values |
+| `src/routes/_public/sign-in.tsx` | `/sign-in` | signed-in users are redirected to `?next=` (default `/host`); `safeReturnTo` rejects `//host` style values |
+| `src/routes/_public/sign-up.tsx` | `/sign-up` | public role picker (`src/pages/SignUp.tsx`, F-7): Host or Vendor, then Auth0 sign-up with `returnTo=/welcome?role=…`; a signed-in visitor goes straight to `/welcome` |
+| `src/routes/welcome.tsx` | `/welcome?role=&next=` | `RequireAuth`; F-7 onboarding wizard (`src/pages/Welcome.tsx`): about you (name, phone, city) → host intent or vendor business → the house (`/host?welcome=1` or `/vendor/profile?welcome=1`, or a safe in-app `next`) |
 | `src/routes/_public/auth.callback.tsx` | `/auth/callback` | public — must be in Auth0's Allowed Callback URLs for every origin |
 | `src/routes/_public/$.tsx` | `/*` | splat: `discover, vendors, culture, about, help, get-started` → `PlaceholderPage`, anything else → `NotFound` |
-| `src/routes/host.tsx` + `host/index.tsx` + `host/$section.tsx` | `/host`, `/host/:section` | `RequireAuth` inside `HouseLayout houseId="host"` |
+| `src/routes/host.tsx` + `host/index.tsx` + `host/$section.tsx` | `/host`, `/host/:section` | `RequireAuth` → `OnboardingGate` (F-7: unfinished onboarding redirects to `/welcome?role=host&next=…`; staff of another house and a missing migration pass through) inside `HouseLayout houseId="host"` |
 | `src/routes/vendor.tsx` + `vendor/*` | `/vendor`, `/vendor/:section` | same for the Vendor house |
-| `src/routes/api/public/paystack/webhook.ts` | `/api/public/paystack/webhook` | POST only; rejects a bad signature with 401 |
+| `src/routes/api/public/paystack/webhook.ts` | `/api/public/paystack/webhook` | POST only; rejects a bad signature with 401; then records the event and allocates once |
+| `src/routes/api/bookings/$id/payments.ts` | `/api/bookings/:id/payments` | GET the caller's fund and movements; POST starts the Paystack charge |
+| `src/routes/api/bookings/$id/complete.ts` | `/api/bookings/:id/complete` | POST the host's completion; releases the final tranche |
+| `src/routes/api/bookings/$id/refund.ts` | `/api/bookings/:id/refund` | POST the host's refund ask for the money still held |
+| `src/routes/api/bookings/$id/freeze.ts` | `/api/bookings/:id/freeze` | POST the staff freeze or unfreeze (arbitrator grant) |
+| `src/routes/api/payments/verify.ts` | `/api/payments/verify` | POST the browser check of a Paystack reference |
+| `src/routes/planner.tsx` | `/planner` | `RequireAuth`; the F-101 planner page (the database decides whether the caller is in a Host house) |
+| `src/routes/api/planner/generate.ts` | `/api/planner/generate` | POST the planner's grounded answer; the caller's token is forwarded to the database |
+| `src/routes/api/planner/report.ts` | `/api/planner/report` | POST one report on the caller's own answer |
+| `src/routes/api/benchmarks.ts` | `/api/benchmarks` | POST the market range for the categories a host is comparing; the caller's token is forwarded to the database |
+| `src/routes/api/ai/status.ts` | `/api/ai/status` | GET whether this caller may use OwanbeAI (the grant **and** the zero-retention contract); the caller's token is forwarded to the database |
+| `src/routes/api/ai/investigate.ts` | `/api/ai/investigate` | POST OwanbeAI's reading of one booking's payment trail; the trail is read from the database first, and the model is called only after the read succeeded |
+| `src/routes/api/ai/report.ts` | `/api/ai/report` | POST one report on the caller's own answer; the shared route for every AI surface (planner, vendor copy, OwanbeAI) |
 
 Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, `PlaceholderPage`, `NotFound`) even though `src/routes/README.md` says not to create that folder. House sections come from `src/lib/houses.ts`.
 
@@ -53,6 +67,8 @@ Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, 
 - Server-only, listed in `src/config/server-env.ts` `REQUIRED_SERVER_ENV`: `APP_ENV`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `EXTERNAL_SUPABASE_SERVICE_ROLE_KEY` (Lovable reserves the `SUPABASE_` prefix; `src/lib/supabase-admin-env.server.ts` falls back to `SUPABASE_SERVICE_ROLE_KEY`), `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `SENTRY_DSN`, `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`.
 - `checkEnvIsolation()` requires `sk_live_`/`pk_live_` in production and rejects them in every other environment — but nothing calls it yet.
 - Also read ad hoc: `LOVABLE_CRON_SECRET`, `LOVABLE_CRON_SECRET_PREVIOUS`, `INITIAL_JS_BUDGET_KB`, and `AUTH0_TENANT` / `AUTH0_TENANT_REGION` in `supabase/config.toml`.
+- F-107 added **`LOVABLE_API_KEY`** as the one key for every AI surface. It is read only by `src/lib/ai/provider.server.ts` (and by the older vendor copy path), never by the browser, and never logged. Without it the platform says "not set up in this environment" rather than failing silently.
+- F-102 added `PAYMENT_ROUTER_KEY`: the platform's own gate on `src/lib/payments/router.server.ts`, the only module that may move money. It is not a third-party credential, it is never logged, and the module refuses to run without it (`unconfigured`). The Paystack secret stays in `PAYSTACK_SECRET_KEY` and is read inside the call.
 - `docs/deployment.md` is the release runbook: one hosted Supabase project (owner's decision), env matrix, migrations-before-app order, backup/restore rehearsal, Paystack and Sentry setup per environment.
 
 ## Performance / bundle

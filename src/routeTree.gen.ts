@@ -11,19 +11,39 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as HostRouteImport } from './routes/host'
+import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as VendorRouteImport } from './routes/vendor'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicSplatRouteImport } from './routes/_public/$'
 import { Route as PublicSignInRouteImport } from './routes/_public/sign-in'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
+import { Route as ApiBenchmarksRouteImport } from './routes/api/benchmarks'
+import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as HostIndexRouteImport } from './routes/host/index'
 import { Route as HostSectionRouteImport } from './routes/host/$section'
 import { Route as VendorIndexRouteImport } from './routes/vendor/index'
 import { Route as VendorSectionRouteImport } from './routes/vendor/$section'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth.callback'
+import { Route as PublicGuestListsIdRouteImport } from './routes/_public/guest-lists.$id'
 import { Route as PublicVendorsIndexRouteImport } from './routes/_public/vendors.index'
 import { Route as PublicVendorsSlugRouteImport } from './routes/_public/vendors.$slug'
+import { Route as ApiAiInvestigateRouteImport } from './routes/api/ai/investigate'
+import { Route as ApiAiReportRouteImport } from './routes/api/ai/report'
+import { Route as ApiAiStatusRouteImport } from './routes/api/ai/status'
+import { Route as ApiChatsIdRouteImport } from './routes/api/chats/$id'
+import { Route as ApiPaymentsVerifyRouteImport } from './routes/api/payments/verify'
+import { Route as ApiPlannerGenerateRouteImport } from './routes/api/planner/generate'
+import { Route as ApiPlannerReportRouteImport } from './routes/api/planner/report'
+import { Route as ApiBookingsIdCompleteRouteImport } from './routes/api/bookings/$id/complete'
+import { Route as ApiBookingsIdFreezeRouteImport } from './routes/api/bookings/$id/freeze'
+import { Route as ApiBookingsIdPaymentsRouteImport } from './routes/api/bookings/$id/payments'
+import { Route as ApiBookingsIdRefundRouteImport } from './routes/api/bookings/$id/refund'
+import { Route as ApiChatsIdAttachmentsRouteImport } from './routes/api/chats/$id/attachments'
+import { Route as ApiChatsIdMessagesRouteImport } from './routes/api/chats/$id/messages'
+import { Route as ApiGuestListsIdShareRouteImport } from './routes/api/guest-lists/$id/share'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack/webhook'
+import { Route as ApiChatsIdAttachmentsAttachmentIdRouteImport } from './routes/api/chats/$id/attachments/$attachmentId'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -34,9 +54,19 @@ const HostRoute = HostRouteImport.update({
   path: '/host',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlannerRoute = PlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VendorRoute = VendorRouteImport.update({
   id: '/vendor',
   path: '/vendor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
@@ -58,6 +88,16 @@ const PublicSignUpRoute = PublicSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
   getParentRoute: () => PublicRoute,
+} as any)
+const ApiBenchmarksRoute = ApiBenchmarksRouteImport.update({
+  id: '/api/benchmarks',
+  path: '/api/benchmarks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatIdRoute = ChatIdRouteImport.update({
+  id: '/chat/$id',
+  path: '/chat/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const HostIndexRoute = HostIndexRouteImport.update({
   id: '/',
@@ -84,6 +124,11 @@ const PublicAuthCallbackRoute = PublicAuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicGuestListsIdRoute = PublicGuestListsIdRouteImport.update({
+  id: '/guest-lists/$id',
+  path: '/guest-lists/$id',
+  getParentRoute: () => PublicRoute,
+} as any)
 const PublicVendorsIndexRoute = PublicVendorsIndexRouteImport.update({
   id: '/vendors/',
   path: '/vendors/',
@@ -94,115 +139,327 @@ const PublicVendorsSlugRoute = PublicVendorsSlugRouteImport.update({
   path: '/vendors/$slug',
   getParentRoute: () => PublicRoute,
 } as any)
+const ApiAiInvestigateRoute = ApiAiInvestigateRouteImport.update({
+  id: '/api/ai/investigate',
+  path: '/api/ai/investigate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiReportRoute = ApiAiReportRouteImport.update({
+  id: '/api/ai/report',
+  path: '/api/ai/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiStatusRoute = ApiAiStatusRouteImport.update({
+  id: '/api/ai/status',
+  path: '/api/ai/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatsIdRoute = ApiChatsIdRouteImport.update({
+  id: '/api/chats/$id',
+  path: '/api/chats/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentsVerifyRoute = ApiPaymentsVerifyRouteImport.update({
+  id: '/api/payments/verify',
+  path: '/api/payments/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlannerGenerateRoute = ApiPlannerGenerateRouteImport.update({
+  id: '/api/planner/generate',
+  path: '/api/planner/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlannerReportRoute = ApiPlannerReportRouteImport.update({
+  id: '/api/planner/report',
+  path: '/api/planner/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBookingsIdCompleteRoute = ApiBookingsIdCompleteRouteImport.update({
+  id: '/api/bookings/$id/complete',
+  path: '/api/bookings/$id/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBookingsIdFreezeRoute = ApiBookingsIdFreezeRouteImport.update({
+  id: '/api/bookings/$id/freeze',
+  path: '/api/bookings/$id/freeze',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBookingsIdPaymentsRoute = ApiBookingsIdPaymentsRouteImport.update({
+  id: '/api/bookings/$id/payments',
+  path: '/api/bookings/$id/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBookingsIdRefundRoute = ApiBookingsIdRefundRouteImport.update({
+  id: '/api/bookings/$id/refund',
+  path: '/api/bookings/$id/refund',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatsIdAttachmentsRoute = ApiChatsIdAttachmentsRouteImport.update({
+  id: '/attachments',
+  path: '/attachments',
+  getParentRoute: () => ApiChatsIdRoute,
+} as any)
+const ApiChatsIdMessagesRoute = ApiChatsIdMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => ApiChatsIdRoute,
+} as any)
+const ApiGuestListsIdShareRoute = ApiGuestListsIdShareRouteImport.update({
+  id: '/api/guest-lists/$id/share',
+  path: '/api/guest-lists/$id/share',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaystackWebhookRoute =
   ApiPublicPaystackWebhookRouteImport.update({
     id: '/api/public/paystack/webhook',
     path: '/api/public/paystack/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiChatsIdAttachmentsAttachmentIdRoute =
+  ApiChatsIdAttachmentsAttachmentIdRouteImport.update({
+    id: '/$attachmentId',
+    path: '/$attachmentId',
+    getParentRoute: () => ApiChatsIdAttachmentsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/host': typeof HostRouteWithChildren
+  '/planner': typeof PlannerRoute
   '/vendor': typeof VendorRouteWithChildren
+  '/welcome': typeof WelcomeRoute
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/api/benchmarks': typeof ApiBenchmarksRoute
+  '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
   '/host/': typeof HostIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/ai/investigate': typeof ApiAiInvestigateRoute
+  '/api/ai/report': typeof ApiAiReportRoute
+  '/api/ai/status': typeof ApiAiStatusRoute
+  '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/payments/verify': typeof ApiPaymentsVerifyRoute
+  '/api/planner/generate': typeof ApiPlannerGenerateRoute
+  '/api/planner/report': typeof ApiPlannerReportRoute
   '/vendors/': typeof PublicVendorsIndexRoute
+  '/api/bookings/$id/complete': typeof ApiBookingsIdCompleteRoute
+  '/api/bookings/$id/freeze': typeof ApiBookingsIdFreezeRoute
+  '/api/bookings/$id/payments': typeof ApiBookingsIdPaymentsRoute
+  '/api/bookings/$id/refund': typeof ApiBookingsIdRefundRoute
+  '/api/chats/$id/attachments': typeof ApiChatsIdAttachmentsRouteWithChildren
+  '/api/chats/$id/messages': typeof ApiChatsIdMessagesRoute
+  '/api/guest-lists/$id/share': typeof ApiGuestListsIdShareRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRoutesByTo {
+  '/planner': typeof PlannerRoute
+  '/welcome': typeof WelcomeRoute
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
+  '/api/benchmarks': typeof ApiBenchmarksRoute
+  '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
   '/': typeof PublicIndexRoute
   '/host': typeof HostIndexRoute
   '/vendor': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
+  '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/ai/investigate': typeof ApiAiInvestigateRoute
+  '/api/ai/report': typeof ApiAiReportRoute
+  '/api/ai/status': typeof ApiAiStatusRoute
+  '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/payments/verify': typeof ApiPaymentsVerifyRoute
+  '/api/planner/generate': typeof ApiPlannerGenerateRoute
+  '/api/planner/report': typeof ApiPlannerReportRoute
   '/vendors': typeof PublicVendorsIndexRoute
+  '/api/bookings/$id/complete': typeof ApiBookingsIdCompleteRoute
+  '/api/bookings/$id/freeze': typeof ApiBookingsIdFreezeRoute
+  '/api/bookings/$id/payments': typeof ApiBookingsIdPaymentsRoute
+  '/api/bookings/$id/refund': typeof ApiBookingsIdRefundRoute
+  '/api/chats/$id/attachments': typeof ApiChatsIdAttachmentsRouteWithChildren
+  '/api/chats/$id/messages': typeof ApiChatsIdMessagesRoute
+  '/api/guest-lists/$id/share': typeof ApiGuestListsIdShareRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteWithChildren
   '/host': typeof HostRouteWithChildren
+  '/planner': typeof PlannerRoute
   '/vendor': typeof VendorRouteWithChildren
+  '/welcome': typeof WelcomeRoute
   '/_public/$': typeof PublicSplatRoute
   '/_public/sign-in': typeof PublicSignInRoute
   '/_public/sign-up': typeof PublicSignUpRoute
+  '/api/benchmarks': typeof ApiBenchmarksRoute
+  '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
   '/_public/': typeof PublicIndexRoute
   '/host/': typeof HostIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
+  '/_public/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/_public/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/ai/investigate': typeof ApiAiInvestigateRoute
+  '/api/ai/report': typeof ApiAiReportRoute
+  '/api/ai/status': typeof ApiAiStatusRoute
+  '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/payments/verify': typeof ApiPaymentsVerifyRoute
+  '/api/planner/generate': typeof ApiPlannerGenerateRoute
+  '/api/planner/report': typeof ApiPlannerReportRoute
   '/_public/vendors/': typeof PublicVendorsIndexRoute
+  '/api/bookings/$id/complete': typeof ApiBookingsIdCompleteRoute
+  '/api/bookings/$id/freeze': typeof ApiBookingsIdFreezeRoute
+  '/api/bookings/$id/payments': typeof ApiBookingsIdPaymentsRoute
+  '/api/bookings/$id/refund': typeof ApiBookingsIdRefundRoute
+  '/api/chats/$id/attachments': typeof ApiChatsIdAttachmentsRouteWithChildren
+  '/api/chats/$id/messages': typeof ApiChatsIdMessagesRoute
+  '/api/guest-lists/$id/share': typeof ApiGuestListsIdShareRoute
   '/api/public/paystack/webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/host'
+    | '/planner'
     | '/vendor'
+    | '/welcome'
     | '/$'
     | '/sign-in'
     | '/sign-up'
+    | '/api/benchmarks'
+    | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
     | '/host/'
     | '/vendor/'
     | '/auth/callback'
+    | '/guest-lists/$id'
     | '/vendors/$slug'
+    | '/api/ai/investigate'
+    | '/api/ai/report'
+    | '/api/ai/status'
+    | '/api/chats/$id'
+    | '/api/payments/verify'
+    | '/api/planner/generate'
+    | '/api/planner/report'
     | '/vendors/'
+    | '/api/bookings/$id/complete'
+    | '/api/bookings/$id/freeze'
+    | '/api/bookings/$id/payments'
+    | '/api/bookings/$id/refund'
+    | '/api/chats/$id/attachments'
+    | '/api/chats/$id/messages'
+    | '/api/guest-lists/$id/share'
     | '/api/public/paystack/webhook'
+    | '/api/chats/$id/attachments/$attachmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/planner'
+    | '/welcome'
     | '/$'
     | '/sign-in'
     | '/sign-up'
+    | '/api/benchmarks'
+    | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
     | '/'
     | '/host'
     | '/vendor'
     | '/auth/callback'
+    | '/guest-lists/$id'
     | '/vendors/$slug'
+    | '/api/ai/investigate'
+    | '/api/ai/report'
+    | '/api/ai/status'
+    | '/api/chats/$id'
+    | '/api/payments/verify'
+    | '/api/planner/generate'
+    | '/api/planner/report'
     | '/vendors'
+    | '/api/bookings/$id/complete'
+    | '/api/bookings/$id/freeze'
+    | '/api/bookings/$id/payments'
+    | '/api/bookings/$id/refund'
+    | '/api/chats/$id/attachments'
+    | '/api/chats/$id/messages'
+    | '/api/guest-lists/$id/share'
     | '/api/public/paystack/webhook'
+    | '/api/chats/$id/attachments/$attachmentId'
   id:
     | '__root__'
     | '/_public'
     | '/host'
+    | '/planner'
     | '/vendor'
+    | '/welcome'
     | '/_public/$'
     | '/_public/sign-in'
     | '/_public/sign-up'
+    | '/api/benchmarks'
+    | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
     | '/_public/'
     | '/host/'
     | '/vendor/'
     | '/_public/auth/callback'
+    | '/_public/guest-lists/$id'
     | '/_public/vendors/$slug'
+    | '/api/ai/investigate'
+    | '/api/ai/report'
+    | '/api/ai/status'
+    | '/api/chats/$id'
+    | '/api/payments/verify'
+    | '/api/planner/generate'
+    | '/api/planner/report'
     | '/_public/vendors/'
+    | '/api/bookings/$id/complete'
+    | '/api/bookings/$id/freeze'
+    | '/api/bookings/$id/payments'
+    | '/api/bookings/$id/refund'
+    | '/api/chats/$id/attachments'
+    | '/api/chats/$id/messages'
+    | '/api/guest-lists/$id/share'
     | '/api/public/paystack/webhook'
+    | '/api/chats/$id/attachments/$attachmentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
   HostRoute: typeof HostRouteWithChildren
+  PlannerRoute: typeof PlannerRoute
   VendorRoute: typeof VendorRouteWithChildren
+  WelcomeRoute: typeof WelcomeRoute
+  ApiBenchmarksRoute: typeof ApiBenchmarksRoute
+  ChatIdRoute: typeof ChatIdRoute
+  ApiAiInvestigateRoute: typeof ApiAiInvestigateRoute
+  ApiAiReportRoute: typeof ApiAiReportRoute
+  ApiAiStatusRoute: typeof ApiAiStatusRoute
+  ApiChatsIdRoute: typeof ApiChatsIdRouteWithChildren
+  ApiPaymentsVerifyRoute: typeof ApiPaymentsVerifyRoute
+  ApiPlannerGenerateRoute: typeof ApiPlannerGenerateRoute
+  ApiPlannerReportRoute: typeof ApiPlannerReportRoute
+  ApiBookingsIdCompleteRoute: typeof ApiBookingsIdCompleteRoute
+  ApiBookingsIdFreezeRoute: typeof ApiBookingsIdFreezeRoute
+  ApiBookingsIdPaymentsRoute: typeof ApiBookingsIdPaymentsRoute
+  ApiBookingsIdRefundRoute: typeof ApiBookingsIdRefundRoute
+  ApiGuestListsIdShareRoute: typeof ApiGuestListsIdShareRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
@@ -222,11 +479,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HostRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/planner': {
+      id: '/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof PlannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/vendor': {
       id: '/vendor'
       path: '/vendor'
       fullPath: '/vendor'
       preLoaderRoute: typeof VendorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public/': {
@@ -256,6 +527,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/sign-up'
       preLoaderRoute: typeof PublicSignUpRouteImport
       parentRoute: typeof PublicRoute
+    }
+    '/api/benchmarks': {
+      id: '/api/benchmarks'
+      path: '/api/benchmarks'
+      fullPath: '/api/benchmarks'
+      preLoaderRoute: typeof ApiBenchmarksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/$id': {
+      id: '/chat/$id'
+      path: '/chat/$id'
+      fullPath: '/chat/$id'
+      preLoaderRoute: typeof ChatIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/host/': {
       id: '/host/'
@@ -292,6 +577,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicAuthCallbackRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/guest-lists/$id': {
+      id: '/_public/guest-lists/$id'
+      path: '/guest-lists/$id'
+      fullPath: '/guest-lists/$id'
+      preLoaderRoute: typeof PublicGuestListsIdRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/vendors/': {
       id: '/_public/vendors/'
       path: '/vendors'
@@ -306,12 +598,117 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicVendorsSlugRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/api/ai/investigate': {
+      id: '/api/ai/investigate'
+      path: '/api/ai/investigate'
+      fullPath: '/api/ai/investigate'
+      preLoaderRoute: typeof ApiAiInvestigateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/report': {
+      id: '/api/ai/report'
+      path: '/api/ai/report'
+      fullPath: '/api/ai/report'
+      preLoaderRoute: typeof ApiAiReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/status': {
+      id: '/api/ai/status'
+      path: '/api/ai/status'
+      fullPath: '/api/ai/status'
+      preLoaderRoute: typeof ApiAiStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chats/$id': {
+      id: '/api/chats/$id'
+      path: '/api/chats/$id'
+      fullPath: '/api/chats/$id'
+      preLoaderRoute: typeof ApiChatsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/verify': {
+      id: '/api/payments/verify'
+      path: '/api/payments/verify'
+      fullPath: '/api/payments/verify'
+      preLoaderRoute: typeof ApiPaymentsVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/planner/generate': {
+      id: '/api/planner/generate'
+      path: '/api/planner/generate'
+      fullPath: '/api/planner/generate'
+      preLoaderRoute: typeof ApiPlannerGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/planner/report': {
+      id: '/api/planner/report'
+      path: '/api/planner/report'
+      fullPath: '/api/planner/report'
+      preLoaderRoute: typeof ApiPlannerReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bookings/$id/complete': {
+      id: '/api/bookings/$id/complete'
+      path: '/api/bookings/$id/complete'
+      fullPath: '/api/bookings/$id/complete'
+      preLoaderRoute: typeof ApiBookingsIdCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bookings/$id/freeze': {
+      id: '/api/bookings/$id/freeze'
+      path: '/api/bookings/$id/freeze'
+      fullPath: '/api/bookings/$id/freeze'
+      preLoaderRoute: typeof ApiBookingsIdFreezeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bookings/$id/payments': {
+      id: '/api/bookings/$id/payments'
+      path: '/api/bookings/$id/payments'
+      fullPath: '/api/bookings/$id/payments'
+      preLoaderRoute: typeof ApiBookingsIdPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bookings/$id/refund': {
+      id: '/api/bookings/$id/refund'
+      path: '/api/bookings/$id/refund'
+      fullPath: '/api/bookings/$id/refund'
+      preLoaderRoute: typeof ApiBookingsIdRefundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chats/$id/attachments': {
+      id: '/api/chats/$id/attachments'
+      path: '/attachments'
+      fullPath: '/api/chats/$id/attachments'
+      preLoaderRoute: typeof ApiChatsIdAttachmentsRouteImport
+      parentRoute: typeof ApiChatsIdRoute
+    }
+    '/api/chats/$id/messages': {
+      id: '/api/chats/$id/messages'
+      path: '/messages'
+      fullPath: '/api/chats/$id/messages'
+      preLoaderRoute: typeof ApiChatsIdMessagesRouteImport
+      parentRoute: typeof ApiChatsIdRoute
+    }
+    '/api/guest-lists/$id/share': {
+      id: '/api/guest-lists/$id/share'
+      path: '/api/guest-lists/$id/share'
+      fullPath: '/api/guest-lists/$id/share'
+      preLoaderRoute: typeof ApiGuestListsIdShareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/paystack/webhook': {
       id: '/api/public/paystack/webhook'
       path: '/api/public/paystack/webhook'
       fullPath: '/api/public/paystack/webhook'
       preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/chats/$id/attachments/$attachmentId': {
+      id: '/api/chats/$id/attachments/$attachmentId'
+      path: '/$attachmentId'
+      fullPath: '/api/chats/$id/attachments/$attachmentId'
+      preLoaderRoute: typeof ApiChatsIdAttachmentsAttachmentIdRouteImport
+      parentRoute: typeof ApiChatsIdAttachmentsRoute
     }
   }
 }
@@ -322,6 +719,7 @@ interface PublicRouteChildren {
   PublicSignUpRoute: typeof PublicSignUpRoute
   PublicIndexRoute: typeof PublicIndexRoute
   PublicAuthCallbackRoute: typeof PublicAuthCallbackRoute
+  PublicGuestListsIdRoute: typeof PublicGuestListsIdRoute
   PublicVendorsSlugRoute: typeof PublicVendorsSlugRoute
   PublicVendorsIndexRoute: typeof PublicVendorsIndexRoute
 }
@@ -332,6 +730,7 @@ const PublicRouteChildren: PublicRouteChildren = {
   PublicSignUpRoute: PublicSignUpRoute,
   PublicIndexRoute: PublicIndexRoute,
   PublicAuthCallbackRoute: PublicAuthCallbackRoute,
+  PublicGuestListsIdRoute: PublicGuestListsIdRoute,
   PublicVendorsSlugRoute: PublicVendorsSlugRoute,
   PublicVendorsIndexRoute: PublicVendorsIndexRoute,
 }
@@ -364,10 +763,54 @@ const VendorRouteChildren: VendorRouteChildren = {
 const VendorRouteWithChildren =
   VendorRoute._addFileChildren(VendorRouteChildren)
 
+interface ApiChatsIdAttachmentsRouteChildren {
+  ApiChatsIdAttachmentsAttachmentIdRoute: typeof ApiChatsIdAttachmentsAttachmentIdRoute
+}
+
+const ApiChatsIdAttachmentsRouteChildren: ApiChatsIdAttachmentsRouteChildren = {
+  ApiChatsIdAttachmentsAttachmentIdRoute:
+    ApiChatsIdAttachmentsAttachmentIdRoute,
+}
+
+const ApiChatsIdAttachmentsRouteWithChildren =
+  ApiChatsIdAttachmentsRoute._addFileChildren(
+    ApiChatsIdAttachmentsRouteChildren,
+  )
+
+interface ApiChatsIdRouteChildren {
+  ApiChatsIdAttachmentsRoute: typeof ApiChatsIdAttachmentsRouteWithChildren
+  ApiChatsIdMessagesRoute: typeof ApiChatsIdMessagesRoute
+}
+
+const ApiChatsIdRouteChildren: ApiChatsIdRouteChildren = {
+  ApiChatsIdAttachmentsRoute: ApiChatsIdAttachmentsRouteWithChildren,
+  ApiChatsIdMessagesRoute: ApiChatsIdMessagesRoute,
+}
+
+const ApiChatsIdRouteWithChildren = ApiChatsIdRoute._addFileChildren(
+  ApiChatsIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
   HostRoute: HostRouteWithChildren,
+  PlannerRoute: PlannerRoute,
   VendorRoute: VendorRouteWithChildren,
+  WelcomeRoute: WelcomeRoute,
+  ApiBenchmarksRoute: ApiBenchmarksRoute,
+  ChatIdRoute: ChatIdRoute,
+  ApiAiInvestigateRoute: ApiAiInvestigateRoute,
+  ApiAiReportRoute: ApiAiReportRoute,
+  ApiAiStatusRoute: ApiAiStatusRoute,
+  ApiChatsIdRoute: ApiChatsIdRouteWithChildren,
+  ApiPaymentsVerifyRoute: ApiPaymentsVerifyRoute,
+  ApiPlannerGenerateRoute: ApiPlannerGenerateRoute,
+  ApiPlannerReportRoute: ApiPlannerReportRoute,
+  ApiBookingsIdCompleteRoute: ApiBookingsIdCompleteRoute,
+  ApiBookingsIdFreezeRoute: ApiBookingsIdFreezeRoute,
+  ApiBookingsIdPaymentsRoute: ApiBookingsIdPaymentsRoute,
+  ApiBookingsIdRefundRoute: ApiBookingsIdRefundRoute,
+  ApiGuestListsIdShareRoute: ApiGuestListsIdShareRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport

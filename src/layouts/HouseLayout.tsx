@@ -5,12 +5,16 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { Logo } from "@/components/site/Logo";
 import { HOUSES, type HouseId } from "@/lib/houses";
 import { OpenVendorHouse } from "@/features/vendor-profile/OpenVendorHouse";
+import { OnboardingGate } from "@/features/onboarding/OnboardingGate";
+import { forgetOnboarding } from "@/features/onboarding/gate-cache";
 
 /** Shell for the Host and Vendor houses: each has its own navigation and never mixes with the other. */
 export default function HouseLayout({ houseId }: { houseId: HouseId }) {
   return (
     <RequireAuth>
-      <HouseShell houseId={houseId} />
+      <OnboardingGate houseId={houseId}>
+        <HouseShell houseId={houseId} />
+      </OnboardingGate>
     </RequireAuth>
   );
 }
@@ -57,7 +61,10 @@ function HouseShell({ houseId }: { houseId: HouseId }) {
           <p className="truncate text-sm font-semibold text-ink" data-testid="signed-in-as">
             {user?.display_name ?? user?.email ?? "Signed in"}
           </p>
-          <button type="button" onClick={() => void logout()} className="mt-2 flex min-h-[44px] items-center gap-2 rounded-xl px-3 text-sm font-medium text-ink-muted hover:bg-plum-100">
+          <button type="button" onClick={() => {
+              forgetOnboarding();
+              void logout();
+            }} className="mt-2 flex min-h-[44px] items-center gap-2 rounded-xl px-3 text-sm font-medium text-ink-muted hover:bg-plum-100">
             <LogOut aria-hidden className="h-4 w-4" /> Sign out
           </button>
         </div>

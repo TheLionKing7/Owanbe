@@ -32,8 +32,24 @@ export interface ProfileCopy {
 }
 
 export type GenerateResult =
-  | { ok: true; copy: ProfileCopy }
+  | { ok: true; copy: ProfileCopy; interaction_id: string | null }
   | { ok: false; error: string; retryable: boolean };
+
+/** The draft as plain text, for the clipboard and for the interaction log. */
+export function profileCopyText(copy: ProfileCopy): string {
+  return [
+    copy.headline,
+    copy.tagline,
+    "",
+    copy.about,
+    "",
+    "Services",
+    ...copy.services.map((s) => `• ${s.name}: ${s.description}`),
+    "",
+    "Why hosts choose us",
+    ...copy.highlights.map((h) => `• ${h}`),
+  ].join("\n");
+}
 
 /** Trims and clamps model output so the UI never shows broken or oversized copy. */
 export function normalizeCopy(raw: unknown): ProfileCopy | null {

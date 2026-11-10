@@ -2,8 +2,16 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { APICallError, NoObjectGeneratedError, Output, streamText } from "ai";
 import { z } from "zod";
-import { normalizeCopy, type GenerateResult, type ProfileBrief } from "./contracts";
+import {
+  normalizeCopy,
+  profileCopyText,
+  type GenerateResult,
+  type ProfileBrief,
+  type ProfileCopy,
+} from "./contracts";
 import { findCategory, TONES } from "./presets";
+import { AI_MODELS } from "@/lib/ai/provider.server";
+import { callAsCaller } from "@/lib/db/caller.server";
 
 const MODEL = "openai/gpt-6-astra";
 
@@ -69,7 +77,7 @@ export async function generateProfileCopy(brief: ProfileBrief): Promise<Generate
     });
     const copy = normalizeCopy(await result.output);
     if (!copy) return { ok: false, error: "The draft came back incomplete. Please try again.", retryable: true };
-    return { ok: true, copy };
+    return { ok: true, copy, interaction_id: null };
   } catch (error) {
     if (NoObjectGeneratedError.isInstance(error)) {
       return { ok: false, error: "The draft came back incomplete. Please try again.", retryable: true };
@@ -80,5 +88,54 @@ export async function generateProfileCopy(brief: ProfileBrief): Promise<Generate
     if (status === 402) return { ok: false, error: "AI credits have run out. The workspace owner needs to top up.", retryable: false };
     if (status === 403) return { ok: false, error: "The writing assistant is not available for this workspace.", retryable: false };
     return { ok: false, error: "We couldn't write your profile just now. Please try again.", retryable: true };
+  }
+}
+
+/** What the vendor asked for, in one line, so the log says what the draft was for. */
+function briefSummary(brief: ProfileBrief): string {
+  return [
+    `Business: ${brief.businessName}`,
+    `Category: ${brief.category}`,
+    `Tone: ${brief.tone}`,
+    `Offerings: ${brief.offerings.join(", ")}`,
+  ]
+    .join(" · ")
+    .slice(0, 500);
+}
+
+/**
+ * The draft is logged as an interaction so the vendor can report it.
+ *
+ * A draft that cannot be logged is still shown to the vendor; it simply carries no report. The
+ * database decides whether the caller may log it, so the caller's own token goes with it.
+ */
+export async function logCopyInteraction(
+  token: string,
+  brief: ProfileBrief,
+  copy: ProfileCopy,
+): Promise<string | null> {
+  try {
+    const res = await callAsCaller("log_ai_interaction", token, {
+      p_surface: "vendor_profile_copy",
+      p_request_summary: briefSummary(brief),
+      p_response_text: profileCopyText(copy).slice(0, 4000),
+      p_reason: null,
+      p_model: AI_MODELS.vendorCopy,
+      p_outcome: "answered",
+      p_booking: null,
+    });
+    if (!res.ok) {
+      console.error("[profile-copy] interaction not logged", res.status);
+      return null;
+    }
+    const rows = (await res.json()) as unknown;
+    const id = typeof rows === "string" ? rows : String((rows as { id?: unknown })?.id ?? "");
+    return id ? id : null;
+  } catch (error) {
+    console.error(
+      "[profile-copy] interaction not logged",
+      error instanceof Error ? error.message : "unknown",
+    );
+    return null;
   }
 }
