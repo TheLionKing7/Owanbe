@@ -3,6 +3,7 @@ import type { PublicVendorProfile } from "@/features/vendor-profile/profile-data
 import { CheckCircle2, MapPin, Wallet } from "lucide-react";
 import { getPublicVendor } from "@/features/vendor-profile/public.functions";
 import { findCategory } from "@/features/vendor-profile/presets";
+import { QuoteRequestForm } from "@/features/quotes/QuoteRequestForm";
 
 export const Route = createFileRoute("/_public/vendors/$slug")({
   loader: async ({ params }): Promise<PublicVendorProfile> => {
@@ -92,10 +93,8 @@ function VendorProfilePage() {
         </section>
       )}
 
-      <div className="mt-8 rounded-3xl bg-muted p-6">
-        <p className="font-semibold text-plum-950">Interested in {v.business_name}?</p>
-        <p className="mt-1 text-sm text-ink-muted">Ask for a quote from your Host house. Prices and dates are only confirmed in a quote.</p>
-        <Link to="/host/$section" params={{ section: "quotes" }} className="btn-primary mt-4 inline-flex h-11 items-center px-5">Request a quote</Link>
+      <div className="mt-8">
+        <QuoteRequestForm vendorSlug={v.slug} vendorName={v.business_name} />
       </div>
     </article>
   );

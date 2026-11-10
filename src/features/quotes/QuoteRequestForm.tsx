@@ -40,14 +40,17 @@ export function QuoteRequestForm({ vendorSlug, vendorName, api = quoteRequestApi
       await api.create(parsed.data);
       setSent(true);
     } catch (caught) {
-      if (caught instanceof QuoteError && caught.code === "unauthorized") {
+      const raw = caught instanceof Error ? caught.message.toLowerCase() : "";
+      if (raw.includes("not_signed_in") || raw.includes("jwt") || raw.includes("no host house")) {
         setNeedsSignIn(true);
+      } else if (raw.includes("own vendor house")) {
+        setError("This is your own vendor house, so you cannot ask it for a quote.");
       } else if (caught instanceof QuoteError && caught.message.includes("too_many_open_requests")) {
         setError(`You already have 3 open requests with ${vendorName}. Wait for a reply first.`);
       } else if (caught instanceof QuoteError) {
         setError(QUOTE_ERROR_COPY[caught.code]);
       } else {
-        setNeedsSignIn(true);
+        setError(QUOTE_ERROR_COPY.unknown);
       }
     } finally {
       setPending(false);
