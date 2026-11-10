@@ -12,7 +12,7 @@
 select app_private.configure_auth0('owanbe.us.auth0.com', 'https://api.owanbe.app');
 
 create function pg_temp.claims(sub text) returns text language sql as $$
-  select jsonb_build_object('sub', sub, 'iss', 'https://api.owanbe.us.auth0.com/', 'aud', 'https://api.owanbe.app',
+  select jsonb_build_object('sub', sub, 'iss', 'https://owanbe.us.auth0.com/', 'aud', 'https://api.owanbe.app',
     'role', 'authenticated', 'exp', extract(epoch from now())::bigint + 3600)::text
 $$;
 create function pg_temp.expect_error(stmt text, fragment text) returns void language plpgsql as $$
