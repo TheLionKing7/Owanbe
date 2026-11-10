@@ -18,4 +18,22 @@ describe("standalone Auth0 navigation", () => {
     expect(openStandaloneAuth({ returnTo: "/host" })).toBe(false);
     expect(open).not.toHaveBeenCalled();
   });
+  it("redirects the top window when embedded in a frame", () => {
+    const top = { location: { href: "" } };
+    vi.spyOn(window, "top", "get").mockReturnValue(top as unknown as Window);
+    const open = vi.spyOn(window, "open");
+    expect(openStandaloneAuth({ signup: true, returnTo: "/host" })).toBe(true);
+    expect(top.location.href).toBe(`${window.location.origin}/sign-up?next=%2Fhost`);
+    expect(open).not.toHaveBeenCalled();
+  });
+  it("falls back to a new tab when the top window cannot be navigated", () => {
+    const top = { location: {} };
+    Object.defineProperty(top.location, "href", { set() { throw new DOMException("blocked"); } });
+    vi.spyOn(window, "top", "get").mockReturnValue(top as unknown as Window);
+    const opened = { opener: window } as unknown as Window;
+    const open = vi.spyOn(window, "open").mockReturnValue(opened);
+    expect(openStandaloneAuth({ returnTo: "/host" })).toBe(true);
+    expect(open).toHaveBeenCalledWith(`${window.location.origin}/sign-in?next=%2Fhost`, "_blank");
+    expect(opened.opener).toBeNull();
+  });
 });
