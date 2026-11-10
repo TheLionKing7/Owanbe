@@ -159,6 +159,66 @@ export function paymentReference(): string {
   return `owanbe-${groups.join("-")}`;
 }
 
+export interface TransferAccount {
+  account_number: string;
+  account_name: string;
+  bank_name: string;
+}
+
+/**
+ * F-48 (owner decision 2026-11-10): the host's Paystack Dedicated Virtual Account is created at
+ * their first checkout and reused after. Paystack holds the money, never Ówàńbè. A failure here
+ * never blocks card checkout; the host simply sees no transfer option this time.
+ */
+export async function ensureDedicatedAccount(token: string): Promise<TransferAccount | null> {
+  try {
+    const res = await callAsCaller("my_checkout_identity", token, {});
+    if (!res.ok) return null;
+    const rows = (await res.json()) as {
+      user_id: string;
+      email: string;
+      display_name: string;
+      has_account: boolean;
+      account_number: string | null;
+      account_name: string | null;
+      bank_name: string | null;
+    }[];
+    const me = rows[0];
+    if (!me) return null;
+    if (me.has_account && me.account_number) {
+      return {
+        account_number: me.account_number,
+        account_name: me.account_name ?? "",
+        bank_name: me.bank_name ?? "",
+      };
+    }
+    if (!me.email) return null;
+    const { createDedicatedAccount } = await import("@/lib/payments/paystack.server");
+    const { storeDedicatedAccount } = await import("@/lib/payments/router.server");
+    const [first, ...rest] = (me.display_name || "Ówàńbè host").trim().split(/\s+/);
+    const account = await createDedicatedAccount({
+      email: me.email,
+      firstName: first ?? "Host",
+      lastName: rest.join(" ") || "Host",
+    });
+    await storeDedicatedAccount({
+      userId: me.user_id,
+      customerCode: account.customerCode,
+      accountNumber: account.accountNumber,
+      accountName: account.accountName,
+      bankName: account.bankName,
+    });
+    return {
+      account_number: account.accountNumber,
+      account_name: account.accountName,
+      bank_name: account.bankName,
+    };
+  } catch (error) {
+    console.error("dedicated account unavailable", error instanceof Error ? error.message : "unknown");
+    return null;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // GET /api/bookings/:id/payments — the money of one booking
 // ---------------------------------------------------------------------------
@@ -253,8 +313,11 @@ export async function startBookingPaymentAsCaller(
     return routerFailure(error);
   }
 
+  const transferAccount = await ensureDedicatedAccount(token);
+
   return json(
     {
+      transfer_account: transferAccount,
       reference: started.reference,
       authorization_url: started.authorizationUrl,
       amount_minor: needed.total_minor,
