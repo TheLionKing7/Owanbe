@@ -225,3 +225,78 @@ export async function refundTransaction(input: {
     amountMinor: Number(data.amount ?? input.amountMinor),
   };
 }
+
+export interface PaystackDedicatedAccount {
+  customerCode: string;
+  accountNumber: string;
+  accountName: string;
+  bankName: string;
+}
+
+/**
+ * F-48: create the customer's Paystack Dedicated Virtual Account. Called on first checkout only
+ * (owner decision 2026-11-10). Money paid into it is held by Paystack, never by Ówàńbè.
+ */
+export async function createDedicatedAccount(input: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  preferredBank?: string;
+}): Promise<PaystackDedicatedAccount> {
+  const customer = await paystackRequest<{ customer_code?: unknown }>("/customer", {
+    method: "POST",
+    body: {
+      email: input.email,
+      first_name: input.firstName,
+      last_name: input.lastName,
+      phone: input.phone,
+    },
+  });
+  const customerCode = typeof customer.customer_code === "string" ? customer.customer_code : "";
+  if (!customerCode) throw new PaystackError("refused", "paystack_customer_incomplete");
+
+  const dva = await paystackRequest<{
+    account_number?: unknown;
+    account_name?: unknown;
+    bank?: { name?: unknown };
+  }>("/dedicated_account", {
+    method: "POST",
+    body: { customer: customerCode, preferred_bank: input.preferredBank ?? "wema-bank" },
+  });
+  const accountNumber = typeof dva.account_number === "string" ? dva.account_number : "";
+  if (!/^\d{10}$/.test(accountNumber)) throw new PaystackError("refused", "paystack_dva_incomplete");
+  return {
+    customerCode,
+    accountNumber,
+    accountName: typeof dva.account_name === "string" ? dva.account_name : "",
+    bankName: typeof dva.bank?.name === "string" ? dva.bank.name : "",
+  };
+}
+
+/** F-60: keep only the reusable reference and display fields. Never the card number. */
+export function safeAuthorization(raw: unknown): {
+  authorizationCode: string;
+  cardBrand: string | null;
+  last4: string | null;
+  expMonth: string | null;
+  expYear: string | null;
+  reusable: boolean;
+} | null {
+  if (!raw || typeof raw !== "object") return null;
+  const a = raw as Record<string, unknown>;
+  const code = typeof a["authorization_code"] === "string" ? a["authorization_code"] : "";
+  if (!/^AUTH_[A-Za-z0-9]+$/.test(code)) return null;
+  const pick = (k: string, re: RegExp) => {
+    const v = a[k];
+    return typeof v === "string" && re.test(v) ? v : null;
+  };
+  return {
+    authorizationCode: code,
+    cardBrand: pick("brand", /^[A-Za-z ]{1,20}$/),
+    last4: pick("last4", /^\d{4}$/),
+    expMonth: pick("exp_month", /^\d{2}$/),
+    expYear: pick("exp_year", /^\d{4}$/),
+    reusable: a["reusable"] === true,
+  };
+}
