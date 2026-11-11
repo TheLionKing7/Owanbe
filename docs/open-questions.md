@@ -251,23 +251,22 @@ affected feature, the status and the release impact. Approved answers move to
 ### Q18. Who confirms the zero-data-retention contract, and with which provider?
 
 - **Owner:** Ola (product owner)
-- **Status:** open — the gate is built and closed by the owner's decision (2026-11-09: "Build the
-  gate, closed until the owner confirms a contract"), so nothing is blocked by it, but OwanbeAI
-  cannot be used until it is answered
-- **Affected:** F-107 OwanbeAI (built, gated), F-65 Zero Data Retention (ZDR) for AI Models
-  (`blocked`), F-46 AI Investigation-only Role, any future AI surface that reads sensitive data
+- **Status:** **answered 2026-11-10** (Sage 7 question `3e793b14`): "Lovable has ZDR and gpt also
+  has ZDR in place so this is okay to function now." The gate is open, recorded by
+  `supabase/migrations/20261110203000_f107_open_zdr_gate.sql`. F-65 stays open — the contract
+  paperwork is a separate feature.
+- **Affected:** F-107 OwanbeAI (built, the gate is now open), F-65 Zero Data Retention (ZDR) for
+  AI Models (`blocked`), F-46 AI Investigation-only Role, any future AI surface that reads
+  sensitive data
 - **Release impact:** the platform talks to one AI gateway (`ai.gateway.lovable.dev`, model
-  `openai/gpt-6-astra`). `app_private.ai_settings` holds the record of the contract and
-  `app_private.ai_zdr_confirmed()` reads it; no application role can write to that table, so the
-  gate can only be opened by an owner action in the database. While it is closed,
-  `public.ai_payment_log` raises `zdr_contract_required`, the API answers `503 locked`, the staff
-  panel does not appear, and the shared provider refuses any request marked sensitive. Nothing
-  sensitive has left for a model under F-107, and no payment trail has been read by a model at all.
-  The owner still needs to decide **who signs the contract and with whom** (the gateway operator or
-  the model vendor), **what the confirmation actually requires** (a written zero-retention clause
-  naming the model, or a contractual setting the platform can verify), and **how the record is
-  written** — a row in `app_private.ai_settings` set by an owner-only script, or a signed document
-  the platform checks. Until then OwanbeAI stays closed and F-65 stays open. The open decisions
-  around retention deadlines for other data (F-39 Record Retention Policy, F-59 Health Data
-  Protection) are separate and are not answered by this one.
+  `openai/gpt-6-astra`), and the owner confirms that both the gateway operator and the model
+  vendor hold a zero-data-retention agreement. `app_private.ai_settings` holds the record and
+  `app_private.ai_zdr_confirmed()` reads it; the table is still revoked from every application
+  role, so no application path can open or close the gate — the owner can, and the migration
+  records that act. The trail is still minimised in the database and every read is still a
+  sensitive read with a purpose, so what reaches the model is unchanged: money and state, never a
+  person and never a provider reference. **Not** answered by this: whether the platform should
+  *verify* the contract rather than record it (a signed document the platform checks, or a
+  contractual setting it can read), and the retention deadlines for other data (F-39 Record
+  Retention Policy, F-59 Health Data Protection) — F-65 owns the first, the others own the rest.
 

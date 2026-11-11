@@ -43,6 +43,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/auth0-setup.md` | Step-by-step Auth0 tenant, Post-Login Action, Supabase third-party auth, configure_auth0, .env.local |
 | `docs/decisions/2026-11-04-tanstack-start-and-paystack.md` | Sage 7 pickup copy of ADR 0003 (runtime + Paystack approved, CI workflows owner-requested); `blueprint/` still needs the sync. |
 | `docs/decisions/2026-11-06-feature-requests-competitive.md` | Owner decision record for the competitive feature requests raised on 2026-11-06. |
+| `docs/decisions/2026-11-10-payments-owner-answers.md` | Owner decision record for the open payment questions: custody stays with Paystack, the cancellation refund percentages, the dedicated virtual account, the two-approval threshold and read-only AI. |
 | `docs/decisions/f13-chat-owns-its-feature-code.md` | Owner decision: in-app chat gets its own feature code (F-100) and is built before F-13's direct search and book flow. |
 | `docs/decisions/f14-quote-date-lock.md` | Owner decision on the F-14 quote date lock: which dates a quote holds and when expiry restarts. |
 | `docs/decisions/f79-monitoring-configuration.md` | F-79 decision record: browser-only Sentry with a strict allowlist; do not call monitoring active yet. |
@@ -69,8 +70,13 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-09-F-102-fund-pool-escrow.md` | Journal: F-102 fund pool and escrow — the ledger, the 70/30 split, the dispute freeze, the refunds and what was never executed. |
 | `docs/journal/2026-11-09-F-106-market-benchmark-data.md` | Journal: F-106 market benchmark data — the observed price, the two-vendor rule, the provenance gate, the audit trail and what was never executed. |
 | `docs/journal/2026-11-09-F-107-owanbeai.md` | F-107 journal: the four owner decisions, what OwanbeAI delivers, the database rules, the checks run and the limits. |
+| `docs/journal/2026-11-10-f13-payments-wiring.md` | Journal: the F-13, F-20/F-21, F-48 and F-60 wiring (the cancel action, quote requests, the dedicated account, the saved authorisation reference) and what was never applied. |
+| `docs/journal/2026-11-10-payment-completion-blocked.md` | Journal: the remaining payment and AI work is blocked — Sage 7 returned no task and the compliance specification leaves custody, KYC and thresholds unresolved. |
+| `docs/journal/2026-11-10-signup-sql-repair.md` | Journal: the F-76/F-7/F-13 installation and sign-up repair — repeatable SQL, the event-planner sign-up and the standalone Auth0 navigation. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
-| `docs/Ówàńbè Compliance, KYC & Payments Spec.md` | Owner-supplied compliance, KYC and payments specification (untracked owner document). |
+| `docs/sql/2026-11-10-cancellation-tokens-dva.sql` | Installation script, superseded by the combined one: the cancellation refund function, the cancellation, authorisation and dedicated-account tables. |
+| `docs/sql/2026-11-10-f13-booking-completion.sql` | The combined installation script: cancellation and refunds, saved Paystack authorisation references, dedicated virtual accounts and the F-13 quote requests. |
+| `docs/Ówàńbè-Compliance-KYC-Payments-Spec.md` | Owner-supplied compliance, KYC and payments specification. |
 
 #### public/
 
@@ -197,11 +203,15 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/planner/server.ts` | F-101 server boundary: token-forwarding handlers for the plan and the report. |
 | `src/features/quotes/QuoteBuilder.tsx` | F-14 UI: the vendor's quote editor with integer minor-unit lines. |
 | `src/features/quotes/QuoteCard.tsx` | F-14 UI: one quote revision with the actions its side may take. |
+| `src/features/quotes/QuoteRequestForm.tsx` | F-13 UI: the host's quote request form, sent from the vendor's public page. |
+| `src/features/quotes/QuoteRequestsList.tsx` | F-13 UI: the quote requests a house has sent or received, with the vendor's write-quote and the host's withdraw action. |
 | `src/features/quotes/QuotesPanel.test.tsx` | F-14 tests: the quote list, the actions offered and the error copy. |
 | `src/features/quotes/QuotesPanel.tsx` | F-14 UI: the house's quotes and the actions each side may take. |
 | `src/features/quotes/api.ts` | F-14 browser boundary: the quote RPCs and their error classification. |
 | `src/features/quotes/contracts.test.ts` | F-14 tests: quote validation, totals and status transitions. |
 | `src/features/quotes/contracts.ts` | F-14 contracts: quote statuses, revisions and money in integer minor units. |
+| `src/features/quotes/requests.test.ts` | F-13 tests: the quote request rules (a future date, the guest count, the budget and the notes). |
+| `src/features/quotes/requests.ts` | F-13 quote request contract and browser boundary: the schema, the RPC calls and the request shape. |
 | `src/features/vendor-profile/OpenVendorHouse.tsx` | UI: opens the caller's single Vendor house. |
 | `src/features/vendor-profile/ProfileCopyStudio.tsx` | UI: the vendor profile editor with the AI copy assistant. |
 | `src/features/vendor-profile/contracts.test.ts` | Tests: the vendor profile brief validation and the copy result shape. |
@@ -247,6 +257,8 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/lib/auth/AuthProvider.tsx` | Auth context: idle session restore, admit via ensureAppUser + listHouses, login/logout/completeLogin/retry; `useAuth()` |
 | `src/lib/auth/auth0Client.ts` | LAZY CHUNK: Auth0 SPA client + Supabase client (accessToken = Auth0 token); rpc ensure_user / my_houses; safe returnTo. |
 | `src/lib/auth/config.functions.ts` | Server function that hands the browser only the public Auth0 identifiers. |
+| `src/lib/auth/preview-navigation.test.ts` | Tests: the standalone Auth0 path, the unsafe destinations and the new-tab fallback. |
+| `src/lib/auth/preview-navigation.ts` | Leaves the preview iframe before the Auth0 transaction and builds the same-origin sign-in path. |
 | `src/lib/auth/types.ts` | `AuthClient` boundary, `AppUser`, `HouseSummary`, `AuthStatus`, `AccountBlockedError` |
 | `src/lib/auth/validate-token.server.ts` | Server-side Auth0 JWT verification (jose JWKS, RS256, iss/aud/exp/sub) mapped to one active user; no call sites yet. |
 | `src/lib/db/caller.server.ts` | The one way the app asks the database something as the caller: the caller's own token is forwarded to PostgREST and a secret key is refused, so the database decides what they may read and write. |
@@ -257,6 +269,8 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/lib/monitoring/browser.ts` | initializeMonitoring(): lazy Sentry init from the server-provided DSN; no DSN means no capture. |
 | `src/lib/monitoring/config.functions.ts` | Read-only server function exposing only the public Sentry DSN and environment label. |
 | `src/lib/monitoring/privacy.ts` | Sentry event sanitizer: allowlist fields, redacted message, no user/request/breadcrumbs/contexts. |
+| `src/lib/payments/cancellation.test.ts` | F-20/F-21 tests: the refund percentages, the day boundaries and the two-approval threshold. |
+| `src/lib/payments/cancellation.ts` | F-20/F-21 preview of who gets what back when a booking is cancelled; the database figure is the one that is paid. |
 | `src/lib/payments/credential-guard.test.ts` | F-60 tests: raw card and bank credentials are refused. |
 | `src/lib/payments/credential-guard.ts` | F-60 guard that refuses raw card and bank credentials in code, logs and payloads. |
 | `src/lib/payments/currency.test.ts` | F-102 tests: the minor-unit table, the money formatting and the unknown currency. |
@@ -265,6 +279,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/lib/payments/paystack.server.ts` | Paystack HMAC-SHA512 sign/verify for webhook payloads; secret stays server-side. |
 | `src/lib/payments/router.server.test.ts` | F-102 tests: the router key gate, the service-role call, the SQLSTATE mapping and the provider events. |
 | `src/lib/payments/router.server.ts` | F-102 payment router: the only module that may move money; the allocate, the provider event, the refund settlement and the due-tranche sweep behind PAYMENT_ROUTER_KEY. |
+| `src/lib/payments/safe-authorization.test.ts` | F-60 test: only the Paystack reference and the safe display fields are kept. |
 | `src/lib/permissions.ts` | UI mirror of the F-78 role matrix: houseCan(), validateStaffCapabilities(), isValidAccessPurpose(); not wired. |
 | `src/lib/router.tsx` | React-Router-shaped adapter over the TanStack router (Link, useNavigate, useParams, Navigate) for ported components. |
 | `src/lib/supabase-admin-env.server.ts` | Resolves the service-role key (EXTERNAL_SUPABASE_SERVICE_ROLE_KEY, then SUPABASE_SERVICE_ROLE_KEY). |
@@ -280,6 +295,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/pages/NotFound.tsx` | Unknown route page. |
 | `src/pages/PlaceholderPage.tsx` | Coming-soon page for the marketing slugs listed in the splat route. |
 | `src/pages/SignIn.tsx` | Sign-in/sign-up screen: starts Auth0 login and redirects signed-in users to ?next=. |
+| `src/pages/SignUp.test.tsx` | F-7 tests: the role picker and the sign-up hand-off to Auth0. |
 | `src/pages/SignUp.tsx` | F-7 /sign-up: Host or Vendor role picker, then Auth0 sign-up returning to /welcome?role=. |
 | `src/pages/Welcome.tsx` | F-7 /welcome onboarding wizard with progress bar: about you → host intent or vendor business → the right house. |
 
@@ -393,6 +409,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261109140000_f102_fund_pool.sql` | F-102: the ledger (ledger_accounts, journal_entries, postings), the fund pool, the wallet ledger, the 70/30 split, the refunds, the dispute freeze and the projections. |
 | `supabase/migrations/20261109160000_f106_market_benchmarks.sql` | F-106 migration: the `market_benchmarks` table (one observed price per place, from a sent quote), the `analytics` staff capability, the observation trigger on `public.quotes`, and the two read functions — the published range and the provenance. |
 | `supabase/migrations/20261109180000_f107_owanbe_ai.sql` | F-107 migration: the `ai_investigation` platform-staff capability, `app_private.ai_settings`, the `cases` and `ai_interactions` tables, the minimised payment-log read, the interaction log and the case opener. |
+| `supabase/migrations/20261110203000_f107_open_zdr_gate.sql` | F-107 follow-up: opens the zero-retention gate in `app_private.ai_settings` on the owner's confirmation (2026-11-10) that the platform's provider holds a zero-data-retention agreement, and carries the statement that closes it again. |
 
 #### supabase/tests/
 
@@ -413,6 +430,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f77_data_model.test.sql` | Host house provisioning, composite FK and constraint checks, staff visibility, grants/assignments, append-only audit, version |
 | `supabase/tests/f78_permissions.test.sql` | SQL suite for the F-78 functions: owner/staff rules, support and event-manager grants, purpose enforcement. |
 | `supabase/tests/f7_onboarding.test.sql` | SQL tests for F-7 (validation, completion rules, isolation, no phone in audit). |
+| `supabase/tests/payment-installation-retry.test.sql` | Proves the payment installation script can be rerun: the four tables survive and the grants and policies stay as they were. |
 | `supabase/tests/run-local.sh` | Runs stub + migrations + every *.test.sql on a throwaway Postgres 16 |
 | `supabase/tests/schema_conventions.test.sql` | Enforces conventions on every public table (uuid id, timestamptz, *_minor + currency, RLS, no client writes) |
 | `supabase/tests/supabase_stub.sql` | Local stand-in for Supabase roles and auth.jwt() |
