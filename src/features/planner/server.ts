@@ -198,6 +198,9 @@ export async function planAsCaller(request: Request): Promise<Response> {
 
   const { generatePlanOptions, PLANNER_MODEL } = await import("./planner.server");
   const outcome = await generatePlanOptions(input, facts);
+  // The model that answered, not the chain's first choice: the interaction log has to name the
+  // model that actually produced the plan.
+  const answeredModel = outcome.model ?? PLANNER_MODEL;
 
   const plan: GroundedPlan | null = outcome.ok ? outcome.plan : null;
   const status = outcome.ok ? "ok" : "error";
@@ -218,7 +221,7 @@ export async function planAsCaller(request: Request): Promise<Response> {
       p_budget_minor: input.budget_minor,
       p_budget_currency: input.budget_currency,
       p_brief: input.brief,
-      p_model: PLANNER_MODEL,
+      p_model: answeredModel,
       p_status: status,
       p_option_count: plan?.options.length ?? 0,
       p_plan_summary: planSummary,

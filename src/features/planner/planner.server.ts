@@ -36,8 +36,8 @@ export type PlannerFailureCode =
   "unconfigured" | "rate_limited" | "credits" | "unavailable" | "incomplete" | "unknown";
 
 export type PlannerOutcome =
-  | { ok: true; plan: GroundedPlan }
-  | { ok: false; code: PlannerFailureCode; error: string; retryable: boolean };
+  | { ok: true; plan: GroundedPlan; model: string }
+  | { ok: false; code: PlannerFailureCode; error: string; retryable: boolean; model?: string };
 
 function factsPrompt(facts: VendorFact[]): string {
   return facts
@@ -79,6 +79,11 @@ function emptyPlan(reason: string): GroundedPlan {
  * plain error: if the zero-retention gate ever refuses this surface, the host is told so.
  */
 function plannerFailure(failure: AiFailure): PlannerOutcome {
+  const outcome = plannerFailureMessage(failure);
+  return failure.model ? { ...outcome, model: failure.model } : outcome;
+}
+
+function plannerFailureMessage(failure: AiFailure): PlannerOutcome {
   switch (failure.code) {
     case "unconfigured":
       return {
@@ -146,6 +151,7 @@ export async function generatePlanOptions(
       plan: emptyPlan(
         "No vendor has published a profile yet, so there is nothing for the planner to build on. Come back once the marketplace has vendors, or open a vendor house of your own.",
       ),
+      model: PLANNER_MODEL,
     };
   }
 
@@ -157,5 +163,5 @@ export async function generatePlanOptions(
   });
 
   if (!outcome.ok) return plannerFailure(outcome.failure);
-  return { ok: true, plan: groundPlan(outcome.value, facts, input) };
+  return { ok: true, plan: groundPlan(outcome.value, facts, input), model: outcome.model };
 }

@@ -22,7 +22,7 @@ import {
   type PaymentEventRow,
   type PaymentLogRow,
 } from "./investigation";
-import { AI_MODELS, generateStructured, type AiFailure } from "@/lib/ai/provider.server";
+import { generateStructured, type AiFailure } from "@/lib/ai/provider.server";
 import { callAsCaller, callerToken } from "@/lib/db/caller.server";
 
 function json(body: unknown, status: number): Response {
@@ -382,7 +382,7 @@ export async function investigatePaymentAsCaller(request: Request): Promise<Resp
       ),
       p_response_text: summary,
       p_reason: null,
-      p_model: AI_MODELS.investigation,
+      p_model: outcome.model,
       p_outcome: FINDING_OUTCOME[finding],
       p_booking: bookingId,
     });

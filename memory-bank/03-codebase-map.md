@@ -217,7 +217,8 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/vendor-profile/contracts.test.ts` | Tests: the vendor profile brief validation and the copy result shape. |
 | `src/features/vendor-profile/contracts.ts` | Vendor profile contracts: the brief, the copy result and the save payload. |
 | `src/features/vendor-profile/copy.functions.ts` | Server function that verifies the caller before asking for AI copy. |
-| `src/features/vendor-profile/copy.server.ts` | Server-only: drafts vendor profile copy through the Lovable AI Gateway. |
+| `src/features/vendor-profile/copy.server.test.ts` | F-107 tests: the copy assistant drafts through the platform's provider and the provider's failures are said in the studio's own words. |
+| `src/features/vendor-profile/copy.server.ts` | Vendor copy assistant: drafts the profile copy through the platform's one AI provider (the gateway client is not written twice) and logs the draft as an interaction with the model that answered. |
 | `src/features/vendor-profile/presets.ts` | Vendor profile presets: categories, service options and tones. |
 | `src/features/vendor-profile/profile-data.test.ts` | Tests: the saved brief and the profile save payload. |
 | `src/features/vendor-profile/profile-data.ts` | Vendor profile data helpers: the saved brief, the publish state and the save payload. |
@@ -253,7 +254,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | File | Purpose |
 |---|---|
 | `src/lib/ai/provider.server.test.ts` | F-107 tests: the shared provider — the gateway, the model, the store-off rule, the refusals and the sensitive-request gate. |
-| `src/lib/ai/provider.server.ts` | F-107 the platform's one AI provider: the Lovable AI Gateway, the model table, the failure mapping and the gate that refuses a sensitive request while no zero-retention contract is confirmed. |
+| `src/lib/ai/provider.server.ts` | The platform's one AI provider: the model chains, the gateway, the zero-retention gate that refuses a sensitive request unless the database says the contract is confirmed, and the model that answered (every call sets store: false). |
 | `src/lib/auth/AuthProvider.tsx` | Auth context: idle session restore, admit via ensureAppUser + listHouses, login/logout/completeLogin/retry; `useAuth()` |
 | `src/lib/auth/auth0Client.ts` | LAZY CHUNK: Auth0 SPA client + Supabase client (accessToken = Auth0 token); rpc ensure_user / my_houses; safe returnTo. |
 | `src/lib/auth/config.functions.ts` | Server function that hands the browser only the public Auth0 identifiers. |
