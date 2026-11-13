@@ -258,7 +258,14 @@ affected feature, the status and the release impact. Approved answers move to
 ### Q19. How long may an offline door device keep admitting from its cache?
 
 - **Owner:** Ola (product owner)
-- **Status:** **open** (asked 2026-11-13)
+- **Status:** **answered** (asked 2026-11-13, answered 2026-11-13). The decision is
+  `docs/decisions/f108-offline-cache-window.md`: the offline cache is bounded by the **door
+  window** (the grant's own expiry, which the host sets), a device that has never synced or
+  whose window has closed admits nobody and answers `needs_sync`, and the door has one
+  reconciliation action — **sync the door** — that sends the waiting check-ins and fetches the
+  guest list again. No new threshold was invented; the platform's answer still wins whenever
+  the platform can be reached. The residual exposure is written down in the decision: while the
+  device is dark it cannot see a revocation, so the window is the bound on that.
 - **Detail:** The scanner's cache holds **hashes** of the admission credentials, never the
   credentials themselves, and a scan is hashed on the device before it is compared. That is the
   protection that lets the device work with no network. What is *not* settled is how a cache

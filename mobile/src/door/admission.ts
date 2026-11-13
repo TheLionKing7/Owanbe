@@ -8,9 +8,9 @@ import {
   queueCheckin,
   reconcileQueuedCheckin,
   verifyAgainstCache,
-  type CachedAdmission,
   type OfflineVerdict,
   type QueuedCheckin,
+  type ScannerCache,
 } from "../../../src/features/tickets/scanner";
 
 export interface CheckinOutcome {
@@ -35,10 +35,13 @@ export interface AdmitResult {
  * A card is admitted against the platform when the platform can be reached, and against the
  * cache when it cannot. An offline admission is kept in the queue and sent when the device is
  * back online, so the host still sees who came in.
+ *
+ * The cache is only good while it came from the platform and the door window behind it is open.
+ * A door that has never synced, or whose window has closed, is told to sync instead of admitting.
  */
 export async function admitCard(input: {
   credential: string;
-  cache: readonly CachedAdmission[];
+  cache: ScannerCache;
   queue: readonly QueuedCheckin[];
   online: (credential: string) => Promise<CheckinOutcome>;
   now?: Date;

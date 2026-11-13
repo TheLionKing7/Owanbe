@@ -4,7 +4,12 @@
  * does not hand out a guest list.
  */
 import type { PairingPayload } from "../../../src/features/tickets/pairing";
-import type { CachedAdmission, QueuedCheckin } from "../../../src/features/tickets/scanner";
+import {
+  emptyScannerCache,
+  type CachedAdmission,
+  type QueuedCheckin,
+  type ScannerCache,
+} from "../../../src/features/tickets/scanner";
 import { clearSecret, readSecret, writeSecret } from "../secure";
 
 const PAIRING_KEY = "owanbe.door.pairing";
@@ -37,18 +42,22 @@ export async function clearPairing(): Promise<void> {
   await clearSecret(PAIRING_KEY);
 }
 
-export async function saveCache(cache: readonly CachedAdmission[]): Promise<void> {
+export async function saveCache(cache: ScannerCache): Promise<void> {
   await writeSecret(CACHE_KEY, JSON.stringify(cache));
 }
 
-export async function loadCache(): Promise<CachedAdmission[]> {
+export async function loadCache(): Promise<ScannerCache> {
   const raw = await readSecret(CACHE_KEY);
-  if (!raw) return [];
+  if (!raw) return emptyScannerCache();
   try {
-    const parsed = JSON.parse(raw) as CachedAdmission[];
-    return Array.isArray(parsed) ? parsed : [];
+    const parsed = JSON.parse(raw) as ScannerCache | CachedAdmission[];
+    // A cache saved before the device kept track of its sync is treated as never synced, so the
+    // door has to reach the platform before it may admit anyone from it.
+    if (Array.isArray(parsed)) return { entries: parsed, synced_at: null };
+    if (!parsed || !Array.isArray(parsed.entries)) return emptyScannerCache();
+    return { entries: parsed.entries, synced_at: parsed.synced_at ?? null };
   } catch {
-    return [];
+    return emptyScannerCache();
   }
 }
 

@@ -3,7 +3,11 @@
  * the code the host gave them, and then the device admits guests.
  */
 import { useCallback, useEffect, useState } from "react";
-import type { CachedAdmission, QueuedCheckin } from "../../../src/features/tickets/scanner";
+import {
+  emptyScannerCache,
+  type QueuedCheckin,
+  type ScannerCache,
+} from "../../../src/features/tickets/scanner";
 import { restoreSession, signIn, signOut } from "../auth";
 import { Button, Notice, Screen } from "../ui";
 import { PairScreen } from "./PairScreen";
@@ -21,7 +25,7 @@ import {
 export function DoorScreen() {
   const [token, setToken] = useState<string | null>(null);
   const [pairing, setPairing] = useState<Pairing | null>(null);
-  const [cache, setCache] = useState<CachedAdmission[]>([]);
+  const [cache, setCache] = useState<ScannerCache>(emptyScannerCache);
   const [queue, setQueue] = useState<QueuedCheckin[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -41,7 +45,7 @@ export function DoorScreen() {
     })();
   }, []);
 
-  const changeCache = useCallback((rows: CachedAdmission[]) => {
+  const changeCache = useCallback((rows: ScannerCache) => {
     setCache(rows);
     void saveCache(rows);
   }, []);

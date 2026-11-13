@@ -15,7 +15,23 @@ export interface CachedAdmission {
   cache_expires_at: string;
 }
 
-export type OfflineOutcome = "admitted" | "duplicate" | "expired" | "unknown";
+/**
+ * The door's cache, and when it was last fetched from the platform. A cache that has never been
+ * fetched is empty: the device has no truth to admit from until it has spoken to the platform.
+ */
+export interface ScannerCache {
+  entries: readonly CachedAdmission[];
+  /** When the device last reached the platform for this cache. Null when it never has. */
+  synced_at: string | null;
+}
+
+export type OfflineOutcome = "admitted" | "duplicate" | "expired" | "unknown" | "needs_sync";
+
+/**
+ * Where the door stands. The cache may only be used when it came from the platform and the door
+ * window behind it is still open.
+ */
+export type DoorSyncState = "ready" | "never_synced" | "empty" | "window_closed";
 
 export interface OfflineVerdict {
   outcome: OfflineOutcome;
@@ -40,17 +56,48 @@ export async function hashCredential(
   return (await sha256(trimmed)).trim().toLowerCase();
 }
 
+/** A cache that has never been fetched: the device knows nothing yet. */
+export function emptyScannerCache(): ScannerCache {
+  return { entries: [], synced_at: null };
+}
+
+/**
+ * Where the door stands. The cache may only be used when it came from the platform and the door
+ * window behind it is still open; a device that has never synced, or whose window has closed, is
+ * not trusted and has to ask the platform before it admits anyone.
+ */
+export function doorSyncState(cache: ScannerCache, now: Date = new Date()): DoorSyncState {
+  if (!cache.synced_at) return "never_synced";
+  if (cache.entries.length === 0) return "empty";
+  if (cacheIsStale(cache.entries, now)) return "window_closed";
+  return "ready";
+}
+
+/**
+ * The cache may be used to answer for a card only when the platform put it there and the window
+ * behind it is open. An empty list the platform gave is still a truth: the card is simply unknown.
+ */
+export function cacheIsTrusted(cache: ScannerCache, now: Date = new Date()): boolean {
+  const state = doorSyncState(cache, now);
+  return state === "ready" || state === "empty";
+}
+
 /**
  * What a scanned card means when the device is offline. The cache is the whole truth then: a card
  * it does not know is unknown, a card past its expiry is expired, a card already admitted here is
- * a duplicate, and anything else is admitted.
+ * a duplicate, and anything else is admitted. A cache the door may not trust answers with
+ * "needs_sync" instead: the door has to reach the platform before it admits anyone.
  */
 export function verifyAgainstCache(
-  cache: readonly CachedAdmission[],
+  cache: ScannerCache,
   credentialHash: string,
   now: Date = new Date(),
 ): OfflineVerdict {
-  const entry = cache.find((row) => row.credential_hash === credentialHash);
+  const state = doorSyncState(cache, now);
+  if (state === "never_synced" || state === "window_closed") {
+    return { outcome: "needs_sync", name: null };
+  }
+  const entry = cache.entries.find((row) => row.credential_hash === credentialHash);
   if (!entry) return { outcome: "unknown", name: null };
   if (entry.status === "revoked") return { outcome: "unknown", name: null };
   if (new Date(entry.expires_at).getTime() <= now.getTime()) {

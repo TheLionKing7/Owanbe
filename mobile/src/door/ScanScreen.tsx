@@ -5,7 +5,12 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import type { CachedAdmission, QueuedCheckin } from "../../../src/features/tickets/scanner";
+import {
+  doorSyncState,
+  type CachedAdmission,
+  type QueuedCheckin,
+  type ScannerCache,
+} from "../../../src/features/tickets/scanner";
 import { ApiError, apiErrorMessage, rpc } from "../api";
 import { QrScanner } from "../qr";
 import { readNdefText } from "../nfc";
@@ -24,6 +29,7 @@ const OUTCOME_COPY: Record<string, string> = {
   duplicate: "Already admitted",
   expired: "This card has expired",
   unknown: "This card is not on the list",
+  needs_sync: "The door has to reach the platform before it admits anyone",
 };
 
 export function ScanScreen({
@@ -37,9 +43,9 @@ export function ScanScreen({
 }: {
   token: string;
   pairing: Pairing;
-  cache: CachedAdmission[];
+  cache: ScannerCache;
   queue: QueuedCheckin[];
-  onCacheChange: (cache: CachedAdmission[]) => void;
+  onCacheChange: (cache: ScannerCache) => void;
   onQueueChange: (queue: QueuedCheckin[]) => void;
   onSignOut: () => void;
 }) {
@@ -48,6 +54,8 @@ export function ScanScreen({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [scanKey, setScanKey] = useState(0);
+
+  const syncState = doorSyncState(cache);
 
   const record = useCallback(
     async (credential: string) => {
@@ -84,28 +92,16 @@ export function ScanScreen({
     [cache, onQueueChange, pairing, queue, token],
   );
 
-  async function refreshCache() {
+  /**
+   * One reconciliation: the waiting check-ins go to the platform and the guest list comes back
+   * fresh, so the door's cache says what the platform says now. A door that cannot do this has no
+   * list it may trust, and says so instead of admitting on stale truth.
+   */
+  async function syncDoor() {
     setError(null);
     setBusy(true);
     try {
-      const rows = await rpc<CachedAdmission[]>(
-        "scanner_admissions",
-        { p_grant: pairing.grant_id, p_device_id: pairing.device_id },
-        token,
-      );
-      onCacheChange(rows);
-    } catch (caught) {
-      setError(apiErrorMessage(caught));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function sendQueue() {
-    setError(null);
-    setBusy(true);
-    try {
-      const result = await flushQueue({
+      const flushed = await flushQueue({
         queue,
         online: async (credential, occurredAt) =>
           await rpc<CheckinOutcome>(
@@ -120,11 +116,17 @@ export function ScanScreen({
             token,
           ),
       });
-      onQueueChange(result.remaining);
-      if (result.verdicts.length > 0) {
-        const last = result.verdicts[result.verdicts.length - 1];
+      onQueueChange(flushed.remaining);
+      if (flushed.verdicts.length > 0) {
+        const last = flushed.verdicts[flushed.verdicts.length - 1];
         setOutcome(last ?? null);
       }
+      const rows = await rpc<CachedAdmission[]>(
+        "scanner_admissions",
+        { p_grant: pairing.grant_id, p_device_id: pairing.device_id },
+        token,
+      );
+      onCacheChange({ entries: rows, synced_at: new Date().toISOString() });
     } catch (caught) {
       setError(apiErrorMessage(caught));
     } finally {
@@ -154,8 +156,8 @@ export function ScanScreen({
   }
 
   useEffect(() => {
-    if (cache.length === 0) void refreshCache();
-    // The cache is loaded once when the door opens; afterwards the door keeps what it has.
+    if (!cache.synced_at) void syncDoor();
+    // The list is fetched once when the door opens; afterwards the door keeps what it has.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -163,17 +165,37 @@ export function ScanScreen({
     <Screen title="The door">
       <View style={styles.summary}>
         <Text style={styles.summaryText}>
-          {pairing.device_id} · {cache.length} cards cached
+          {pairing.device_id} · {cache.entries.length} cards cached
           {queue.length > 0 ? ` · ${queue.length} waiting to be sent` : ""}
         </Text>
         <Text style={styles.summaryHint}>
-          Allowed until {formatDay(pairing.expires_at)}. The host can take this device back at any
-          time.
+          Allowed until {formatDay(pairing.expires_at)}. That is the door's window: after it, the
+          device admits nobody until the host pairs it again.
         </Text>
       </View>
 
+      {syncState === "never_synced" && (
+        <Notice tone="info" testID="door-never-synced">
+          This door has not reached the platform yet. Sync it so it can admit guests even when the
+          network is down.
+        </Notice>
+      )}
+      {syncState === "window_closed" && (
+        <Notice tone="error" testID="door-window-closed">
+          This door's window has closed. Ask the host for a new pairing before admitting anyone.
+        </Notice>
+      )}
       {outcome && (
-        <Notice tone={outcome.outcome === "admitted" ? "good" : "error"} testID="scan-outcome">
+        <Notice
+          tone={
+            outcome.outcome === "admitted"
+              ? "good"
+              : outcome.outcome === "needs_sync"
+                ? "info"
+                : "error"
+          }
+          testID="scan-outcome"
+        >
           {OUTCOME_COPY[outcome.outcome] ?? "That card could not be admitted."}
           {outcome.name ? ` · ${outcome.name}` : ""}
         </Notice>
@@ -193,7 +215,16 @@ export function ScanScreen({
         }}
       />
 
-      <Button label="Read an NFC tag" tone="quiet" onPress={() => void readTag()} busy={busy} />
+      <Button
+        label="Fast track: read an NFC tag"
+        tone="quiet"
+        onPress={() => void readTag()}
+        busy={busy}
+      />
+      <Text style={styles.summaryHint}>
+        The camera reads a card on every phone. Reading a tag is a fast track for the phones that
+        have NFC.
+      </Text>
 
       <Field
         label="Or type the code"
@@ -210,19 +241,15 @@ export function ScanScreen({
       />
 
       <Button
-        label="Refresh the cache"
-        tone="quiet"
-        onPress={() => void refreshCache()}
+        label={
+          queue.length > 0
+            ? `Sync the door and send ${queue.length} waiting check-in${queue.length === 1 ? "" : "s"}`
+            : "Sync the door"
+        }
+        onPress={() => void syncDoor()}
         busy={busy}
+        testID="sync-door"
       />
-      {queue.length > 0 && (
-        <Button
-          label={`Send ${queue.length} waiting check-in${queue.length === 1 ? "" : "s"}`}
-          tone="quiet"
-          onPress={() => void sendQueue()}
-          busy={busy}
-        />
-      )}
       <Button label="Sign out" tone="quiet" onPress={onSignOut} />
     </Screen>
   );

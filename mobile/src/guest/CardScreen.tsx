@@ -58,7 +58,9 @@ export function CardScreen({
     setBusy(true);
     try {
       if (!(await nfcSupported()) || !(await nfcEnabled())) {
-        setNfcMessage("NFC is not available on this phone.");
+        setNfcMessage(
+          "Writing to a tag is not available on this phone. The code below is the way in.",
+        );
         return;
       }
       await writeNdefText(current);
@@ -67,7 +69,7 @@ export function CardScreen({
       setError(
         caught instanceof ApiError
           ? apiErrorMessage(caught)
-          : "This phone could not write to the tag. On iPhone, showing the code is the way.",
+          : "This phone could not write to the tag. Showing the code is the way — the camera reads it on any phone.",
       );
     } finally {
       setBusy(false);
@@ -92,7 +94,8 @@ export function CardScreen({
             {current}
           </Text>
           <Text style={styles.hint}>
-            Show this at the door, or write it to an NFC tag. Works until {formatDay(expiresAt)}.
+            Show this at the door — the camera reads it on any phone. On Android you can also write
+            it to an NFC tag for a faster entry. Works until {formatDay(expiresAt)}.
           </Text>
         </View>
       )}
@@ -109,7 +112,7 @@ export function CardScreen({
             testID="copy-code"
           />
           <Button
-            label="Write to an NFC tag"
+            label="Optional: write to an NFC tag (Android only)"
             tone="quiet"
             onPress={() => void writeTag()}
             busy={busy}
