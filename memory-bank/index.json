@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-13T08:15:45.948Z",
+  "updatedAt": "2026-11-13T08:38:24.650Z",
   "docs": [
     {
       "file": "README.md",
@@ -190,7 +190,7 @@
     "docs/journal/2026-11-12-F-90-paystack-webhook-signature.md": "e1b8e05fdee11f64",
     "docs/journal/2026-11-13-F-107-ai-console.md": "228ebbe9ef6a2d93",
     "docs/journal/2026-11-13-F-126-observability-dashboard.md": "ec8cb69af68ed024",
-    "docs/journal/2026-11-13-F-46-investigation-only-role.md": "38a707ea2f44e1ba",
+    "docs/journal/2026-11-13-F-46-investigation-only-role.md": "908177519e433e24",
     "docs/open-questions.md": "a300435b944fbdcf",
     "docs/sql/2026-11-10-cancellation-tokens-dva.sql": "7c2bdb5f11353ca5",
     "docs/sql/2026-11-10-f13-booking-completion.sql": "fe5344db5c7db548",
@@ -460,7 +460,7 @@
     "supabase/migrations/20261110203000_f107_open_zdr_gate.sql": "c239e8cd604757cf",
     "supabase/migrations/20261112100000_f14_counter_response_deadline.sql": "51d6c562af7c235c",
     "supabase/migrations/20261112110000_f23_counter_offer_in_chat.sql": "e685f988129b2f11",
-    "supabase/migrations/20261112130000_f46_investigation_only_role.sql": "cf9e969f0b4f79e5",
+    "supabase/migrations/20261112130000_f46_investigation_only_role.sql": "2591a2b24c02ba65",
     "supabase/migrations/20261112140000_f126_observability_dashboard.sql": "57924ad6a7650048",
     "supabase/migrations/20261113120000_f107_ai_console.sql": "89a71284872f95c4",
     "supabase/tests/db_state_check.sql": "188d306fdb5ad0d7",
@@ -477,7 +477,7 @@
     "supabase/tests/f23_counter_offer_in_chat.test.sql": "eebaa933b13c1867",
     "supabase/tests/f38_soft_hold.test.sql": "3d404c708a83bc5f",
     "supabase/tests/f40_guest_privacy.test.sql": "198618bb48a4a043",
-    "supabase/tests/f46_investigation_only.test.sql": "3ac070b407036600",
+    "supabase/tests/f46_investigation_only.test.sql": "d80e01dbc8cc11d5",
     "supabase/tests/f60_payment_data_protection.test.sql": "d041edb6be9cf91f",
     "supabase/tests/f76_auth.test.sql": "c973a5b114b5cbef",
     "supabase/tests/f77_data_model.test.sql": "5e6029fa8682602f",
