@@ -17,6 +17,8 @@ export interface QuoteSummary {
   current_revision: number;
   sent_at: string | null;
   expires_at: string | null;
+  /** The vendor's deadline to answer a host counter. Set only while the quote is countered. */
+  counter_response_due_at: string | null;
   decided_at: string | null;
   close_note: string | null;
   version: number;

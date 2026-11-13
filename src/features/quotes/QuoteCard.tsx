@@ -2,7 +2,14 @@ import { useState } from "react";
 import type { HoldSummary } from "@/features/holds/contracts";
 import { paymentWindow, REFUND_COPY, RELEASE_COPY } from "@/features/holds/contracts";
 import type { QuoteRevision, QuoteSummary } from "./api";
-import { actionsFor, countdownFrom, formatMinor, STATUS_LABELS, type QuoteSide } from "./contracts";
+import {
+  actionsFor,
+  counterDeadlineLabel,
+  countdownFrom,
+  formatMinor,
+  STATUS_LABELS,
+  type QuoteSide,
+} from "./contracts";
 
 export type QuoteAction = "send" | "revise" | "cancel" | "accept" | "decline" | "counter";
 
@@ -54,7 +61,11 @@ export function QuoteCard({
   const [cancelReason, setCancelReason] = useState("");
   const [mode, setMode] = useState<null | "counter" | "cancel">(null);
   const actions = actionsFor(quote.status, side);
-  const countdown = countdownFrom(quote.expires_at, now);
+  // A countered quote is waiting for the vendor, so the deadline that ends it is the one the
+  // counter set, not the one the send set.
+  const countered = quote.status === "countered";
+  const deadline = countered ? quote.counter_response_due_at : quote.expires_at;
+  const countdown = countdownFrom(deadline, now);
   const pay = hold?.status === "awaiting_payment" ? paymentWindow(hold.payment_due_at, now) : null;
   const busy = pending !== null;
 
@@ -108,8 +119,9 @@ export function QuoteCard({
             countdown.expired ? "bg-ink-subtle/15 text-ink-muted" : "bg-gold-100 text-plum-900"
           }`}
           data-testid="quote-countdown"
+          data-deadline={countered ? "counter" : "offer"}
         >
-          {countdown.label}
+          {countered ? counterDeadlineLabel(side, countdown) : countdown.label}
         </p>
       )}
 

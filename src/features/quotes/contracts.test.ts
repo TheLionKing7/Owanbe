@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   actionsFor,
+  counterDeadlineLabel,
   countdownFrom,
   currencySchema,
   dailyCapacitySchema,
@@ -183,5 +184,27 @@ describe("the deadline the server set", () => {
   it("has nothing to count down before a quote is sent", () => {
     expect(countdownFrom(null, now)).toBeNull();
     expect(countdownFrom("not-a-date", now)).toBeNull();
+  });
+});
+
+describe("the counter's vendor deadline", () => {
+  const now = new Date("2026-11-04T12:00:00.000Z");
+
+  it("tells the vendor the window is theirs and the host how long the vendor has", () => {
+    const countdown = countdownFrom("2026-11-05T12:00:00.000Z", now);
+    expect(counterDeadlineLabel("vendor", countdown!)).toBe(
+      "You have 24h 0m to respond. After that the offer expires and the date is released.",
+    );
+    expect(counterDeadlineLabel("host", countdown!)).toBe(
+      "The vendor has 24h 0m to respond. After that the offer expires and the date is released.",
+    );
+  });
+
+  it("says so plainly once the window has closed", () => {
+    const countdown = countdownFrom("2026-11-04T11:59:59.000Z", now);
+    expect(counterDeadlineLabel("host", countdown!)).toBe(
+      "The vendor's time to respond has run out",
+    );
+    expect(counterDeadlineLabel("vendor", countdown!)).toBe("Your time to respond has run out");
   });
 });

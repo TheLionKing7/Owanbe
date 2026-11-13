@@ -45,6 +45,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/decisions/2026-11-06-feature-requests-competitive.md` | Owner decision record for the competitive feature requests raised on 2026-11-06. |
 | `docs/decisions/2026-11-10-payments-owner-answers.md` | Owner decision record for the open payment questions: custody stays with Paystack, the cancellation refund percentages, the dedicated virtual account, the two-approval threshold and read-only AI. |
 | `docs/decisions/f13-chat-owns-its-feature-code.md` | Owner decision: in-app chat gets its own feature code (F-100) and is built before F-13's direct search and book flow. |
+| `docs/decisions/f14-counter-response-deadline.md` | Decision record: a host counter starts the vendor's 24-hour response deadline, the counter deadline governs while the quote is countered, and the host is told when it closes. |
 | `docs/decisions/f14-quote-date-lock.md` | Owner decision on the F-14 quote date lock: which dates a quote holds and when expiry restarts. |
 | `docs/decisions/f79-monitoring-configuration.md` | F-79 decision record: browser-only Sentry with a strict allowlist; do not call monitoring active yet. |
 | `docs/decisions/f80-ci-install-and-test-gate.md` | Owner decision to install and test the CI gate before running it. |
@@ -73,6 +74,9 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-10-f13-payments-wiring.md` | Journal: the F-13, F-20/F-21, F-48 and F-60 wiring (the cancel action, quote requests, the dedicated account, the saved authorisation reference) and what was never applied. |
 | `docs/journal/2026-11-10-payment-completion-blocked.md` | Journal: the remaining payment and AI work is blocked — Sage 7 returned no task and the compliance specification leaves custody, KYC and thresholds unresolved. |
 | `docs/journal/2026-11-10-signup-sql-repair.md` | Journal: the F-76/F-7/F-13 installation and sign-up repair — repeatable SQL, the event-planner sign-up and the standalone Auth0 navigation. |
+| `docs/journal/2026-11-12-F-1-workspace-switcher.md` | F-1 build journal: what the audit found, the confirmation step, the per-house badge and the checks run |
+| `docs/journal/2026-11-12-F-14-counter-response-deadline.md` | F-14 build journal: the vendor response deadline, the expiry that releases the date, the host alert, and the alternatives that are still not built |
+| `docs/journal/2026-11-12-F-90-paystack-webhook-signature.md` | F-90 build journal: the route-level test that proves the webhook checks the signature itself, and the four ways a forged request is refused |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
 | `docs/sql/2026-11-10-cancellation-tokens-dva.sql` | Installation script, superseded by the combined one: the cancellation refund function, the cancellation, authorisation and dedicated-account tables. |
 | `docs/sql/2026-11-10-f13-booking-completion.sql` | The combined installation script: cancellation and refunds, saved Paystack authorisation references, dedicated virtual accounts and the F-13 quote requests. |
@@ -223,6 +227,8 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/vendor-profile/profile-data.test.ts` | Tests: the saved brief and the profile save payload. |
 | `src/features/vendor-profile/profile-data.ts` | Vendor profile data helpers: the saved brief, the publish state and the save payload. |
 | `src/features/vendor-profile/public.functions.ts` | Server functions: the public reads of published vendor profiles. |
+| `src/features/workspace/HouseSwitcher.test.tsx` | F-1 switcher tests: both houses listed, per-house unread badge, confirm-before-switch, cancel stays, one-house account, unreadable house |
+| `src/features/workspace/HouseSwitcher.tsx` | F-1 house switcher: the caller's own houses with a badge each, and a confirmation before the house changes |
 
 #### src/hooks/
 
@@ -337,6 +343,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/api/payments/verify.ts` | POST /api/payments/verify — the browser check of a Paystack reference; the allocation happens on the webhook or here, never twice. |
 | `src/routes/api/planner/generate.ts` | POST /api/planner/generate — the grounded answer, logged as the caller's own interaction. |
 | `src/routes/api/planner/report.ts` | POST /api/planner/report — report one answer against the caller's own interaction. |
+| `src/routes/api/public/paystack/webhook.test.ts` | F-90 route tests: the webhook route refuses an unsigned, wrong-key or altered-body request and records a signed charge |
 | `src/routes/api/public/paystack/webhook.ts` | POST /api/public/paystack/webhook: verifies the signature and logs the event name only. |
 | `src/routes/chat.$id.tsx` | The /chat/:id page: one conversation between a host house and a vendor house. |
 | `src/routes/host.tsx` | /host layout: RequireAuth inside HouseLayout houseId=host. |
@@ -411,6 +418,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261109160000_f106_market_benchmarks.sql` | F-106 migration: the `market_benchmarks` table (one observed price per place, from a sent quote), the `analytics` staff capability, the observation trigger on `public.quotes`, and the two read functions — the published range and the provenance. |
 | `supabase/migrations/20261109180000_f107_owanbe_ai.sql` | F-107 migration: the `ai_investigation` platform-staff capability, `app_private.ai_settings`, the `cases` and `ai_interactions` tables, the minimised payment-log read, the interaction log and the case opener. |
 | `supabase/migrations/20261110203000_f107_open_zdr_gate.sql` | F-107 follow-up: opens the zero-retention gate in `app_private.ai_settings` on the owner's confirmation (2026-11-10) that the platform's provider holds a zero-data-retention agreement, and carries the statement that closes it again. |
+| `supabase/migrations/20261112100000_f14_counter_response_deadline.sql` | F-14 follow-up: the counter-response deadline (`quotes.counter_response_due_at`), the state shape that says which deadline governs a quote, the expiry that releases the date when the vendor runs out of time, and the `counter_ignored` house alert. |
 
 #### supabase/tests/
 
@@ -423,6 +431,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f102_fund_pool.test.sql` | F-102 SQL tests: the allocation, the replay, the completion, the refund, the freeze, the append-only ledger and the house isolation. |
 | `supabase/tests/f106_market_benchmarks.test.sql` | F-106 SQL suite: a sent quote becomes an observed price with its provenance, a new price supersedes the old one, an unverified or withdrawn quote never reaches the market, one vendor is not a range, and only the planner's Host houses and the `analytics` capability may read. |
 | `supabase/tests/f107_owanbe_ai.test.sql` | F-107 SQL suite: the closed gate, the grant, the minimised trail, the logged interaction, the opened case and the proof that the AI path cannot allocate, refund, settle, freeze, unfreeze, complete or release. |
+| `supabase/tests/f14_counter_response.test.sql` | F-14 SQL tests for the counter deadline: the window the counter starts, the expiry that releases the date, the audit reason, the host alert and the vendor's re-send. |
 | `supabase/tests/f14_quotes.test.sql` | F-14 SQL tests: quote revisions, transitions and vendor-only authoring. |
 | `supabase/tests/f38_soft_hold.test.sql` | F-38 SQL tests: hold creation, the payment window and release. |
 | `supabase/tests/f40_guest_privacy.test.sql` | F-40 SQL tests: default privacy, masking, sharing and revocation. |

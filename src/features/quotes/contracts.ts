@@ -215,3 +215,19 @@ export function countdownFrom(
     label: hours > 0 ? `${hours}h ${minutes}m left to respond` : `${minutes}m left to respond`,
   };
 }
+
+/**
+ * The copy for the deadline a host counter starts. A countered quote is waiting for the vendor,
+ * so the window belongs to them; the host is told how long the vendor has.
+ */
+export function counterDeadlineLabel(side: QuoteSide, countdown: Countdown): string {
+  if (countdown.expired) {
+    return side === "vendor"
+      ? "Your time to respond has run out"
+      : "The vendor's time to respond has run out";
+  }
+  const window = `${countdown.hours}h ${countdown.minutes}m`;
+  return side === "vendor"
+    ? `You have ${window} to respond. After that the offer expires and the date is released.`
+    : `The vendor has ${window} to respond. After that the offer expires and the date is released.`;
+}

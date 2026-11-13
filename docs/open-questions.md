@@ -9,17 +9,24 @@ affected feature, the status and the release impact. Approved answers move to
 ### Q1. What stops a vendor from ignoring a counter-offer?
 
 - **Owner:** Ola (product owner)
-- **Status:** open — asked in the F-14 feature spec, still unanswered
+- **Status:** **answered 2026-11-12** — the feature spec's own answer is now built:
+  a host counter starts a 24-hour vendor response deadline; if the vendor neither
+  revises nor declines by then, the quote expires, the date lock is released and
+  the host is told their counter went unanswered. See
+  `docs/decisions/f14-counter-response-deadline.md`.
 - **Affected:** F-14 (counter path), F-23 Quote Counter-Offer Controls (`planned`),
   F-22 Trust Score System (blocked), F-24 Multi-channel Notification Delivery (blocked)
-- **Release impact:** a host can counter, and the vendor's 24-hour clock keeps
-  running, but nothing in F-14 pressures the vendor to respond. The quote simply
-  expires. No reminder, penalty or ranking consequence was implemented, because
-  inventing one would put an unapproved business rule into the database.
-- **What was built instead:** the counter is recorded as a host-authored revision
-  with a required message, it does not restart the vendor's deadline, and the
-  vendor can revise and re-send (which does restart it). That is the whole
-  behaviour; the enforcement question is left to F-23/F-22.
+- **Release impact:** the counter is recorded as a host-authored revision with a
+  required message, and it now starts the vendor's own 24-hour window
+  (`quotes.counter_response_due_at`). The expiry is audited as
+  `vendor_response_overdue` and raises a `counter_ignored` alert in the host
+  house. **Still not built:** the "show the host relevant alternatives" half of
+  the spec answer — listing other vendors for that date needs vendor discovery
+  and a relevance rule (F-13, F-35, F-27), the same gap Q5 records for F-38. The
+  host is told the date is free again and that they can ask the vendor or look
+  for another vendor. No reminder, penalty or ranking consequence was
+  implemented, because inventing one would put an unapproved business rule into
+  the database.
 
 ### Q2. Where does a vendor get the host house ID to quote for?
 
