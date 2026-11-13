@@ -61,6 +61,13 @@ create temp table b1 (id uuid);
 create temp table ai_grant (id uuid);
 grant select, insert on ids, q1, b1, ai_grant to authenticated, anon, service_role, investigation_only;
 
+-- The suite reads its own temporary tables after switching role, and a session's temporary
+-- schema belongs to the session's role alone, so it is opened to the roles the suite uses.
+do $$ begin
+  execute format('grant usage on schema %I to authenticated, anon, service_role, investigation_only',
+                 pg_my_temp_schema()::regnamespace::text);
+end $$;
+
 insert into ai_grant select id from public.staff_grants
  where capability = 'ai_investigation'
    and user_id = (select investigator from ids);
@@ -103,15 +110,29 @@ do $$ declare r record; begin
   assert r.rolinherit = false, 'the identity inherits nothing';
 end $$;
 
--- It belongs to no role and no role belongs to it, so there is no path in and no path out.
+-- It belongs to no role, so there is no path out. And nobody may act as it: from Postgres 16 on,
+-- a membership carries the SET option, and only that option lets a member become the role —
+-- Postgres records the role that created a role as an admin member of it, with the SET option
+-- off, so that member may administer the role but may not act as it. Before Postgres 16 any
+-- member could become the role, so the identity must have no member at all.
 do $$ declare n bigint; begin
   select count(*) into n from pg_auth_members m join pg_roles r on r.oid = m.member
    where r.rolname = 'investigation_only';
   assert n = 0, 'the identity is a member of no role, got ' || n::text;
 
-  select count(*) into n from pg_auth_members m join pg_roles r on r.oid = m.roleid
-   where r.rolname = 'investigation_only';
-  assert n = 0, 'the identity has no members, got ' || n::text;
+  if current_setting('server_version_num')::int >= 160000 then
+    select count(*) into n
+      from pg_auth_members m
+      join pg_roles r on r.oid = m.roleid
+     where r.rolname = 'investigation_only' and m.set_option;
+    assert n = 0, 'nobody may act as the identity, got ' || n::text;
+  else
+    select count(*) into n
+      from pg_auth_members m
+      join pg_roles r on r.oid = m.roleid
+     where r.rolname = 'investigation_only';
+    assert n = 0, 'the identity has no member, got ' || n::text;
+  end if;
 end $$;
 
 -- ---------------------------------------------------------------------------
@@ -156,9 +177,14 @@ end $$;
 -- 4. Nobody can become the identity
 -- ---------------------------------------------------------------------------
 do $$ declare n bigint; begin
-  select count(*) into n from (values ('authenticated'), ('anon'), ('service_role')) as r(name)
-   where pg_has_role(r.name, 'investigation_only', 'member')
-      or pg_has_role(r.name, 'investigation_only', 'set');
+  if current_setting('server_version_num')::int >= 160000 then
+    select count(*) into n from (values ('authenticated'), ('anon'), ('service_role')) as r(name)
+     where pg_has_role(r.name, 'investigation_only', 'member')
+        or pg_has_role(r.name, 'investigation_only', 'set');
+  else
+    select count(*) into n from (values ('authenticated'), ('anon'), ('service_role')) as r(name)
+     where pg_has_role(r.name, 'investigation_only', 'member');
+  end if;
   assert n = 0, 'no application role may become the identity, got ' || n::text;
 end $$;
 
@@ -203,6 +229,24 @@ end $$;
 -- ---------------------------------------------------------------------------
 -- 6. Acting as the identity, it can read the minimised view and nothing else
 -- ---------------------------------------------------------------------------
+-- Acting as the identity needs the runner to be able to SET ROLE it, and a non-superuser
+-- runner that created the role cannot: from Postgres 16 on, such a creator is recorded as an
+-- admin member of the role with the SET option off. The runner takes the membership for the
+-- length of this section and gives it straight back, so the identity is left with nobody able
+-- to act as it.
+do $$
+declare
+  v_runner text := current_user;
+begin
+  begin
+    execute format('grant investigation_only to %I', v_runner);
+  exception when insufficient_privilege then
+    raise exception
+      'F-46: % cannot take membership in investigation_only. Run: grant investigation_only to % with admin option; as a superuser, then run this suite again.',
+      v_runner, v_runner;
+  end;
+end $$;
+
 begin;
   set local role investigation_only;
   select pg_temp.expect_error($q$select * from public.fund_pool$q$, 'permission denied');
@@ -228,6 +272,18 @@ begin;
     assert n = 1, 'the identity sees the booking, got ' || n::text;
   end $$;
 commit;
+
+-- The membership goes back, so that nobody is left able to act as the identity.
+do $$
+declare
+  v_runner text := current_user;
+begin
+  if current_setting('server_version_num')::int >= 160000 then
+    execute format('revoke investigation_only from %I granted by %I', v_runner, v_runner);
+  else
+    execute format('revoke investigation_only from %I', v_runner);
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- 7. The investigator's read is unchanged, and it is still the AI's own read

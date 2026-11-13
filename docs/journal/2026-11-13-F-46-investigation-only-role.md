@@ -19,9 +19,10 @@ the money was a `GRANT` check on a capability — not an identity of its own.
 
 - `supabase/migrations/20261112130000_f46_investigation_only_role.sql`
   - **The identity.** A new role `investigation_only`: `nologin`, `nosuperuser`,
-    `nocreatedb`, `nocreaterole`, `noinherit`. It is a member of no role and no role is
-    a member of it, so there is no path into it and no privilege reaches it by
-    inheritance.
+    `nocreatedb`, `nocreaterole`, `noinherit`. It is a member of no role, so no privilege
+    reaches it by inheritance, and the only membership it may have is the platform's own
+    administrator, which PostgreSQL itself records when the role is created and which
+    holds no `SET` option, so nobody may act as it.
   - **What it may read, and nothing else.** Two minimised views in `app_private`:
     `investigation_payment_view` (what was paid, what is held, what was released, what
     was refunded, whether the money is frozen, the counts and the hours since payment)
@@ -68,6 +69,49 @@ The read is `SECURITY DEFINER` so the *caller* is still the one who is checked: 
 signed-in investigator, through the platform's own RPC. The identity is the **subject**
 of the read, not a substitute caller.
 
+## The handover failed on a non-superuser runner (2026-11-13)
+
+The owner applied the migration to the platform's own database and it stopped here:
+
+```
+ERROR: 42501: must be able to SET ROLE "investigation_only"
+```
+
+That is the handover, not the identity. `ALTER FUNCTION … OWNER TO` requires the runner to
+be able to `SET ROLE` the new owner, and the runner that created the role cannot:
+
+- From PostgreSQL 16 on, a `CREATEROLE` user that creates a role is recorded as an **admin
+  member** of it — granted by the bootstrap superuser, with `ADMIN` on and the `SET` option
+  **off**. The runner may therefore administer the role but may not act as it, and the
+  handover was refused. (`createrole_self_grant`, the setting that would have granted the
+  `SET` option automatically, is empty by default.)
+- Before PostgreSQL 16, membership alone was enough to `SET ROLE`, and a `CREATEROLE` user
+  could grant membership in any non-superuser role outright.
+
+The fix gives the runner the membership for the length of each handover and takes it
+straight back:
+
+- `grant investigation_only to <runner>` — one statement on every supported version, because
+  from PostgreSQL 16 on a new membership carries the `SET` option by default.
+- the `ALTER FUNCTION … OWNER TO`, inside the same block.
+- `revoke investigation_only from <runner> granted by <runner>` on PostgreSQL 16 and later,
+  plain `revoke` before that. The grantor is named on purpose: the administrative
+  membership Postgres created itself was granted by the bootstrap superuser and must be
+  left alone.
+- if the handover fails, the membership is still taken back and the original error is
+  re-raised with its SQLSTATE, so nothing is left behind and nothing is swallowed.
+
+The suite got the same treatment around its `set local role investigation_only` block,
+and one assertion was corrected rather than kept: the identity may have **one** member on
+PostgreSQL 16 and later — the platform's own administrator, which Postgres itself
+records, with the `SET` option off, so nobody may act as it. The suite now asserts that
+no membership carries the `SET` option (and on PostgreSQL 15 and earlier, that the
+identity has no member at all) rather than asserting that it has no members.
+
+This is still **unexecuted** here: this machine has no PostgreSQL 16 and Docker does not
+work on it, so the corrected SQL has been written to be read. It runs in the `database`
+job of `.github/workflows/verify.yml`.
+
 ## How it was checked
 
 - `node scripts/sql-shape-check.mjs` on the new migration and the new suite: shape OK.
@@ -82,8 +126,8 @@ of the read, not a substitute caller.
   The SQL in this change is therefore **unexecuted**: it has been written to be read,
   not proven to run.
 - `supabase/tests/f46_investigation_only.test.sql` (written, unexecuted) asserts, over
-  its own fixtures: the role exists and is powerless in itself; it is a member of
-  nothing and has no members; it holds no `SELECT`, `INSERT`, `UPDATE` or `DELETE` on
+  its own fixtures: the role exists and is powerless in itself; it is a member of nothing
+  and nobody may act as it; it holds no `SELECT`, `INSERT`, `UPDATE` or `DELETE` on
   any of twelve tables including every payment table, `public.cases` and
   `public.ai_interactions`; it holds no `EXECUTE` on the nine money functions nor on
   the two payment RPCs; no application role may become it; both reads are owned by it

@@ -21,7 +21,10 @@
 --     the application already calls. They carry no table access of their own.
 --
 -- Invariants this file owns:
---   * investigation_only cannot sign in, is a member of no role and has no members. The only way
+--   * investigation_only cannot sign in and is a member of no role. The only membership it may
+--     have is the platform's own administrator: from Postgres 16 on, Postgres records the role
+--     that created a role as an admin member of it, with the SET option off, so that member may
+--     administer the role but may not act as it. Nobody may become the identity; the only way
 --     to act as it is through the two functions it owns, and both check the caller first.
 --   * it can read the two minimised views and call four helpers. Nothing else.
 --   * it holds no grant on any payment table, no grant on a case or an interaction, and no
@@ -37,7 +40,10 @@
 -- The identity
 -- ---------------------------------------------------------------------------
 -- It cannot sign in, it is not a superuser, it creates nothing, and it inherits nothing. The
--- migration runner is the cluster owner, so it may hand the role an object to own.
+-- migration runner creates it, and from Postgres 16 on Postgres makes that runner an admin
+-- member of the role it created — with the SET option off, so the runner may administer the
+-- role but may not act as it. The runner takes the membership for the length of each handover
+-- below and gives it straight back.
 do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'investigation_only') then
     create role investigation_only nologin nosuperuser nocreatedb nocreaterole noinherit;
@@ -233,7 +239,40 @@ do $$ begin
     'grant execute on function app_private.investigation_read(uuid, text) to %I', current_user);
 end $$;
 grant create on schema app_private to investigation_only;
-alter function app_private.investigation_read(uuid, text) owner to investigation_only;
+
+-- Handing the function over needs the runner to be able to SET ROLE the new owner. A
+-- non-superuser runner that created the role cannot: from Postgres 16 on, such a creator is
+-- recorded as an admin member of the role with the SET option off, so it may administer the
+-- role but may not act as it. The runner takes the membership for the length of the handover
+-- and gives it straight back, so nobody is left able to act as the identity.
+--
+-- The membership grant is one statement on every supported version: from Postgres 16 on a new
+-- membership carries the SET option by default, and before that membership alone was enough to
+-- SET ROLE. The revoke names the runner as the grantor, because from Postgres 16 on the
+-- administrative membership Postgres created itself was granted by the bootstrap superuser and
+-- must be left alone.
+do $$
+declare
+  v_runner text := current_user;
+  v_state  text;
+  v_error  text;
+begin
+  execute format('grant investigation_only to %I', v_runner);
+  begin
+    execute 'alter function app_private.investigation_read(uuid, text) owner to investigation_only';
+  exception when others then
+    get stacked diagnostics v_state = returned_sqlstate, v_error = message_text;
+  end;
+  if current_setting('server_version_num')::int >= 160000 then
+    execute format('revoke investigation_only from %I granted by %I', v_runner, v_runner);
+  else
+    execute format('revoke investigation_only from %I', v_runner);
+  end if;
+  if v_error is not null then
+    raise exception '%', v_error using errcode = v_state;
+  end if;
+end $$;
+
 revoke create on schema app_private from investigation_only;
 
 create function app_private.investigation_event_read(p_booking uuid, p_purpose text)
@@ -298,7 +337,30 @@ do $$ begin
     'grant execute on function app_private.investigation_event_read(uuid, text) to %I', current_user);
 end $$;
 grant create on schema app_private to investigation_only;
-alter function app_private.investigation_event_read(uuid, text) owner to investigation_only;
+
+-- The same handover as above, for the second read.
+do $$
+declare
+  v_runner text := current_user;
+  v_state  text;
+  v_error  text;
+begin
+  execute format('grant investigation_only to %I', v_runner);
+  begin
+    execute 'alter function app_private.investigation_event_read(uuid, text) owner to investigation_only';
+  exception when others then
+    get stacked diagnostics v_state = returned_sqlstate, v_error = message_text;
+  end;
+  if current_setting('server_version_num')::int >= 160000 then
+    execute format('revoke investigation_only from %I granted by %I', v_runner, v_runner);
+  else
+    execute format('revoke investigation_only from %I', v_runner);
+  end if;
+  if v_error is not null then
+    raise exception '%', v_error using errcode = v_state;
+  end if;
+end $$;
+
 revoke create on schema app_private from investigation_only;
 
 -- ---------------------------------------------------------------------------
