@@ -76,6 +76,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-10-signup-sql-repair.md` | Journal: the F-76/F-7/F-13 installation and sign-up repair — repeatable SQL, the event-planner sign-up and the standalone Auth0 navigation. |
 | `docs/journal/2026-11-12-F-1-workspace-switcher.md` | F-1 build journal: what the audit found, the confirmation step, the per-house badge and the checks run |
 | `docs/journal/2026-11-12-F-14-counter-response-deadline.md` | F-14 build journal: the vendor response deadline, the expiry that releases the date, the host alert, and the alternatives that are still not built |
+| `docs/journal/2026-11-12-F-23-counter-offer-in-chat.md` | F-23 build journal: the counter-offer inside the chat thread, the message kinds, the thread projection and what stays in the quotes panel. |
 | `docs/journal/2026-11-12-F-90-paystack-webhook-signature.md` | F-90 build journal: the route-level test that proves the webhook checks the signature itself, and the four ways a forged request is refused |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
 | `docs/sql/2026-11-10-cancellation-tokens-dva.sql` | Installation script, superseded by the combined one: the cancellation refund function, the cancellation, authorisation and dedicated-account tables. |
@@ -157,6 +158,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/chat/ChatPanel.tsx` | F-100 UI: the house's conversation list as messaging-style rows. |
 | `src/features/chat/ChatThread.test.tsx` | F-100 tests: the chat thread, the attach menu and shared documents. |
 | `src/features/chat/ChatThread.tsx` | F-100 UI: the WhatsApp-style chat thread — bubbles, day separators, composer and attachments. |
+| `src/features/chat/ThreadQuoteCard.tsx` | F-23 UI: the live quote band inside the chat thread — the offer, its server deadline, and the host's counter written into the conversation. |
 | `src/features/chat/api.test.ts` | F-100 tests: the chat API boundary — upload, link and error mapping. |
 | `src/features/chat/api.ts` | F-100 browser boundary: reads and writes over the app's own routes with the caller's token. |
 | `src/features/chat/contracts.test.ts` | F-100 tests: attachment types, size limits, captions and labels. |
@@ -419,6 +421,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261109180000_f107_owanbe_ai.sql` | F-107 migration: the `ai_investigation` platform-staff capability, `app_private.ai_settings`, the `cases` and `ai_interactions` tables, the minimised payment-log read, the interaction log and the case opener. |
 | `supabase/migrations/20261110203000_f107_open_zdr_gate.sql` | F-107 follow-up: opens the zero-retention gate in `app_private.ai_settings` on the owner's confirmation (2026-11-10) that the platform's provider holds a zero-data-retention agreement, and carries the statement that closes it again. |
 | `supabase/migrations/20261112100000_f14_counter_response_deadline.sql` | F-14 follow-up: the counter-response deadline (`quotes.counter_response_due_at`), the state shape that says which deadline governs a quote, the expiry that releases the date when the vendor runs out of time, and the `counter_ignored` house alert. |
+| `supabase/migrations/20261112110000_f23_counter_offer_in_chat.sql` | F-23 migration: the message kinds (`quote_offer`, `counter_offer`) with the quote and revision they carry, the thread a revision was made in, the counter that posts into the thread, the offer that is announced in it, the `thread_quotes` projection, and F-60's credential guard on the chat body. |
 
 #### supabase/tests/
 
@@ -433,6 +436,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f107_owanbe_ai.test.sql` | F-107 SQL suite: the closed gate, the grant, the minimised trail, the logged interaction, the opened case and the proof that the AI path cannot allocate, refund, settle, freeze, unfreeze, complete or release. |
 | `supabase/tests/f14_counter_response.test.sql` | F-14 SQL tests for the counter deadline: the window the counter starts, the expiry that releases the date, the audit reason, the host alert and the vendor's re-send. |
 | `supabase/tests/f14_quotes.test.sql` | F-14 SQL tests: quote revisions, transitions and vendor-only authoring. |
+| `supabase/tests/f23_counter_offer_in_chat.test.sql` | F-23 SQL suite: the offer announced in the thread, the host's counter in the thread, the thread a counter may name, the parties-only read of the thread's quote, the draft that never appears, and the refused transitions. |
 | `supabase/tests/f38_soft_hold.test.sql` | F-38 SQL tests: hold creation, the payment window and release. |
 | `supabase/tests/f40_guest_privacy.test.sql` | F-40 SQL tests: default privacy, masking, sharing and revocation. |
 | `supabase/tests/f60_payment_data_protection.test.sql` | F-60 SQL tests: the refusal of raw credentials and the partner-reference rules. |
