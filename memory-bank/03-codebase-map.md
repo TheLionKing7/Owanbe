@@ -44,6 +44,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/decisions/2026-11-04-tanstack-start-and-paystack.md` | Sage 7 pickup copy of ADR 0003 (runtime + Paystack approved, CI workflows owner-requested); `blueprint/` still needs the sync. |
 | `docs/decisions/2026-11-06-feature-requests-competitive.md` | Owner decision record for the competitive feature requests raised on 2026-11-06. |
 | `docs/decisions/2026-11-10-payments-owner-answers.md` | Owner decision record for the open payment questions: custody stays with Paystack, the cancellation refund percentages, the dedicated virtual account, the two-approval threshold and read-only AI. |
+| `docs/decisions/f107-ai-console.md` | F-107 decision record: the console is a staff surface behind the existing `ai_investigation` grant, it lives outside both house shells, working a case changes the case and nothing else, the database owns the transition rule, and the note's text never reaches the audit trail. |
 | `docs/decisions/f126-observability-dashboard.md` | F-126 decision record: the dashboard reads operational records and returns counts only, access is the existing `operations` capability, every read is audited, and the gaps are named rather than hidden. |
 | `docs/decisions/f13-chat-owns-its-feature-code.md` | Owner decision: in-app chat gets its own feature code (F-100) and is built before F-13's direct search and book flow. |
 | `docs/decisions/f14-counter-response-deadline.md` | Decision record: a host counter starts the vendor's 24-hour response deadline, the counter deadline governs while the quote is countered, and the host is told when it closes. |
@@ -79,6 +80,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-12-F-14-counter-response-deadline.md` | F-14 build journal: the vendor response deadline, the expiry that releases the date, the host alert, and the alternatives that are still not built |
 | `docs/journal/2026-11-12-F-23-counter-offer-in-chat.md` | F-23 build journal: the counter-offer inside the chat thread, the message kinds, the thread projection and what stays in the quotes panel. |
 | `docs/journal/2026-11-12-F-90-paystack-webhook-signature.md` | F-90 build journal: the route-level test that proves the webhook checks the signature itself, and the four ways a forged request is refused |
+| `docs/journal/2026-11-13-F-107-ai-console.md` | F-107 console build journal: the three gaps the tree still had, the console, what working a case does and does not touch, the checks run and what was never executed. |
 | `docs/journal/2026-11-13-F-126-observability-dashboard.md` | F-126 build journal: the twelve counters, the access rule, the gaps the dashboard names, and what has not been run. |
 | `docs/journal/2026-11-13-F-46-investigation-only-role.md` | F-46 build journal: the identity the AI's payment read runs under, why the read lives in `app_private`, and what it may not do. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
@@ -137,12 +139,19 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 
 | File | Purpose |
 |---|---|
+| `src/features/ai/AiConsolePanel.test.tsx` | F-107 tests: the console — the caller's own answers, the case queue, the case move with its note, the refusal wording and the empty states. |
+| `src/features/ai/AiConsolePanel.tsx` | F-107 UI: the OwanbeAI console — your own answers, the case queue and the answer list, and the one form that works a case. Working a case changes the case and nothing else. |
 | `src/features/ai/AiDisclosure.test.tsx` | F-107 tests: the label renders, the report form opens, the categories are sent and a refusal is shown. |
 | `src/features/ai/AiDisclosure.tsx` | F-107 the one AI label and the one report control, shared by every AI surface so the disclosure and the report path are written once. |
 | `src/features/ai/AiInvestigationPanel.test.tsx` | F-107 tests: the staff panel — it stays hidden without the grant, forwards the question, shows the finding and the case reference, and shows the closed-gate wording. |
 | `src/features/ai/AiInvestigationPanel.tsx` | F-107 UI: the staff panel on a booking's payments — "Ask OwanbeAI about this payment", the disclosed answer and the report control. Read-only; it can open a case but never move money. |
 | `src/features/ai/api.test.ts` | F-107 tests: the browser boundary — the caller's token, the error codes and the investigation calls. |
 | `src/features/ai/api.ts` | F-107 browser boundary: the AI routes, the error codes and the refusal copy, including the closed-gate wording. |
+| `src/features/ai/console-contracts.ts` | F-107 console contracts: the case statuses, the legal moves, the labels, the disclosure and the update schema. It mirrors the database's transition rule so the form only offers a legal move; the database stays the authority. |
+| `src/features/ai/console.api.test.ts` | F-107 tests: the console browser boundary — the caller's token, the error codes and the refusal copy. |
+| `src/features/ai/console.api.ts` | F-107 console browser boundary: the console routes, the error codes and the refusal copy, including the "ask platform operations staff" wording. |
+| `src/features/ai/console.server.test.ts` | F-107 tests: the console server boundary — the token forwarding, the refusals, the case move and the note validation. |
+| `src/features/ai/console.server.ts` | F-107 console server boundary: the caller's token is forwarded to the database for the cases, the answers, the caller's own answers and the case move. No service-role path. |
 | `src/features/ai/contracts.test.ts` | F-107 tests: the disclosure labels, the report categories and the investigation request schema. |
 | `src/features/ai/contracts.ts` | F-107 contracts: the per-surface AI label, the report categories and the investigation request and result shapes. |
 | `src/features/ai/investigation.test.ts` | F-107 tests: the system prompt, the minimised trail, the model answer and the case subject. |
@@ -340,7 +349,12 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/_public/sign-up.tsx` | Route for /sign-up rendering SignIn in signup mode. |
 | `src/routes/_public/vendors.$slug.tsx` | Public vendor profile page. |
 | `src/routes/_public/vendors.index.tsx` | Public vendor directory. |
+| `src/routes/ai.tsx` | F-107: the /ai page — the OwanbeAI console, outside either house shell. |
+| `src/routes/api/ai/answers.ts` | GET /api/ai/answers — the answers OwanbeAI gave, for staff holding the `ai_investigation` grant. |
+| `src/routes/api/ai/case.ts` | POST /api/ai/case — move a case and leave a note on it; the database decides whether the move is legal. |
+| `src/routes/api/ai/cases.ts` | GET /api/ai/cases — the case queue for staff holding the `ai_investigation` grant. |
 | `src/routes/api/ai/investigate.ts` | POST /api/ai/investigate — the read-only payment investigation, run as the caller and logged as the caller's own interaction. |
+| `src/routes/api/ai/mine.ts` | GET /api/ai/mine — the caller's own AI answers; every signed-in person may read their own. |
 | `src/routes/api/ai/report.ts` | POST /api/ai/report — report one AI answer under a category, against the caller's own interaction. |
 | `src/routes/api/ai/status.ts` | GET /api/ai/status — whether the zero-retention contract is confirmed and whether the caller holds the AI investigation grant; the panel asks before it renders. |
 | `src/routes/api/benchmarks.ts` | F-106 route: `POST /api/benchmarks` — the market range for the categories a host is comparing. |
@@ -437,6 +451,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261112110000_f23_counter_offer_in_chat.sql` | F-23 migration: the message kinds (`quote_offer`, `counter_offer`) with the quote and revision they carry, the thread a revision was made in, the counter that posts into the thread, the offer that is announced in it, the `thread_quotes` projection, and F-60's credential guard on the chat body. |
 | `supabase/migrations/20261112130000_f46_investigation_only_role.sql` | F-46 migration: the `investigation_only` role, the two minimised views it may read, the payment reads it owns, and the passthroughs `public.ai_payment_log` and `public.ai_payment_event_log` keep the application on. |
 | `supabase/migrations/20261112140000_f126_observability_dashboard.sql` | F-126 migration: `public.observability_dashboard()` — twelve counters read from the platform's own operational records, for staff holding the existing `operations` capability, with every read audited. |
+| `supabase/migrations/20261113120000_f107_ai_console.sql` | F-107 console migration: the `ai_case_notes` table, the case and answer reads (`read_ai_cases`, `read_ai_interactions`), the audited case move (`update_ai_case`) with its transition rule, and `my_ai_interactions` re-created with the request and the model. |
 
 #### supabase/tests/
 
@@ -448,6 +463,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f101_ai_planner.test.sql` | F-101 SQL tests: logging an interaction, the cooldown, the host check and the report. |
 | `supabase/tests/f102_fund_pool.test.sql` | F-102 SQL tests: the allocation, the replay, the completion, the refund, the freeze, the append-only ledger and the house isolation. |
 | `supabase/tests/f106_market_benchmarks.test.sql` | F-106 SQL suite: a sent quote becomes an observed price with its provenance, a new price supersedes the old one, an unverified or withdrawn quote never reaches the market, one vendor is not a range, and only the planner's Host houses and the `analytics` capability may read. |
+| `supabase/tests/f107_ai_console.test.sql` | F-107 console SQL suite: the console is closed without the `ai_investigation` grant and to anon, the case queue and the answer queue read, the audit rows, the whole case lifecycle from open to closed, every refused move, the caller's own answers only, the AI identity's lack of any path in, and the proof that working a case moves no money. |
 | `supabase/tests/f107_owanbe_ai.test.sql` | F-107 SQL suite: the closed gate, the grant, the minimised trail, the logged interaction, the opened case and the proof that the AI path cannot allocate, refund, settle, freeze, unfreeze, complete or release. |
 | `supabase/tests/f126_observability_dashboard.test.sql` | F-126 SQL suite: the dashboard is closed without the `operations` capability, the twelve counts, the audit row, the absence of money and party detail, the tables that cannot be read directly, and the grant that closes it again. |
 | `supabase/tests/f14_counter_response.test.sql` | F-14 SQL tests for the counter deadline: the window the counter starts, the expiry that releases the date, the audit reason, the host alert and the vendor's re-send. |

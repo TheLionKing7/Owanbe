@@ -60,6 +60,11 @@ Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
 | `src/routes/api/ai/status.ts` | `/api/ai/status` | GET whether this caller may use OwanbeAI (the grant **and** the zero-retention contract); the caller's token is forwarded to the database |
 | `src/routes/api/ai/investigate.ts` | `/api/ai/investigate` | POST OwanbeAI's reading of one booking's payment trail; the trail is read from the database first, and the model is called only after the read succeeded |
 | `src/routes/api/ai/report.ts` | `/api/ai/report` | POST one report on the caller's own answer; the shared route for every AI surface (planner, vendor copy, OwanbeAI) |
+| `src/routes/ai.tsx` | `/ai` | the F-107 OwanbeAI console; outside both house shells, so it is not a house page |
+| `src/routes/api/ai/cases.ts` | `/api/ai/cases` | GET the case queue for staff holding the `ai_investigation` grant |
+| `src/routes/api/ai/answers.ts` | `/api/ai/answers` | GET the answers OwanbeAI gave, for the same grant |
+| `src/routes/api/ai/mine.ts` | `/api/ai/mine` | GET the caller's own answers; every signed-in person may read their own |
+| `src/routes/api/ai/case.ts` | `/api/ai/case` | POST a case move with an optional note |
 | `src/routes/observability.tsx` | `/observability` | the F-126 operations dashboard; outside both house shells, so it is not a house page |
 | `src/routes/api/observability.ts` | `/api/observability` | GET the operational counters for a staff member holding the `operations` grant; the caller's token is forwarded to the database |
 
