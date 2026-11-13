@@ -1,9 +1,10 @@
-import { NavLink, Outlet } from "@/lib/router";
+import { NavLink, Outlet, useNavigate } from "@/lib/router";
 import { LogOut } from "lucide-react";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { Logo } from "@/components/site/Logo";
 import { HOUSES, type HouseId } from "@/lib/houses";
+import { HouseSwitcher } from "@/features/workspace/HouseSwitcher";
 import { OpenVendorHouse } from "@/features/vendor-profile/OpenVendorHouse";
 import { OnboardingGate } from "@/features/onboarding/OnboardingGate";
 import { forgetOnboarding } from "@/features/onboarding/gate-cache";
@@ -21,9 +22,9 @@ export default function HouseLayout({ houseId }: { houseId: HouseId }) {
 
 function HouseShell({ houseId }: { houseId: HouseId }) {
   const { user, houses, logout } = useAuth();
+  const navigate = useNavigate();
   const house = HOUSES[houseId];
   const myHouse = houses.find((h) => h.kind === houseId);
-  const other = HOUSES[houseId === "host" ? "vendor" : "host"];
   return (
     <div className="mx-auto min-h-screen max-w-page lg:grid lg:grid-cols-[260px_1fr]">
       <aside className="border-b border-plum-900/10 bg-white/80 px-4 py-4 lg:min-h-screen lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
@@ -54,9 +55,11 @@ function HouseShell({ houseId }: { houseId: HouseId }) {
             ))}
           </ul>
         </nav>
-        <NavLink to={other.basePath} className="mt-6 hidden min-h-[44px] items-center rounded-xl border border-plum-900/10 px-3 text-sm font-medium text-ink-muted hover:bg-plum-100 lg:flex">
-          Switch to {other.name}
-        </NavLink>
+        <HouseSwitcher
+          houses={houses}
+          current={houseId}
+          onSwitch={(kind) => navigate(HOUSES[kind].basePath)}
+        />
         <div className="mt-6 hidden border-t border-plum-900/10 pt-4 lg:block">
           <p className="truncate text-sm font-semibold text-ink" data-testid="signed-in-as">
             {user?.display_name ?? user?.email ?? "Signed in"}
