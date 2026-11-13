@@ -13,7 +13,7 @@
 | Email / Jobs / Search / AI | Resend, Trigger.dev, Algolia, Vercel AI SDK | not started |
 | Observability | `@sentry/react` 10, browser-only, sanitized by `src/lib/monitoring/privacy.ts` | ✅ code; no DSN in preview, ingestion unverified **(unverified)** |
 | Hosting | Lovable (source repo `TheLionKing7/owanbe-project-studio`) | ✅ |
-| Mobile | Expo / React Native | not started |
+| Mobile | Expo / React Native | ✅ started in F-108 — `mobile/` (Expo SDK 58, React Native 0.88, New Architecture); the guest's card and the door device. **Never installed or run on this machine** (the npm registry is unreachable from it), so it is code only **(unverified)** |
 | Tests | Vitest 4 (jsdom) in `src/test`; plain SQL suites on Postgres 16 in `supabase/tests` | both run in CI (`verify.yml`); the owner's environment reports 25 tests / 6 files green, this machine could not run them **(unverified here)** |
 | Package manager | **Bun** (`bun.lock`, `bunfig.toml`; CI pins bun 1.4.4) | `README.md` still tells people to use npm (see `09`) |
 
@@ -67,6 +67,9 @@ Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
 | `src/routes/api/ai/case.ts` | `/api/ai/case` | POST a case move with an optional note |
 | `src/routes/observability.tsx` | `/observability` | the F-126 operations dashboard; outside both house shells, so it is not a house page |
 | `src/routes/api/observability.ts` | `/api/observability` | GET the operational counters for a staff member holding the `operations` grant; the caller's token is forwarded to the database |
+| `src/routes/_public/invite.$token.tsx` | `/invite/:token` | public and `noindex`; the F-108 guest claim page — the token is in the path, never in a query string |
+| `src/routes/api/invitations/claim.ts` | `/api/invitations/claim` | POST the guest's claim; the **publishable** key only (a `sb_secret_` key is refused with 503), so a guest needs no account |
+| `src/routes/api/invitations/card.ts` | `/api/invitations/card` | POST the guest's own card, read with the guest's own session; the token or the phone is never echoed back |
 
 Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, `PlaceholderPage`, `NotFound`) even though `src/routes/README.md` says not to create that folder. House sections come from `src/lib/houses.ts`.
 
@@ -83,6 +86,15 @@ Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, 
 - `scripts/check-bundle.mjs` enforces ≤ 100 kB gzipped initial JS (override with `INITIAL_JS_BUDGET_KB`) but is **not wired** into `package.json` or CI, and the rebuild's SSR bundle is far larger than the old 78 kB SPA figure — re-measure before re-stating a number.
 - Keep the SDK lazy-import rule: never statically import `@auth0/auth0-spa-js` or `@supabase/supabase-js` outside `src/lib/auth/auth0Client.ts`.
 - `src/lib/router.tsx`'s `Link`/`NavLink` render plain `<a>` and call `router.navigate()`, so TanStack's route preloading does not apply to them.
+
+## The phone app (F-108)
+`mobile/` is an Expo SDK 58 app (React Native 0.88, New Architecture) with two halves: **My card** (a guest claims an invitation and carries the entry card) and **The door** (the person at the door signs in, pairs the device and admits guests).
+
+- It is a **separate npm project with its own `package.json`**; it is not part of the root `package.json`, the root vitest run or the root build. `mobile/metro.config.js` watches the repository root so the app can import the platform's own rules from `src/features/tickets/scanner.ts` and `src/features/tickets/pairing.ts` — the phone and the web tests reason about the same cache, the same card shape and the same queue.
+- **No secret ever reaches the phone.** The guest path uses the Supabase publishable key; the door path uses the operator's own Auth0 access token (authorization code flow with PKCE, `expo-auth-session` + `expo-web-browser`). The session, the pairing, the cache and the queue live in the device's locked drawer (`expo-secure-store`), never in plain storage.
+- The **QR carries the raw card credential**; the **cache carries its hash** (`sha256`), so the device hashes a scanned card locally (`expo-crypto`) to match it offline. The platform stores only hashes.
+- NFC needs a **development build** (`expo-dev-client`, `expo prebuild`): Expo Go cannot load `react-native-nfc-manager`. Writing a tag is Android-only; an iPhone can read one.
+- The app was **never installed, built or run**: the npm registry is unreachable from this machine. Its code is reviewed, not executed — treat it as unverified until it runs on a device.
 
 ## Git hosting and what a push does
 - Lovable syncs to **`TheLionKing7/owanbe-project-studio`** (source). `.github/workflows/mirror-to-owanbe.yml` forwards that `main` to `TheLionKing7/Owanbe/main` — the audit repo Sage 7 watches — with a plain push: no force, no deploy, no migration.

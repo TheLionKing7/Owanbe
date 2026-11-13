@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Ówàńbè",
+    "slug": "owanbe",
+    "scheme": "owanbe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "bundleIdentifier": "app.owanbe.tickets",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NFCReaderUsageDescription": "Ówàńbè reads the entry card a guest carries at the door.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "app.owanbe.tickets",
+      "permissions": [
+        "android.permission.NFC",
+        "android.permission.CAMERA",
+        "android.permission.INTERNET"
+      ],
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Ówàńbè uses the camera to read entry cards at the door."
+        }
+      ],
+      ["expo-secure-store", { "configureAndroidBackup": true }],
+      [
+        "react-native-nfc-manager",
+        {
+          "nfcPermission": "Allow Ówàńbè to scan the entry card a guest carries."
+        }
+      ]
+    ]
+  }
+}

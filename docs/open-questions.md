@@ -253,6 +253,41 @@ affected feature, the status and the release impact. Approved answers move to
 
 
 
+## F-108 Ticketing system
+
+### Q19. How long may an offline door device keep admitting from its cache?
+
+- **Owner:** Ola (product owner)
+- **Status:** **answered** (asked 2026-11-13, answered 2026-11-13). The decision is
+  `docs/decisions/f108-offline-cache-window.md`: the offline cache is bounded by the **door
+  window** (the grant's own expiry, which the host sets), a device that has never synced or
+  whose window has closed admits nobody and answers `needs_sync`, and the door has one
+  reconciliation action — **sync the door** — that sends the waiting check-ins and fetches the
+  guest list again. No new threshold was invented; the platform's answer still wins whenever
+  the platform can be reached. The residual exposure is written down in the decision: while the
+  device is dark it cannot see a revocation, so the window is the bound on that.
+- **Detail:** The scanner's cache holds **hashes** of the admission credentials, never the
+  credentials themselves, and a scan is hashed on the device before it is compared. That is the
+  protection that lets the device work with no network. What is *not* settled is how a cache
+  behaves once the authority behind it has gone: a host who revokes a scanner grant, an
+  invitation the host revokes, or a card whose admission has expired will still match a hash
+  the device cached while it was offline. Today the cache is bounded by the **grant's** expiry,
+  and a queued check-in is reconciled against the database when the network returns — a check-in
+  the database refuses is refused in the reconciliation, not accepted silently. What is missing
+  is the owner's rule for the window itself: how long a cached hash may be trusted, whether the
+  device must wipe its cache on a revocation it learns about, and whether a door that has been
+  offline across a revocation must refuse the next scan rather than admit it.
+- **Affected:** F-108 Ticketing system (built; the door app under `mobile/`), F-16 Dispute
+  Filing & Arbitration, F-17 Vendor No-show Recovery (both read the check-in record), F-33
+  No-show Ticket & Evidence Flow
+- **Release impact:** the door device can admit a guest the platform has since stopped
+  admitting, and the check-in is recorded — so the record and the truth can differ until the
+  device is online. The **check-in row** says which it was (`mode` = `online` or
+  `queued_offline`), so the disagreement is visible rather than hidden, but it is not resolved
+  by the code. Recommendation: bound the cache by the grant's expiry **and** require a
+  reconciliation pass before a device is trusted again after a revocation, rather than letting
+  the offline window be however long the outage was.
+
 ## F-107 OwanbeAI
 
 ### Q18. Who confirms the zero-data-retention contract, and with which provider?

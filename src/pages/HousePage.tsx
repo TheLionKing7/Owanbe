@@ -6,6 +6,7 @@ import { VendorCalendarPanel } from "@/features/holds/VendorCalendarPanel";
 import { HouseAlerts } from "@/features/holds/HouseAlerts";
 import { ProfileCopyStudio } from "@/features/vendor-profile/ProfileCopyStudio";
 import { GuestListPanel } from "@/features/guest-lists/GuestListPanel";
+import { InvitationsPanel } from "@/features/tickets/InvitationsPanel";
 import { ChatPanel } from "@/features/chat/ChatPanel";
 import { PlannerPanel } from "@/features/planner/PlannerPanel";
 import { PaymentsPanel } from "@/features/payments/PaymentsPanel";
@@ -17,7 +18,7 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
   const { section } = useParams();
   const [params] = useSearchParams();
   const { pathname } = useLocation();
-  const { houses, getAccessToken } = useAuth();
+  const { houses, getAccessToken, rpc } = useAuth();
   const item = findNavItem(house, section);
   if (!item) return <NotFound />;
 
@@ -71,8 +72,9 @@ export default function HousePage({ houseId }: { houseId: HouseId }) {
         </div>
       )}
       {item.slug === "guests" && houseId === "host" && myHouse && (
-        <div className="mt-8">
+        <div className="mt-8 space-y-8">
           <GuestListPanel house={myHouse} getAccessToken={getAccessToken} />
+          <InvitationsPanel house={myHouse} rpc={rpc} />
         </div>
       )}
       {item.slug === "plan" && houseId === "host" && (
