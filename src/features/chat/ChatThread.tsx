@@ -9,6 +9,8 @@ import {
 } from "react";
 import { Check, FileText, Image as ImageIcon, Paperclip, Send, X } from "lucide-react";
 import { Link } from "@/lib/router";
+import { quoteApi as defaultQuoteApi, type QuoteApi } from "@/features/quotes/api";
+import { formatMinor } from "@/features/quotes/contracts";
 import { chatErrorMessage, createChatApi, type ChatApi } from "./api";
 import {
   ATTACHMENT_ACCEPT,
@@ -20,16 +22,23 @@ import {
   formatFileSize,
   formatMessageTime,
   isImageAttachment,
+  liveThreadQuote,
   messageBodySchema,
   messageDayLabel,
+  threadRevision,
   type ChatAttachment,
   type ConversationThread,
+  type MessageKind,
+  type ThreadQuoteRevision,
 } from "./contracts";
+import { ThreadQuoteCard } from "./ThreadQuoteCard";
 
 interface ChatThreadProps {
   conversationId: string;
   /** Injected in tests; defaults to the app's own chat routes. */
   api?: ChatApi | undefined;
+  /** F-23: the quote boundary, used when the host counters inside the thread. */
+  quoteApi?: QuoteApi | undefined;
   /** The caller's token decides whether they take part in the conversation. */
   getAccessToken?: (() => Promise<string | null>) | undefined;
 }
@@ -55,7 +64,12 @@ async function downloadFile(url: string, fileName: string): Promise<void> {
   window.open(url, "_blank", "noopener");
 }
 
-export function ChatThread({ conversationId, api, getAccessToken }: ChatThreadProps) {
+export function ChatThread({
+  conversationId,
+  api,
+  quoteApi = defaultQuoteApi,
+  getAccessToken,
+}: ChatThreadProps) {
   const readToken = getAccessToken ?? NO_TOKEN;
   const client = useMemo(() => api ?? createChatApi(readToken), [api, readToken]);
 
@@ -67,6 +81,13 @@ export function ChatThread({ conversationId, api, getAccessToken }: ChatThreadPr
   const [pending, setPending] = useState<File | null>(null);
   const [attachError, setAttachError] = useState<string | null>(null);
   const [attachMenuOpen, setAttachMenuOpen] = useState(false);
+  // Display clock only: the deadline is decided by the database, never by this interval.
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const bodyRef = useRef<HTMLTextAreaElement | null>(null);
@@ -186,6 +207,7 @@ export function ChatThread({ conversationId, api, getAccessToken }: ChatThreadPr
   const backHref = thread?.side === "vendor" ? "/vendor/enquiries" : "/host/enquiries";
   const counterparty = thread?.counterparty_name ?? "Conversation";
   const initial = counterparty.trim().charAt(0).toUpperCase() || "?";
+  const liveQuote = thread ? liveThreadQuote(thread.quotes) : null;
 
   return (
     <div
@@ -220,6 +242,19 @@ export function ChatThread({ conversationId, api, getAccessToken }: ChatThreadPr
           </p>
         </div>
       </header>
+
+      {liveQuote && (
+        <div className="border-b border-plum-900/10 bg-cream-50 px-3 py-3 sm:px-6">
+          <ThreadQuoteCard
+            quote={liveQuote}
+            side={thread?.side ?? "host"}
+            conversationId={conversationId}
+            api={quoteApi}
+            onCountered={() => void load()}
+            now={now}
+          />
+        </div>
+      )}
 
       <div
         ref={scrollRef}
@@ -266,12 +301,17 @@ export function ChatThread({ conversationId, api, getAccessToken }: ChatThreadPr
                 !previous || messageDayLabel(previous.sent_at) !== messageDayLabel(message.sent_at)
                   ? messageDayLabel(message.sent_at)
                   : "";
+              const carried =
+                message.kind === "quote_offer" || message.kind === "counter_offer"
+                  ? threadRevision(thread.quotes, message.quote_id, message.revision)
+                  : null;
               return (
                 <li
                   key={message.message_id}
                   className={`flex ${message.mine ? "justify-end" : "justify-start"}`}
                   data-testid="chat-message"
                   data-mine={message.mine ? "true" : "false"}
+                  data-kind={message.kind}
                 >
                   <div className="w-full">
                     {day && (
@@ -293,6 +333,13 @@ export function ChatThread({ conversationId, api, getAccessToken }: ChatThreadPr
                         <p className="text-xs font-semibold text-owanbe-emerald-green">
                           {message.sender_name || "Them"}
                         </p>
+                      )}
+                      {carried && (
+                        <QuoteMessageCard
+                          kind={message.kind}
+                          revision={carried}
+                          mine={message.mine}
+                        />
                       )}
                       {message.attachments.map((attachment) => (
                         <AttachmentCard
@@ -470,13 +517,37 @@ export function ChatThread({ conversationId, api, getAccessToken }: ChatThreadPr
   );
 }
 
+interface QuoteMessageCardProps {
+  kind: MessageKind;
+  revision: ThreadQuoteRevision;
+  mine: boolean;
+}
+
+/** F-23: an offer or a counter the thread carries, shown as the offer it is. */
+function QuoteMessageCard({ kind, revision, mine }: QuoteMessageCardProps) {
+  return (
+    <div
+      className={`mt-1 rounded-xl border p-3 ${
+        mine ? "border-cream-50/20 bg-cream-50/10" : "border-plum-900/10 bg-cream-50"
+      }`}
+      data-testid="chat-quote-card"
+      data-kind={kind}
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide opacity-80">
+        {kind === "counter_offer" ? "Counter sent" : "Offer sent"}
+      </p>
+      <p className="mt-1 text-sm font-semibold">{revision.title}</p>
+      <p className="text-sm">{formatMinor(revision.total_minor, revision.currency)}</p>
+    </div>
+  );
+}
+
 interface AttachmentCardProps {
   attachment: ChatAttachment;
   mine: boolean;
   onOpen: (attachment: ChatAttachment) => void;
   signedUrl: (attachmentId: string) => Promise<string>;
 }
-
 /** A photo shows inline; a document shows as a card that opens when it is clicked. */
 function AttachmentCard({ attachment, mine, onOpen, signedUrl }: AttachmentCardProps) {
   const [preview, setPreview] = useState<string | null>(null);

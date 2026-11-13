@@ -8,6 +8,7 @@ import {
 
 const CONVERSATION_ID = "6f1e9c4a-2b3d-4e5f-8a7b-1c2d3e4f5a6b";
 const ATTACHMENT_ID = "2a5b8c1d-4e6f-4a8b-9c0d-1e2f3a4b5c6d";
+const QUOTE_ID = "8c7b6a5d-4e3f-4a2b-9c0d-1e2f3a4b5c6d";
 const TOKEN = "header.payload.signature";
 
 function request(body?: unknown): Request {
@@ -38,8 +39,10 @@ describe("chat routes", () => {
   it("forwards the caller's token to the database function", async () => {
     vi.stubEnv("EXTERNAL_SUPABASE_URL", "https://project.supabase.co");
     vi.stubEnv("EXTERNAL_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_example");
-    const fetchMock = vi.fn(async () =>
-      jsonResponse(
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url.includes("/rest/v1/rpc/conversation_attachments")) return jsonResponse([], 200);
+      if (url.includes("/rest/v1/rpc/thread_quotes")) return jsonResponse([], 200);
+      return jsonResponse(
         [
           {
             conversation_id: CONVERSATION_ID,
@@ -47,16 +50,19 @@ describe("chat routes", () => {
             counterparty_name: "Adeola Cakes",
             counterparty_slug: "adeola-cakes",
             message_id: "m-1",
+            kind: "text",
             sender_side: "vendor",
             sender_name: "Ade",
             body: "Yes, 12 December works.",
+            quote_id: null,
+            revision: null,
             sent_at: "2026-11-09T10:00:00.000Z",
             mine: false,
           },
         ],
         200,
-      ),
-    );
+      );
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     const res = await conversationAsCaller(request(), CONVERSATION_ID);
@@ -67,6 +73,70 @@ describe("chat routes", () => {
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("https://project.supabase.co/rest/v1/rpc/conversation_messages");
     expect((init.headers as Record<string, string>)["Authorization"]).toBe(`Bearer ${TOKEN}`);
+  });
+
+  it("returns the quote the thread is about and what each message carries", async () => {
+    vi.stubEnv("EXTERNAL_SUPABASE_URL", "https://project.supabase.co");
+    vi.stubEnv("EXTERNAL_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_example");
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url.includes("/rest/v1/rpc/conversation_attachments")) return jsonResponse([], 200);
+      if (url.includes("/rest/v1/rpc/thread_quotes")) {
+        return jsonResponse(
+          [
+            {
+              quote_id: QUOTE_ID,
+              service_date: "2026-12-12",
+              status: "sent",
+              currency: "NGN",
+              total_minor: 120000,
+              current_revision: 1,
+              sent_at: "2026-11-09T10:00:00.000Z",
+              expires_at: "2026-11-10T10:00:00.000Z",
+              counter_response_due_at: null,
+              decided_at: null,
+              version: 2,
+              is_vendor_side: false,
+              title: "Hall and decor",
+              revisions: [],
+            },
+          ],
+          200,
+        );
+      }
+      return jsonResponse(
+        [
+          {
+            conversation_id: CONVERSATION_ID,
+            side: "host",
+            counterparty_name: "Adeola Cakes",
+            counterparty_slug: "adeola-cakes",
+            message_id: "m-1",
+            kind: "quote_offer",
+            sender_side: "vendor",
+            sender_name: "Ade",
+            body: "",
+            quote_id: QUOTE_ID,
+            revision: 1,
+            sent_at: "2026-11-09T10:00:00.000Z",
+            mine: false,
+          },
+        ],
+        200,
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const res = await conversationAsCaller(request(), CONVERSATION_ID);
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.messages[0]).toMatchObject({
+      kind: "quote_offer",
+      quote_id: QUOTE_ID,
+      revision: 1,
+    });
+    expect(body.quotes).toHaveLength(1);
+    expect(body.quotes[0]).toMatchObject({ quote_id: QUOTE_ID, title: "Hall and decor" });
   });
 
   it("refuses a conversation that is not the caller's", async () => {

@@ -17,6 +17,8 @@ import {
   captionSchema,
   messageBodySchema,
   uploadedAttachmentSchema,
+  type MessageKind,
+  type ThreadQuote,
 } from "./contracts";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -101,10 +103,12 @@ export async function conversationAsCaller(
 
   let res: Response;
   let attachments: Response;
+  let quotes: Response;
   try {
-    [res, attachments] = await Promise.all([
+    [res, attachments, quotes] = await Promise.all([
       callAsCaller("conversation_messages", token, { p_conversation: conversationId }),
       callAsCaller("conversation_attachments", token, { p_conversation: conversationId }),
+      callAsCaller("thread_quotes", token, { p_conversation: conversationId }),
     ]);
   } catch {
     return json(
@@ -117,6 +121,7 @@ export async function conversationAsCaller(
   }
   if (!res.ok) return failure(res);
   if (!attachments.ok) return failure(attachments);
+  if (!quotes.ok) return failure(quotes);
 
   const rows = (await res.json()) as {
     conversation_id: string;
@@ -124,9 +129,12 @@ export async function conversationAsCaller(
     counterparty_name: string;
     counterparty_slug: string | null;
     message_id: string | null;
+    kind: string;
     sender_side: string;
     sender_name: string;
     body: string;
+    quote_id: string | null;
+    revision: number | null;
     sent_at: string;
     mine: boolean;
   }[];
@@ -143,6 +151,8 @@ export async function conversationAsCaller(
     size_bytes: number;
   }[];
 
+  const quoteRows = (await quotes.json()) as ThreadQuote[];
+
   return json(
     {
       conversation_id: first.conversation_id,
@@ -153,9 +163,12 @@ export async function conversationAsCaller(
         .filter((row) => typeof row.message_id === "string")
         .map((row) => ({
           message_id: row.message_id as string,
+          kind: (row.kind ?? "text") as MessageKind,
           sender_side: row.sender_side,
           sender_name: row.sender_name,
           body: row.body,
+          quote_id: row.quote_id ?? null,
+          revision: row.revision ?? null,
           sent_at: row.sent_at,
           mine: Boolean(row.mine),
           attachments: attachmentRows
@@ -168,6 +181,7 @@ export async function conversationAsCaller(
               size_bytes: Number(attachment.size_bytes),
             })),
         })),
+      quotes: Array.isArray(quoteRows) ? quoteRows : [],
     },
     200,
   );
