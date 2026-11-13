@@ -36,13 +36,17 @@
 --
 -- Depends on 20261108120000_f40_guest_list_privacy.sql (the guest list and its host guard) and
 -- 20261101020000_f77_data_model.sql (users, houses, audit_events).
+--
+-- Re-applying this file is safe: the tables and the indexes are created only when they are
+-- missing, the functions are replaced rather than re-created, and each trigger is dropped before
+-- it is created again. A run that stopped halfway can therefore be re-run without a reset.
 
 -- ---------------------------------------------------------------------------
 -- Helpers
 -- ---------------------------------------------------------------------------
 -- sha256() and gen_random_uuid() are core PostgreSQL, so this file needs no extension. The token
 -- is 244 bits of entropy; only its hash is ever stored.
-create function app_private.f108_hash(p_value text)
+create or replace function app_private.f108_hash(p_value text)
 returns text
 language sql
 immutable
@@ -52,7 +56,7 @@ as $$
 $$;
 revoke all on function app_private.f108_hash(text) from public;
 
-create function app_private.f108_random_token()
+create or replace function app_private.f108_random_token()
 returns text
 language sql
 volatile
@@ -64,7 +68,7 @@ revoke all on function app_private.f108_random_token() from public;
 
 -- The card a guest carries is derived from the guest's own session, so the platform can answer
 -- "show me my card" without ever storing the card itself.
-create function app_private.f108_admission_credential(p_session text)
+create or replace function app_private.f108_admission_credential(p_session text)
 returns text
 language sql
 immutable
@@ -77,7 +81,7 @@ revoke all on function app_private.f108_admission_credential(text) from public;
 -- ---------------------------------------------------------------------------
 -- Invitations
 -- ---------------------------------------------------------------------------
-create table public.invitations (
+create table if not exists public.invitations (
   id                    uuid primary key default gen_random_uuid(),
   guest_list_id         uuid not null references public.guest_lists (id) on delete cascade,
   house_id              uuid not null,
@@ -101,14 +105,15 @@ create table public.invitations (
 comment on table public.invitations is
   'F-108: one invitation link for a guest list. The token is stored only as a hash; a claim_limit of '
   '1 is a standard link and 2 is a couple''s link.';
-create index invitations_list_idx on public.invitations (guest_list_id, created_at desc);
+create index if not exists invitations_list_idx on public.invitations (guest_list_id, created_at desc);
+drop trigger if exists invitations_touch on public.invitations;
 create trigger invitations_touch before update on public.invitations
   for each row execute function app_private.touch();
 
 -- ---------------------------------------------------------------------------
 -- Claims: who claimed an invitation
 -- ---------------------------------------------------------------------------
-create table public.invite_claims (
+create table if not exists public.invite_claims (
   id              uuid primary key default gen_random_uuid(),
   invitation_id   uuid not null references public.invitations (id) on delete cascade,
   guest_list_id   uuid not null references public.guest_lists (id) on delete cascade,
@@ -128,20 +133,21 @@ create table public.invite_claims (
 comment on table public.invite_claims is
   'F-108: one claimed slot. The phone is stored only as a hash, and the guest session only as a '
   'hash, so a claim holds no readable contact and no usable secret.';
-create index invite_claims_invitation_idx on public.invite_claims (invitation_id, slot);
-create index invite_claims_list_idx on public.invite_claims (guest_list_id, claimed_at desc);
+create index if not exists invite_claims_invitation_idx on public.invite_claims (invitation_id, slot);
+create index if not exists invite_claims_list_idx on public.invite_claims (guest_list_id, claimed_at desc);
 -- One slot per claim, and one claim per phone per live invitation: this is what makes the claim
 -- atomic. A revoked claim (after a reissue) frees both.
-create unique index invite_claims_one_slot on public.invite_claims (invitation_id, slot);
-create unique index invite_claims_one_phone on public.invite_claims (invitation_id, phone_reference)
+create unique index if not exists invite_claims_one_slot on public.invite_claims (invitation_id, slot);
+create unique index if not exists invite_claims_one_phone on public.invite_claims (invitation_id, phone_reference)
   where status = 'active';
+drop trigger if exists invite_claims_touch on public.invite_claims;
 create trigger invite_claims_touch before update on public.invite_claims
   for each row execute function app_private.touch();
 
 -- ---------------------------------------------------------------------------
 -- Admissions: the entry card a guest carries
 -- ---------------------------------------------------------------------------
-create table public.admissions (
+create table if not exists public.admissions (
   id              uuid primary key default gen_random_uuid(),
   claim_id        uuid not null unique references public.invite_claims (id) on delete cascade,
   guest_list_id   uuid not null references public.guest_lists (id) on delete cascade,
@@ -157,14 +163,15 @@ create table public.admissions (
 comment on table public.admissions is
   'F-108: the entry card. The credential is stored only as a hash; the scanner matches a scanned '
   'card against the hash it cached.';
-create index admissions_list_idx on public.admissions (guest_list_id, expires_at);
+create index if not exists admissions_list_idx on public.admissions (guest_list_id, expires_at);
+drop trigger if exists admissions_touch on public.admissions;
 create trigger admissions_touch before update on public.admissions
   for each row execute function app_private.touch();
 
 -- ---------------------------------------------------------------------------
 -- Scanner grants: who may admit, on which device, until when
 -- ---------------------------------------------------------------------------
-create table public.scanner_grants (
+create table if not exists public.scanner_grants (
   id              uuid primary key default gen_random_uuid(),
   guest_list_id   uuid not null references public.guest_lists (id) on delete cascade,
   house_id        uuid not null,
@@ -184,16 +191,17 @@ create table public.scanner_grants (
 comment on table public.scanner_grants is
   'F-108: a host-issued grant for one device and one person to admit guests for one guest list. '
   'Revoking it ends the device''s access at once.';
-create index scanner_grants_list_idx on public.scanner_grants (guest_list_id, created_at desc);
-create unique index scanner_grants_one_live_device on public.scanner_grants (guest_list_id, device_id)
+create index if not exists scanner_grants_list_idx on public.scanner_grants (guest_list_id, created_at desc);
+create unique index if not exists scanner_grants_one_live_device on public.scanner_grants (guest_list_id, device_id)
   where revoked_at is null;
+drop trigger if exists scanner_grants_touch on public.scanner_grants;
 create trigger scanner_grants_touch before update on public.scanner_grants
   for each row execute function app_private.touch();
 
 -- ---------------------------------------------------------------------------
 -- Check-ins: who came in, and where the record came from
 -- ---------------------------------------------------------------------------
-create table public.checkins (
+create table if not exists public.checkins (
   id               uuid primary key default gen_random_uuid(),
   admission_id     uuid references public.admissions (id) on delete set null,
   scanner_grant_id uuid not null references public.scanner_grants (id) on delete cascade,
@@ -209,7 +217,8 @@ create table public.checkins (
 comment on table public.checkins is
   'F-108: one admission attempt. A second device admitting the same guest is kept as a duplicate, '
   'because an offline scanner cannot prevent it and the host has to see it.';
-create index checkins_list_idx on public.checkins (guest_list_id, occurred_at desc);
+create index if not exists checkins_list_idx on public.checkins (guest_list_id, occurred_at desc);
+drop trigger if exists checkins_touch on public.checkins;
 create trigger checkins_touch before update on public.checkins
   for each row execute function app_private.touch();
 
@@ -237,7 +246,7 @@ grant all on public.invitations, public.invite_claims, public.admissions,
 -- ---------------------------------------------------------------------------
 -- Host: issue an invitation
 -- ---------------------------------------------------------------------------
-create function public.create_invitation(
+create or replace function public.create_invitation(
   p_list uuid, p_claim_limit integer, p_claim_deadline timestamptz, p_admission_expires_at timestamptz)
 returns jsonb
 language plpgsql
@@ -299,7 +308,7 @@ grant execute on function public.create_invitation(uuid, integer, timestamptz, t
 -- claim and every card made under the old token is revoked. The deadlines stay as they were: a
 -- host who needs new dates issues a new invitation.
 -- ---------------------------------------------------------------------------
-create function public.reissue_invitation(p_invitation uuid, p_expected_version integer)
+create or replace function public.reissue_invitation(p_invitation uuid, p_expected_version integer)
 returns jsonb
 language plpgsql
 volatile
@@ -363,7 +372,7 @@ grant execute on function public.reissue_invitation(uuid, integer) to authentica
 -- ---------------------------------------------------------------------------
 -- Host: revoke an invitation
 -- ---------------------------------------------------------------------------
-create function public.revoke_invitation(p_invitation uuid, p_expected_version integer)
+create or replace function public.revoke_invitation(p_invitation uuid, p_expected_version integer)
 returns integer
 language plpgsql
 volatile
@@ -412,7 +421,7 @@ grant execute on function public.revoke_invitation(uuid, integer) to authenticat
 -- The raw token is not here and never can be: the host sees a fingerprint of the stored hash so
 -- they can tell two links apart.
 -- ---------------------------------------------------------------------------
-create function public.host_invitations(p_list uuid)
+create or replace function public.host_invitations(p_list uuid)
 returns table (
   invitation_id uuid,
   claim_limit smallint,
@@ -449,7 +458,7 @@ grant execute on function public.host_invitations(uuid) to authenticated;
 -- ---------------------------------------------------------------------------
 -- The claim: a guest with an invitation and a phone, and no account
 -- ---------------------------------------------------------------------------
-create function public.claim_invitation(
+create or replace function public.claim_invitation(
   p_token text, p_display_name text, p_phone text, p_device_id text default null)
 returns jsonb
 language plpgsql
@@ -541,7 +550,7 @@ grant execute on function public.claim_invitation(text, text, text, text) to ano
 -- ---------------------------------------------------------------------------
 -- The guest's own card, read with the guest's own session
 -- ---------------------------------------------------------------------------
-create function public.my_claimed_card(p_guest_session text)
+create or replace function public.my_claimed_card(p_guest_session text)
 returns jsonb
 language plpgsql
 stable
@@ -590,7 +599,7 @@ grant execute on function public.my_claimed_card(text) to anon, authenticated;
 -- Scoped to a guest list the caller already hosts, so this is not a way to look people up: only an
 -- active, verified account is returned, and the email address itself never comes back.
 -- ---------------------------------------------------------------------------
-create function public.grantee_for_list(p_list uuid, p_email text)
+create or replace function public.grantee_for_list(p_list uuid, p_email text)
 returns table (user_id uuid, display_name text)
 language plpgsql
 stable
@@ -626,7 +635,7 @@ grant execute on function public.grantee_for_list(uuid, text) to authenticated;
 -- ---------------------------------------------------------------------------
 -- Host: hand a device a scanner grant
 -- ---------------------------------------------------------------------------
-create function public.issue_scanner_grant(
+create or replace function public.issue_scanner_grant(
   p_list uuid, p_device_id text, p_grantee uuid, p_expires_at timestamptz)
 returns jsonb
 language plpgsql
@@ -671,7 +680,7 @@ $$;
 revoke all on function public.issue_scanner_grant(uuid, text, uuid, timestamptz) from public, anon;
 grant execute on function public.issue_scanner_grant(uuid, text, uuid, timestamptz) to authenticated;
 
-create function public.revoke_scanner_grant(p_grant uuid, p_expected_version integer)
+create or replace function public.revoke_scanner_grant(p_grant uuid, p_expected_version integer)
 returns integer
 language plpgsql
 volatile
@@ -705,7 +714,7 @@ $$;
 revoke all on function public.revoke_scanner_grant(uuid, integer) from public, anon;
 grant execute on function public.revoke_scanner_grant(uuid, integer) to authenticated;
 
-create function public.host_scanner_grants(p_list uuid)
+create or replace function public.host_scanner_grants(p_list uuid)
 returns table (
   grant_id uuid,
   device_id text,
@@ -737,7 +746,7 @@ grant execute on function public.host_scanner_grants(uuid) to authenticated;
 -- ---------------------------------------------------------------------------
 -- The scanner's guard: this grant, this device, this person, still live
 -- ---------------------------------------------------------------------------
-create function app_private.require_scanner_grant(p_grant uuid, p_device_id text)
+create or replace function app_private.require_scanner_grant(p_grant uuid, p_device_id text)
 returns public.scanner_grants
 language plpgsql
 stable
@@ -774,7 +783,7 @@ revoke all on function app_private.require_scanner_grant(uuid, text) from public
 --
 -- A card's name, its state and its expiry. No phone number, no address, no other guest's details.
 -- ---------------------------------------------------------------------------
-create function public.scanner_admissions(p_grant uuid, p_device_id text)
+create or replace function public.scanner_admissions(p_grant uuid, p_device_id text)
 returns table (
   credential_hash text,
   display_name text,
@@ -813,7 +822,7 @@ grant execute on function public.scanner_admissions(uuid, text) to authenticated
 -- the device recorded while it could not, and is written when it reconnects; the device's own
 -- clock is what it says it saw, and the moment the platform received it is kept as well.
 -- ---------------------------------------------------------------------------
-create function public.record_checkin(
+create or replace function public.record_checkin(
   p_grant uuid, p_credential text, p_device_id text, p_occurred_at timestamptz, p_mode text)
 returns jsonb
 language plpgsql
@@ -888,7 +897,7 @@ grant execute on function public.record_checkin(uuid, text, text, timestamptz, t
 -- ---------------------------------------------------------------------------
 -- Host: the door's record
 -- ---------------------------------------------------------------------------
-create function public.host_checkins(p_list uuid)
+create or replace function public.host_checkins(p_list uuid)
 returns table (
   checkin_id uuid,
   display_name text,
