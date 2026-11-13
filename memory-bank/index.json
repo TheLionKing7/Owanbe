@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-13T04:40:27.856Z",
+  "updatedAt": "2026-11-13T04:43:19.195Z",
   "docs": [
     {
       "file": "README.md",
@@ -183,7 +183,7 @@
     "docs/journal/2026-11-10-payment-completion-blocked.md": "3355a11f1be265af",
     "docs/journal/2026-11-10-signup-sql-repair.md": "f96963a9305cd6ca",
     "docs/journal/2026-11-12-F-1-workspace-switcher.md": "bebd3ee556b231a2",
-    "docs/journal/2026-11-12-F-14-counter-response-deadline.md": "c2712da173afb4b5",
+    "docs/journal/2026-11-12-F-14-counter-response-deadline.md": "7b288d933a8189d4",
     "docs/journal/2026-11-12-F-90-paystack-webhook-signature.md": "e1b8e05fdee11f64",
     "docs/open-questions.md": "a300435b944fbdcf",
     "docs/sql/2026-11-10-cancellation-tokens-dva.sql": "7c2bdb5f11353ca5",
