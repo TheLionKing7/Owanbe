@@ -60,6 +60,8 @@ Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
 | `src/routes/api/ai/status.ts` | `/api/ai/status` | GET whether this caller may use OwanbeAI (the grant **and** the zero-retention contract); the caller's token is forwarded to the database |
 | `src/routes/api/ai/investigate.ts` | `/api/ai/investigate` | POST OwanbeAI's reading of one booking's payment trail; the trail is read from the database first, and the model is called only after the read succeeded |
 | `src/routes/api/ai/report.ts` | `/api/ai/report` | POST one report on the caller's own answer; the shared route for every AI surface (planner, vendor copy, OwanbeAI) |
+| `src/routes/observability.tsx` | `/observability` | the F-126 operations dashboard; outside both house shells, so it is not a house page |
+| `src/routes/api/observability.ts` | `/api/observability` | GET the operational counters for a staff member holding the `operations` grant; the caller's token is forwarded to the database |
 
 Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, `PlaceholderPage`, `NotFound`) even though `src/routes/README.md` says not to create that folder. House sections come from `src/lib/houses.ts`.
 

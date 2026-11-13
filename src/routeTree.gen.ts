@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as HostRouteImport } from './routes/host'
+import { Route as ObservabilityRouteImport } from './routes/observability'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as VendorRouteImport } from './routes/vendor'
 import { Route as WelcomeRouteImport } from './routes/welcome'
@@ -19,6 +20,7 @@ import { Route as PublicSplatRouteImport } from './routes/_public/$'
 import { Route as PublicSignInRouteImport } from './routes/_public/sign-in'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as ApiBenchmarksRouteImport } from './routes/api/benchmarks'
+import { Route as ApiObservabilityRouteImport } from './routes/api/observability'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as HostIndexRouteImport } from './routes/host/index'
 import { Route as HostSectionRouteImport } from './routes/host/$section'
@@ -52,6 +54,11 @@ const PublicRoute = PublicRouteImport.update({
 const HostRoute = HostRouteImport.update({
   id: '/host',
   path: '/host',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObservabilityRoute = ObservabilityRouteImport.update({
+  id: '/observability',
+  path: '/observability',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlannerRoute = PlannerRouteImport.update({
@@ -92,6 +99,11 @@ const PublicSignUpRoute = PublicSignUpRouteImport.update({
 const ApiBenchmarksRoute = ApiBenchmarksRouteImport.update({
   id: '/api/benchmarks',
   path: '/api/benchmarks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiObservabilityRoute = ApiObservabilityRouteImport.update({
+  id: '/api/observability',
+  path: '/api/observability',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatIdRoute = ChatIdRouteImport.update({
@@ -225,6 +237,7 @@ const ApiChatsIdAttachmentsAttachmentIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/host': typeof HostRouteWithChildren
+  '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
   '/vendor': typeof VendorRouteWithChildren
   '/welcome': typeof WelcomeRoute
@@ -232,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
   '/api/benchmarks': typeof ApiBenchmarksRoute
+  '/api/observability': typeof ApiObservabilityRoute
   '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
@@ -259,12 +273,14 @@ export interface FileRoutesByFullPath {
   '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRoutesByTo {
+  '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
   '/welcome': typeof WelcomeRoute
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
   '/api/benchmarks': typeof ApiBenchmarksRoute
+  '/api/observability': typeof ApiObservabilityRoute
   '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
@@ -296,6 +312,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteWithChildren
   '/host': typeof HostRouteWithChildren
+  '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
   '/vendor': typeof VendorRouteWithChildren
   '/welcome': typeof WelcomeRoute
@@ -303,6 +320,7 @@ export interface FileRoutesById {
   '/_public/sign-in': typeof PublicSignInRoute
   '/_public/sign-up': typeof PublicSignUpRoute
   '/api/benchmarks': typeof ApiBenchmarksRoute
+  '/api/observability': typeof ApiObservabilityRoute
   '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
@@ -335,6 +353,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/host'
+    | '/observability'
     | '/planner'
     | '/vendor'
     | '/welcome'
@@ -342,6 +361,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/api/benchmarks'
+    | '/api/observability'
     | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
@@ -369,12 +389,14 @@ export interface FileRouteTypes {
     | '/api/chats/$id/attachments/$attachmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/observability'
     | '/planner'
     | '/welcome'
     | '/$'
     | '/sign-in'
     | '/sign-up'
     | '/api/benchmarks'
+    | '/api/observability'
     | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
@@ -405,6 +427,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_public'
     | '/host'
+    | '/observability'
     | '/planner'
     | '/vendor'
     | '/welcome'
@@ -412,6 +435,7 @@ export interface FileRouteTypes {
     | '/_public/sign-in'
     | '/_public/sign-up'
     | '/api/benchmarks'
+    | '/api/observability'
     | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
@@ -443,10 +467,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
   HostRoute: typeof HostRouteWithChildren
+  ObservabilityRoute: typeof ObservabilityRoute
   PlannerRoute: typeof PlannerRoute
   VendorRoute: typeof VendorRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
   ApiBenchmarksRoute: typeof ApiBenchmarksRoute
+  ApiObservabilityRoute: typeof ApiObservabilityRoute
   ChatIdRoute: typeof ChatIdRoute
   ApiAiInvestigateRoute: typeof ApiAiInvestigateRoute
   ApiAiReportRoute: typeof ApiAiReportRoute
@@ -477,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/host'
       fullPath: '/host'
       preLoaderRoute: typeof HostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/observability': {
+      id: '/observability'
+      path: '/observability'
+      fullPath: '/observability'
+      preLoaderRoute: typeof ObservabilityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planner': {
@@ -533,6 +566,13 @@ declare module '@tanstack/react-router' {
       path: '/api/benchmarks'
       fullPath: '/api/benchmarks'
       preLoaderRoute: typeof ApiBenchmarksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/observability': {
+      id: '/api/observability'
+      path: '/api/observability'
+      fullPath: '/api/observability'
+      preLoaderRoute: typeof ApiObservabilityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/$id': {
@@ -794,10 +834,12 @@ const ApiChatsIdRouteWithChildren = ApiChatsIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
   HostRoute: HostRouteWithChildren,
+  ObservabilityRoute: ObservabilityRoute,
   PlannerRoute: PlannerRoute,
   VendorRoute: VendorRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
   ApiBenchmarksRoute: ApiBenchmarksRoute,
+  ApiObservabilityRoute: ApiObservabilityRoute,
   ChatIdRoute: ChatIdRoute,
   ApiAiInvestigateRoute: ApiAiInvestigateRoute,
   ApiAiReportRoute: ApiAiReportRoute,

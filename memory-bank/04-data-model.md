@@ -156,5 +156,16 @@ The `ai_investigation` staff capability is **new in F-107** and is added to `sta
 
 Pending note: the migration is unapplied and `f107_owanbe_ai.test.sql` has never been executed on this machine (no Postgres 16 binaries, Docker does not run here), so the database side of F-107 is **unverified**.
 
+## F-126 observability dashboard
+The dashboard reads the platform's **own operational records** and returns counters. It adds no table and no money path.
+
+| Function | Who calls | Does |
+|---|---|---|
+| `public.observability_dashboard()` | the operations dashboard (authenticated, staff holding the existing `operations` grant) | twelve counters with a label, a detail and a severity: provider events with no outcome, the age of the oldest undecided event, bookings whose ledger does not add up, releases past their deadline, refunds owed and not settled, pools frozen by a dispute, failed charges in 24 hours, payment windows that closed unpaid, cases still open, AI answers needing a person, unread house alerts, sensitive reads in 24 hours. **No amount, currency, party name, email, provider reference or house identifier** is in the result. Refused without the grant (42501) and when signed out (28000); every permitted read is audited as `observability.viewed` against the grant id |
+
+Severity on the dashboard is a **reading rule, not a threshold**: the page grades a counter for a human and never decides whether money moves.
+
+Pending note: the migration is unapplied and `f126_observability_dashboard.test.sql` has never been executed on this machine (no Postgres 16 binaries, Docker does not run here), so the database side of F-126 is **unverified**.
+
 ## Planned tables (from `blueprint/tech-spec.md` §4; built by their own features)
 vendor_profiles, services, verification_cases · events, plans, tasks, budget_lines, shortlists · conversations, messages · quotes, quote_items, calendar_holds, allocations · bookings, payments, payment_events · ledger_accounts, ledger_entries, refunds, outages · approvals, payout_references, recovery_locks · subscriptions, fee_entries, trust_events, reviews · disputes, no_show_tickets, case_updates, evidence · guests, guest_shares, health_details, consents · invitations, claims, scanner_grants, admissions · files, access_grants, ai_reports · notifications, deliveries, preferences · jobs, outbox, idempotency_keys, privacy_requests, sessions.

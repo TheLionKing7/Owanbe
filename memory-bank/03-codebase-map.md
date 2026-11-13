@@ -44,6 +44,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/decisions/2026-11-04-tanstack-start-and-paystack.md` | Sage 7 pickup copy of ADR 0003 (runtime + Paystack approved, CI workflows owner-requested); `blueprint/` still needs the sync. |
 | `docs/decisions/2026-11-06-feature-requests-competitive.md` | Owner decision record for the competitive feature requests raised on 2026-11-06. |
 | `docs/decisions/2026-11-10-payments-owner-answers.md` | Owner decision record for the open payment questions: custody stays with Paystack, the cancellation refund percentages, the dedicated virtual account, the two-approval threshold and read-only AI. |
+| `docs/decisions/f126-observability-dashboard.md` | F-126 decision record: the dashboard reads operational records and returns counts only, access is the existing `operations` capability, every read is audited, and the gaps are named rather than hidden. |
 | `docs/decisions/f13-chat-owns-its-feature-code.md` | Owner decision: in-app chat gets its own feature code (F-100) and is built before F-13's direct search and book flow. |
 | `docs/decisions/f14-counter-response-deadline.md` | Decision record: a host counter starts the vendor's 24-hour response deadline, the counter deadline governs while the quote is countered, and the host is told when it closes. |
 | `docs/decisions/f14-quote-date-lock.md` | Owner decision on the F-14 quote date lock: which dates a quote holds and when expiry restarts. |
@@ -78,6 +79,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-12-F-14-counter-response-deadline.md` | F-14 build journal: the vendor response deadline, the expiry that releases the date, the host alert, and the alternatives that are still not built |
 | `docs/journal/2026-11-12-F-23-counter-offer-in-chat.md` | F-23 build journal: the counter-offer inside the chat thread, the message kinds, the thread projection and what stays in the quotes panel. |
 | `docs/journal/2026-11-12-F-90-paystack-webhook-signature.md` | F-90 build journal: the route-level test that proves the webhook checks the signature itself, and the four ways a forged request is refused |
+| `docs/journal/2026-11-13-F-126-observability-dashboard.md` | F-126 build journal: the twelve counters, the access rule, the gaps the dashboard names, and what has not been run. |
 | `docs/journal/2026-11-13-F-46-investigation-only-role.md` | F-46 build journal: the identity the AI's payment read runs under, why the read lives in `app_private`, and what it may not do. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
 | `docs/sql/2026-11-10-cancellation-tokens-dva.sql` | Installation script, superseded by the combined one: the cancellation refund function, the cancellation, authorisation and dedicated-account tables. |
@@ -183,6 +185,12 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/holds/api.ts` | F-38 browser boundary: the hold and notification projections. |
 | `src/features/holds/contracts.test.ts` | F-38 tests: hold status, countdown and the release wording. |
 | `src/features/holds/contracts.ts` | F-38 contracts: hold statuses, the countdown from the server deadline, refund and release wording. |
+| `src/features/observability/ObservabilityPanel.test.tsx` | F-126 tests: the operations panel — the signals it shows, where it says the numbers come from, the error counts, the gaps it names and the refusal wording. |
+| `src/features/observability/ObservabilityPanel.tsx` | F-126 UI: the operations dashboard — the counters, the severity, the error counts and the "not measured yet" list. It reads and explains; it never acts. |
+| `src/features/observability/api.ts` | F-126 browser boundary: the dashboard route, the error codes and the refusal copy. |
+| `src/features/observability/contracts.ts` | F-126 contracts: the signal shape, the severities and the list of what the platform cannot measure yet. |
+| `src/features/observability/server.test.ts` | F-126 tests: the route boundary — the token forwarding, the refusals, the signals, the error counts and the locked environment. |
+| `src/features/observability/server.ts` | F-126 server boundary: the caller's token is forwarded to the database for the dashboard; the Sentry summary is read on the server and never blocks the counters. |
 | `src/features/onboarding/OnboardingGate.tsx` | F-7: keeps a house closed until onboarding is complete; never locks people out when the check can't run. |
 | `src/features/onboarding/Welcome.test.tsx` | Tests for the F-7 wizard and gate (host path, vendor path, failures, staff bypass). |
 | `src/features/onboarding/WelcomePlanCard.tsx` | F-7: Host overview card with what the host said at sign-up and a hand-off to the AI Planner. |
@@ -279,6 +287,8 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/lib/monitoring/browser.ts` | initializeMonitoring(): lazy Sentry init from the server-provided DSN; no DSN means no capture. |
 | `src/lib/monitoring/config.functions.ts` | Read-only server function exposing only the public Sentry DSN and environment label. |
 | `src/lib/monitoring/privacy.ts` | Sentry event sanitizer: allowlist fields, redacted message, no user/request/breadcrumbs/contexts. |
+| `src/lib/monitoring/sentry.server.test.ts` | F-126 tests: the Sentry summary — the configured check, the counted issues, the token in the header, and the answers of nothing when Sentry is absent or unreachable. |
+| `src/lib/monitoring/sentry.server.ts` | F-126 server-only client for Sentry's management API: the unresolved issues in the window, the count's cap, and a null whenever Sentry cannot be asked. The token never leaves the file. |
 | `src/lib/payments/cancellation.test.ts` | F-20/F-21 tests: the refund percentages, the day boundaries and the two-approval threshold. |
 | `src/lib/payments/cancellation.ts` | F-20/F-21 preview of who gets what back when a booking is cancelled; the database figure is the one that is paid. |
 | `src/lib/payments/credential-guard.test.ts` | F-60 tests: raw card and bank credentials are refused. |
@@ -343,6 +353,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/api/chats/$id/attachments/$attachmentId.ts` | GET /api/chats/:id/attachments/:attachmentId — mint a signed link for a shared file. |
 | `src/routes/api/chats/$id/messages.ts` | POST /api/chats/:id/messages — send a message or a document into the thread. |
 | `src/routes/api/guest-lists/$id/share.ts` | POST /api/guest-lists/:id/share — the host shares a list with one platform user. |
+| `src/routes/api/observability.ts` | F-126 route: `GET /api/observability` — the platform's operational counters, for staff holding the `operations` capability. |
 | `src/routes/api/payments/verify.ts` | POST /api/payments/verify — the browser check of a Paystack reference; the allocation happens on the webhook or here, never twice. |
 | `src/routes/api/planner/generate.ts` | POST /api/planner/generate — the grounded answer, logged as the caller's own interaction. |
 | `src/routes/api/planner/report.ts` | POST /api/planner/report — report one answer against the caller's own interaction. |
@@ -352,6 +363,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/host.tsx` | /host layout: RequireAuth inside HouseLayout houseId=host. |
 | `src/routes/host/$section.tsx` | /host/:section route. |
 | `src/routes/host/index.tsx` | /host index route. |
+| `src/routes/observability.tsx` | F-126: the /observability page — the operations dashboard, outside either house shell. |
 | `src/routes/planner.tsx` | The /planner page: OwanbePlanner outside either house shell. |
 | `src/routes/vendor.tsx` | /vendor layout: RequireAuth inside HouseLayout houseId=vendor. |
 | `src/routes/vendor/$section.tsx` | /vendor/:section route. |
@@ -424,6 +436,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261112100000_f14_counter_response_deadline.sql` | F-14 follow-up: the counter-response deadline (`quotes.counter_response_due_at`), the state shape that says which deadline governs a quote, the expiry that releases the date when the vendor runs out of time, and the `counter_ignored` house alert. |
 | `supabase/migrations/20261112110000_f23_counter_offer_in_chat.sql` | F-23 migration: the message kinds (`quote_offer`, `counter_offer`) with the quote and revision they carry, the thread a revision was made in, the counter that posts into the thread, the offer that is announced in it, the `thread_quotes` projection, and F-60's credential guard on the chat body. |
 | `supabase/migrations/20261112130000_f46_investigation_only_role.sql` | F-46 migration: the `investigation_only` role, the two minimised views it may read, the payment reads it owns, and the passthroughs `public.ai_payment_log` and `public.ai_payment_event_log` keep the application on. |
+| `supabase/migrations/20261112140000_f126_observability_dashboard.sql` | F-126 migration: `public.observability_dashboard()` — twelve counters read from the platform's own operational records, for staff holding the existing `operations` capability, with every read audited. |
 
 #### supabase/tests/
 
@@ -436,6 +449,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f102_fund_pool.test.sql` | F-102 SQL tests: the allocation, the replay, the completion, the refund, the freeze, the append-only ledger and the house isolation. |
 | `supabase/tests/f106_market_benchmarks.test.sql` | F-106 SQL suite: a sent quote becomes an observed price with its provenance, a new price supersedes the old one, an unverified or withdrawn quote never reaches the market, one vendor is not a range, and only the planner's Host houses and the `analytics` capability may read. |
 | `supabase/tests/f107_owanbe_ai.test.sql` | F-107 SQL suite: the closed gate, the grant, the minimised trail, the logged interaction, the opened case and the proof that the AI path cannot allocate, refund, settle, freeze, unfreeze, complete or release. |
+| `supabase/tests/f126_observability_dashboard.test.sql` | F-126 SQL suite: the dashboard is closed without the `operations` capability, the twelve counts, the audit row, the absence of money and party detail, the tables that cannot be read directly, and the grant that closes it again. |
 | `supabase/tests/f14_counter_response.test.sql` | F-14 SQL tests for the counter deadline: the window the counter starts, the expiry that releases the date, the audit reason, the host alert and the vendor's re-send. |
 | `supabase/tests/f14_quotes.test.sql` | F-14 SQL tests: quote revisions, transitions and vendor-only authoring. |
 | `supabase/tests/f23_counter_offer_in_chat.test.sql` | F-23 SQL suite: the offer announced in the thread, the host's counter in the thread, the thread a counter may name, the parties-only read of the thread's quote, the draft that never appears, and the refused transitions. |
