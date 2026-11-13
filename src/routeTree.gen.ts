@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
+import { Route as AiRouteImport } from './routes/ai'
 import { Route as HostRouteImport } from './routes/host'
 import { Route as ObservabilityRouteImport } from './routes/observability'
 import { Route as PlannerRouteImport } from './routes/planner'
@@ -30,7 +31,11 @@ import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth.ca
 import { Route as PublicGuestListsIdRouteImport } from './routes/_public/guest-lists.$id'
 import { Route as PublicVendorsIndexRouteImport } from './routes/_public/vendors.index'
 import { Route as PublicVendorsSlugRouteImport } from './routes/_public/vendors.$slug'
+import { Route as ApiAiAnswersRouteImport } from './routes/api/ai/answers'
+import { Route as ApiAiCaseRouteImport } from './routes/api/ai/case'
+import { Route as ApiAiCasesRouteImport } from './routes/api/ai/cases'
 import { Route as ApiAiInvestigateRouteImport } from './routes/api/ai/investigate'
+import { Route as ApiAiMineRouteImport } from './routes/api/ai/mine'
 import { Route as ApiAiReportRouteImport } from './routes/api/ai/report'
 import { Route as ApiAiStatusRouteImport } from './routes/api/ai/status'
 import { Route as ApiChatsIdRouteImport } from './routes/api/chats/$id'
@@ -49,6 +54,11 @@ import { Route as ApiChatsIdAttachmentsAttachmentIdRouteImport } from './routes/
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiRoute = AiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HostRoute = HostRouteImport.update({
@@ -151,9 +161,29 @@ const PublicVendorsSlugRoute = PublicVendorsSlugRouteImport.update({
   path: '/vendors/$slug',
   getParentRoute: () => PublicRoute,
 } as any)
+const ApiAiAnswersRoute = ApiAiAnswersRouteImport.update({
+  id: '/api/ai/answers',
+  path: '/api/ai/answers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiCaseRoute = ApiAiCaseRouteImport.update({
+  id: '/api/ai/case',
+  path: '/api/ai/case',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiCasesRoute = ApiAiCasesRouteImport.update({
+  id: '/api/ai/cases',
+  path: '/api/ai/cases',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAiInvestigateRoute = ApiAiInvestigateRouteImport.update({
   id: '/api/ai/investigate',
   path: '/api/ai/investigate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiMineRoute = ApiAiMineRouteImport.update({
+  id: '/api/ai/mine',
+  path: '/api/ai/mine',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAiReportRoute = ApiAiReportRouteImport.update({
@@ -236,6 +266,7 @@ const ApiChatsIdAttachmentsAttachmentIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
+  '/ai': typeof AiRoute
   '/host': typeof HostRouteWithChildren
   '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
@@ -254,7 +285,11 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/ai/answers': typeof ApiAiAnswersRoute
+  '/api/ai/case': typeof ApiAiCaseRoute
+  '/api/ai/cases': typeof ApiAiCasesRoute
   '/api/ai/investigate': typeof ApiAiInvestigateRoute
+  '/api/ai/mine': typeof ApiAiMineRoute
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/ai/status': typeof ApiAiStatusRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
@@ -273,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRoutesByTo {
+  '/ai': typeof AiRoute
   '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
   '/welcome': typeof WelcomeRoute
@@ -290,7 +326,11 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/ai/answers': typeof ApiAiAnswersRoute
+  '/api/ai/case': typeof ApiAiCaseRoute
+  '/api/ai/cases': typeof ApiAiCasesRoute
   '/api/ai/investigate': typeof ApiAiInvestigateRoute
+  '/api/ai/mine': typeof ApiAiMineRoute
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/ai/status': typeof ApiAiStatusRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
@@ -311,6 +351,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteWithChildren
+  '/ai': typeof AiRoute
   '/host': typeof HostRouteWithChildren
   '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
@@ -330,7 +371,11 @@ export interface FileRoutesById {
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/guest-lists/$id': typeof PublicGuestListsIdRoute
   '/_public/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/ai/answers': typeof ApiAiAnswersRoute
+  '/api/ai/case': typeof ApiAiCaseRoute
+  '/api/ai/cases': typeof ApiAiCasesRoute
   '/api/ai/investigate': typeof ApiAiInvestigateRoute
+  '/api/ai/mine': typeof ApiAiMineRoute
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/ai/status': typeof ApiAiStatusRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
@@ -352,6 +397,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ai'
     | '/host'
     | '/observability'
     | '/planner'
@@ -370,7 +416,11 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/guest-lists/$id'
     | '/vendors/$slug'
+    | '/api/ai/answers'
+    | '/api/ai/case'
+    | '/api/ai/cases'
     | '/api/ai/investigate'
+    | '/api/ai/mine'
     | '/api/ai/report'
     | '/api/ai/status'
     | '/api/chats/$id'
@@ -389,6 +439,7 @@ export interface FileRouteTypes {
     | '/api/chats/$id/attachments/$attachmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/ai'
     | '/observability'
     | '/planner'
     | '/welcome'
@@ -406,7 +457,11 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/guest-lists/$id'
     | '/vendors/$slug'
+    | '/api/ai/answers'
+    | '/api/ai/case'
+    | '/api/ai/cases'
     | '/api/ai/investigate'
+    | '/api/ai/mine'
     | '/api/ai/report'
     | '/api/ai/status'
     | '/api/chats/$id'
@@ -426,6 +481,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_public'
+    | '/ai'
     | '/host'
     | '/observability'
     | '/planner'
@@ -445,7 +501,11 @@ export interface FileRouteTypes {
     | '/_public/auth/callback'
     | '/_public/guest-lists/$id'
     | '/_public/vendors/$slug'
+    | '/api/ai/answers'
+    | '/api/ai/case'
+    | '/api/ai/cases'
     | '/api/ai/investigate'
+    | '/api/ai/mine'
     | '/api/ai/report'
     | '/api/ai/status'
     | '/api/chats/$id'
@@ -466,6 +526,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
+  AiRoute: typeof AiRoute
   HostRoute: typeof HostRouteWithChildren
   ObservabilityRoute: typeof ObservabilityRoute
   PlannerRoute: typeof PlannerRoute
@@ -474,7 +535,11 @@ export interface RootRouteChildren {
   ApiBenchmarksRoute: typeof ApiBenchmarksRoute
   ApiObservabilityRoute: typeof ApiObservabilityRoute
   ChatIdRoute: typeof ChatIdRoute
+  ApiAiAnswersRoute: typeof ApiAiAnswersRoute
+  ApiAiCaseRoute: typeof ApiAiCaseRoute
+  ApiAiCasesRoute: typeof ApiAiCasesRoute
   ApiAiInvestigateRoute: typeof ApiAiInvestigateRoute
+  ApiAiMineRoute: typeof ApiAiMineRoute
   ApiAiReportRoute: typeof ApiAiReportRoute
   ApiAiStatusRoute: typeof ApiAiStatusRoute
   ApiChatsIdRoute: typeof ApiChatsIdRouteWithChildren
@@ -496,6 +561,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai': {
+      id: '/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/host': {
@@ -638,11 +710,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicVendorsSlugRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/api/ai/answers': {
+      id: '/api/ai/answers'
+      path: '/api/ai/answers'
+      fullPath: '/api/ai/answers'
+      preLoaderRoute: typeof ApiAiAnswersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/case': {
+      id: '/api/ai/case'
+      path: '/api/ai/case'
+      fullPath: '/api/ai/case'
+      preLoaderRoute: typeof ApiAiCaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/cases': {
+      id: '/api/ai/cases'
+      path: '/api/ai/cases'
+      fullPath: '/api/ai/cases'
+      preLoaderRoute: typeof ApiAiCasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ai/investigate': {
       id: '/api/ai/investigate'
       path: '/api/ai/investigate'
       fullPath: '/api/ai/investigate'
       preLoaderRoute: typeof ApiAiInvestigateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/mine': {
+      id: '/api/ai/mine'
+      path: '/api/ai/mine'
+      fullPath: '/api/ai/mine'
+      preLoaderRoute: typeof ApiAiMineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ai/report': {
@@ -833,6 +933,7 @@ const ApiChatsIdRouteWithChildren = ApiChatsIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
+  AiRoute: AiRoute,
   HostRoute: HostRouteWithChildren,
   ObservabilityRoute: ObservabilityRoute,
   PlannerRoute: PlannerRoute,
@@ -841,7 +942,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBenchmarksRoute: ApiBenchmarksRoute,
   ApiObservabilityRoute: ApiObservabilityRoute,
   ChatIdRoute: ChatIdRoute,
+  ApiAiAnswersRoute: ApiAiAnswersRoute,
+  ApiAiCaseRoute: ApiAiCaseRoute,
+  ApiAiCasesRoute: ApiAiCasesRoute,
   ApiAiInvestigateRoute: ApiAiInvestigateRoute,
+  ApiAiMineRoute: ApiAiMineRoute,
   ApiAiReportRoute: ApiAiReportRoute,
   ApiAiStatusRoute: ApiAiStatusRoute,
   ApiChatsIdRoute: ApiChatsIdRouteWithChildren,
