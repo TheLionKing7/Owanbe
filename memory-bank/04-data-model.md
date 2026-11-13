@@ -205,12 +205,14 @@ An invitation is a **single secret**: the token exists once, in the host's hands
 | `public.revoke_scanner_grant(grant, expected_version)` | the host (authenticated) | takes the door device back at once; a revoked grant stops admitting at the next scan |
 | `public.host_scanner_grants(list)` | the host (authenticated) | the list's grants: the device, the person, the expiry and whether it was revoked |
 | `public.grantee_for_list(list, email)` | the host's form (authenticated) | resolves the email to a user **on the platform**: a verified, active person who belongs to the host's house. An unknown, unverified or suspended person raises `grantee_not_found`; a malformed address raises `invalid_email` |
-| `public.scanner_admissions(list, credential)` | the door device (authenticated, holding a live grant) | checks a scanned credential against the list: `admitted`, `duplicate`, `expired` or `unknown`. It is `volatile` so a check never sits in a snapshot |
-| `public.record_checkin(list, credential, display_name, occurred_at, mode)` | the door device (authenticated, holding a live grant) | writes the admission the door made. `mode` is `online` or `queued_offline`, so a check-in made while the network was down is visibly reconciled later and not counted twice |
+| `public.scanner_admissions(grant, device_id)` | the door device (authenticated, holding a live grant) | the **admission minimum** for one list: each card's credential hash, name, state, card expiry and the grant's own expiry as the cache's door window. No phone, no address, no other guest's details |
+| `public.record_checkin(grant, credential, device_id, occurred_at, mode)` | the door device (authenticated, holding a live grant) | writes the admission the door made. `mode` is `online` or `queued_offline`, so a check-in made while the network was down is visibly reconciled later and not counted twice |
 | `app_private.f108_hash(value)` / `app_private.f108_random_token()` / `app_private.f108_admission_credential(session)` | the functions above | the hashing, the token minting and the credential derivation — all with core PostgreSQL (`sha256`), so no extension is needed |
 | `app_private.require_list_host(list)` | every host write | F-40's guard, reused: the caller must host the guest list |
 
 The five tables (`invitations`, `invite_claims`, `admissions`, `scanner_grants`, `checkins`) have RLS enabled **and forced**, all access revoked from `public`, `anon` and `authenticated`, and are reachable only through the functions above.
+
+**The door's cache is not a table — it is the device's own memory.** It holds the rows `scanner_admissions` returns plus the moment the platform last gave them (`synced_at`), in the phone's locked drawer. A door may only answer from a cache the platform gave it and only while the door window (the grant's expiry) is open; otherwise it answers `needs_sync` and admits nobody. The decision is `docs/decisions/f108-offline-cache-window.md`.
 
 Pending note: the migration is unapplied and `f108_ticketing.test.sql` has never been executed on this machine (no Postgres 16 binaries, Docker does not run here), so the database side of F-108 is **unverified**. The Expo app under `mobile/` has also **never been installed or run** here (the npm registry is unreachable from this machine), so the phone side is code only (**unverified**).
 
