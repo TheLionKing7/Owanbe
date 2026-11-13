@@ -78,6 +78,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-12-F-14-counter-response-deadline.md` | F-14 build journal: the vendor response deadline, the expiry that releases the date, the host alert, and the alternatives that are still not built |
 | `docs/journal/2026-11-12-F-23-counter-offer-in-chat.md` | F-23 build journal: the counter-offer inside the chat thread, the message kinds, the thread projection and what stays in the quotes panel. |
 | `docs/journal/2026-11-12-F-90-paystack-webhook-signature.md` | F-90 build journal: the route-level test that proves the webhook checks the signature itself, and the four ways a forged request is refused |
+| `docs/journal/2026-11-13-F-46-investigation-only-role.md` | F-46 build journal: the identity the AI's payment read runs under, why the read lives in `app_private`, and what it may not do. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
 | `docs/sql/2026-11-10-cancellation-tokens-dva.sql` | Installation script, superseded by the combined one: the cancellation refund function, the cancellation, authorisation and dedicated-account tables. |
 | `docs/sql/2026-11-10-f13-booking-completion.sql` | The combined installation script: cancellation and refunds, saved Paystack authorisation references, dedicated virtual accounts and the F-13 quote requests. |
@@ -422,6 +423,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261110203000_f107_open_zdr_gate.sql` | F-107 follow-up: opens the zero-retention gate in `app_private.ai_settings` on the owner's confirmation (2026-11-10) that the platform's provider holds a zero-data-retention agreement, and carries the statement that closes it again. |
 | `supabase/migrations/20261112100000_f14_counter_response_deadline.sql` | F-14 follow-up: the counter-response deadline (`quotes.counter_response_due_at`), the state shape that says which deadline governs a quote, the expiry that releases the date when the vendor runs out of time, and the `counter_ignored` house alert. |
 | `supabase/migrations/20261112110000_f23_counter_offer_in_chat.sql` | F-23 migration: the message kinds (`quote_offer`, `counter_offer`) with the quote and revision they carry, the thread a revision was made in, the counter that posts into the thread, the offer that is announced in it, the `thread_quotes` projection, and F-60's credential guard on the chat body. |
+| `supabase/migrations/20261112130000_f46_investigation_only_role.sql` | F-46 migration: the `investigation_only` role, the two minimised views it may read, the payment reads it owns, and the passthroughs `public.ai_payment_log` and `public.ai_payment_event_log` keep the application on. |
 
 #### supabase/tests/
 
@@ -439,6 +441,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f23_counter_offer_in_chat.test.sql` | F-23 SQL suite: the offer announced in the thread, the host's counter in the thread, the thread a counter may name, the parties-only read of the thread's quote, the draft that never appears, and the refused transitions. |
 | `supabase/tests/f38_soft_hold.test.sql` | F-38 SQL tests: hold creation, the payment window and release. |
 | `supabase/tests/f40_guest_privacy.test.sql` | F-40 SQL tests: default privacy, masking, sharing and revocation. |
+| `supabase/tests/f46_investigation_only.test.sql` | F-46 SQL suite: the `investigation_only` identity and its powerlessness, the reads it owns, the fact that nobody can become it, and the investigator's unchanged, still-audited read. |
 | `supabase/tests/f60_payment_data_protection.test.sql` | F-60 SQL tests: the refusal of raw credentials and the partner-reference rules. |
 | `supabase/tests/f76_auth.test.sql` | Token checks (iss/aud/exp/sub), one user per sub, suspended refused, RLS, fail closed |
 | `supabase/tests/f77_data_model.test.sql` | Host house provisioning, composite FK and constraint checks, staff visibility, grants/assignments, append-only audit, version |
