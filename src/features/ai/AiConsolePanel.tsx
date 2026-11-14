@@ -14,7 +14,7 @@
  * holds no money fields at all.
  */
 import { useEffect, useMemo, useState } from "react";
-import { FolderOpen, MessagesSquare, Sparkles } from "lucide-react";
+import { FolderOpen, MessagesSquare } from "lucide-react";
 import {
   aiConsoleErrorMessage,
   createAiConsoleApi,
@@ -22,16 +22,19 @@ import {
   type AiConsoleApi,
 } from "./console.api";
 import {
+  AI_ANSWER_LABEL,
+  AI_ANSWER_LABEL_FALLBACK,
   AI_CASE_MOVES,
   AI_CASE_PRIORITY_LABEL,
   AI_CASE_STATUS_LABEL,
   AI_CASE_STATUSES,
   AI_CONSOLE_DISCLOSURE,
+  AI_CONSOLE_LABEL,
   type AiAnswer,
   type AiCase,
   type AiCaseStatus,
 } from "./console-contracts";
-import { AiReportControl } from "./AiDisclosure";
+import { AiLabel, AiReportControl } from "./AiDisclosure";
 import { aiErrorMessage, createAiReportApi } from "./api";
 
 const NO_TOKEN = async (): Promise<string | null> => null;
@@ -159,9 +162,7 @@ export function AiConsolePanel({ api, getAccessToken }: AiConsolePanelProps) {
       data-testid="ai-console-panel"
     >
       <div>
-        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-plum-800">
-          <Sparkles aria-hidden className="h-3.5 w-3.5" /> OwanbeAI
-        </p>
+        <AiLabel label={AI_CONSOLE_LABEL} testId="ai-console-label" />
         <h2 id="ai-console-title" className="mt-2 font-display text-lg font-bold text-plum-950">
           OwanbeAI
         </h2>
@@ -209,9 +210,15 @@ export function AiConsolePanel({ api, getAccessToken }: AiConsolePanelProps) {
                 className="rounded-xl border border-plum-900/10 p-3"
                 data-testid="ai-console-my-answer"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-plum-500">
-                  {SURFACE_LABEL[answer.surface] ?? answer.surface} &middot; {answer.model}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <AiLabel
+                    label={AI_ANSWER_LABEL[answer.surface] ?? AI_ANSWER_LABEL_FALLBACK}
+                    testId={`ai-console-answer-label-${answer.interaction_id.slice(0, 8)}`}
+                  />
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-plum-500">
+                    {SURFACE_LABEL[answer.surface] ?? answer.surface} &middot; {answer.model}
+                  </p>
+                </div>
                 <p className="mt-1 text-sm text-ink" data-testid="ai-console-my-answer-text">
                   {answer.response_text}
                 </p>
@@ -442,9 +449,15 @@ export function AiConsolePanel({ api, getAccessToken }: AiConsolePanelProps) {
                 className="rounded-xl border border-plum-900/10 p-3"
                 data-testid="ai-console-answer"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-plum-500">
-                  {SURFACE_LABEL[answer.surface] ?? answer.surface} &middot; {answer.model}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <AiLabel
+                    label={AI_ANSWER_LABEL[answer.surface] ?? AI_ANSWER_LABEL_FALLBACK}
+                    testId={`ai-console-answer-label-${answer.interaction_id.slice(0, 8)}`}
+                  />
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-plum-500">
+                    {SURFACE_LABEL[answer.surface] ?? answer.surface} &middot; {answer.model}
+                  </p>
+                </div>
                 <p className="mt-1 text-sm font-semibold text-plum-950">{answer.request_summary}</p>
                 <p className="mt-1 text-sm text-ink" data-testid="ai-console-answer-text">
                   {answer.response_text}

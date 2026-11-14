@@ -199,4 +199,36 @@ describe("AiConsolePanel", () => {
       "no payment, no hold and no booking is touched",
     );
   });
+
+  it("labels itself as AI answers", async () => {
+    const api = stubApi();
+    render(<AiConsolePanel api={api} />);
+
+    expect((await screen.findByTestId("ai-console-label")).textContent).toContain("AI answers");
+  });
+
+  it("labels every answer it shows", async () => {
+    const api = stubApi();
+    render(<AiConsolePanel api={api} />);
+
+    const labels = await screen.findAllByTestId(
+      `ai-console-answer-label-${INTERACTION_ID.slice(0, 8)}`,
+    );
+    expect(labels).toHaveLength(2);
+    for (const label of labels) {
+      expect(label.textContent).toContain("AI investigation");
+    }
+  });
+
+  it("still labels an answer from a surface it does not know", async () => {
+    const api = stubApi({
+      answers: vi.fn(async () => [anAnswer({ surface: "a_surface_we_added" })]),
+    });
+    render(<AiConsolePanel api={api} />);
+
+    const labels = await screen.findAllByTestId(
+      `ai-console-answer-label-${INTERACTION_ID.slice(0, 8)}`,
+    );
+    expect(labels.some((label) => label.textContent?.includes("AI answer"))).toBe(true);
+  });
 });

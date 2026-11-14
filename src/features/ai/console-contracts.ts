@@ -7,6 +7,7 @@
  * database rejects is a disagreement, and the database is right.
  */
 import { z } from "zod";
+import { AI_DISCLOSURE } from "./contracts";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -98,6 +99,22 @@ export interface AiAnswer {
 /** What the console says about itself, on every surface that shows it. */
 export const AI_CONSOLE_DISCLOSURE =
   "OwanbeAI's own records. Working a case changes the case and nothing else: no payment, no hold and no booking is touched.";
+
+/**
+ * The label the console wears. Every answer it shows came from a model, and a reader has to be
+ * able to see that without being told by the answer itself.
+ */
+export const AI_CONSOLE_LABEL = "AI answers";
+
+/** The label an answer wears, by the surface that produced it. */
+export const AI_ANSWER_LABEL: Record<string, string> = {
+  payment_investigation: AI_DISCLOSURE.investigation,
+  vendor_profile_copy: AI_DISCLOSURE.vendorCopy,
+  planner: AI_DISCLOSURE.planner,
+};
+
+/** The label an answer from a surface this build does not know still wears. */
+export const AI_ANSWER_LABEL_FALLBACK = "AI answer";
 
 /** The sentence shown to a caller who may not use the console. */
 export const AI_CONSOLE_FORBIDDEN =

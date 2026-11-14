@@ -56,7 +56,7 @@ describe("generatePlanOptions", () => {
       },
     });
 
-    const outcome = await generatePlanOptions(INPUT, [FACT]);
+    const outcome = await generatePlanOptions(INPUT, [FACT], { zdrConfirmed: true });
 
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
@@ -68,7 +68,7 @@ describe("generatePlanOptions", () => {
   });
 
   it("gives no answer at all when no vendor has published a profile", async () => {
-    const outcome = await generatePlanOptions(INPUT, []);
+    const outcome = await generatePlanOptions(INPUT, [], { zdrConfirmed: true });
 
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
@@ -79,7 +79,14 @@ describe("generatePlanOptions", () => {
 
   it("says the planner is not set up when the gateway key is missing", async () => {
     vi.stubEnv("LOVABLE_API_KEY", "");
-    const outcome = await generatePlanOptions(INPUT, [FACT]);
+    const outcome = await generatePlanOptions(INPUT, [FACT], { zdrConfirmed: true });
+
+    expect(outcome).toMatchObject({ ok: false, code: "unconfigured", retryable: false });
+    expect(streamText).not.toHaveBeenCalled();
+  });
+
+  it("refuses to plan while the zero-retention contract is unconfirmed", async () => {
+    const outcome = await generatePlanOptions(INPUT, [FACT], { zdrConfirmed: false });
 
     expect(outcome).toMatchObject({ ok: false, code: "unconfigured", retryable: false });
     expect(streamText).not.toHaveBeenCalled();
@@ -100,7 +107,9 @@ describe("generatePlanOptions", () => {
       },
     });
 
-    const outcome = await generatePlanOptions(INPUT, [{ ...FACT, price_note: "Ask us" }]);
+    const outcome = await generatePlanOptions(INPUT, [{ ...FACT, price_note: "Ask us" }], {
+      zdrConfirmed: true,
+    });
 
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;

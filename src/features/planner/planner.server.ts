@@ -144,6 +144,7 @@ function plannerFailureMessage(failure: AiFailure): PlannerOutcome {
 export async function generatePlanOptions(
   input: PlannerInput,
   facts: VendorFact[],
+  options: { zdrConfirmed: boolean },
 ): Promise<PlannerOutcome> {
   if (facts.length === 0) {
     return {
@@ -160,6 +161,10 @@ export async function generatePlanOptions(
     system: SYSTEM,
     prompt: `The host's celebration:\n${hostPrompt(input)}\n\nThe vendors on the platform:\n${factsPrompt(facts)}`,
     schema: rawPlanSchema,
+    // The host's celebration details are party details, and the platform's own rule counts those
+    // as sensitive: the request is refused unless the zero-retention contract is confirmed.
+    sensitive: true,
+    zdrConfirmed: options.zdrConfirmed,
   });
 
   if (!outcome.ok) return plannerFailure(outcome.failure);
