@@ -413,6 +413,10 @@ do $$ declare r record; begin
 end $$;
 
 -- Lifting the freeze moves the deadline by the time the money was held.
+-- The freeze is dated two hours back, because the deadline was moved back an hour above: the
+-- window only lands in the future again if the money was held for longer than it was shortened.
+update public.fund_pool set frozen_at = now() - interval '2 hours'
+ where booking_id = (select id from b3);
 begin;
   set local role authenticated;
   select set_config('request.jwt.claims', pg_temp.claims('auth0|f102-staff'), true);
