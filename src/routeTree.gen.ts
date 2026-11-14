@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AiRouteImport } from './routes/ai'
+import { Route as FundsRouteImport } from './routes/funds'
 import { Route as HostRouteImport } from './routes/host'
 import { Route as ObservabilityRouteImport } from './routes/observability'
 import { Route as PlannerRouteImport } from './routes/planner'
@@ -40,6 +41,12 @@ import { Route as ApiAiMineRouteImport } from './routes/api/ai/mine'
 import { Route as ApiAiReportRouteImport } from './routes/api/ai/report'
 import { Route as ApiAiStatusRouteImport } from './routes/api/ai/status'
 import { Route as ApiChatsIdRouteImport } from './routes/api/chats/$id'
+import { Route as ApiFundsAllocateRouteImport } from './routes/api/funds/allocate'
+import { Route as ApiFundsApprovalsRouteImport } from './routes/api/funds/approvals'
+import { Route as ApiFundsReconcileRouteImport } from './routes/api/funds/reconcile'
+import { Route as ApiFundsRecoveryRouteImport } from './routes/api/funds/recovery'
+import { Route as ApiFundsReleaseRouteImport } from './routes/api/funds/release'
+import { Route as ApiFundsSettleRouteImport } from './routes/api/funds/settle'
 import { Route as ApiInvitationsCardRouteImport } from './routes/api/invitations/card'
 import { Route as ApiInvitationsClaimRouteImport } from './routes/api/invitations/claim'
 import { Route as ApiPaymentsVerifyRouteImport } from './routes/api/payments/verify'
@@ -62,6 +69,11 @@ const PublicRoute = PublicRouteImport.update({
 const AiRoute = AiRouteImport.update({
   id: '/ai',
   path: '/ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FundsRoute = FundsRouteImport.update({
+  id: '/funds',
+  path: '/funds',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HostRoute = HostRouteImport.update({
@@ -209,6 +221,36 @@ const ApiChatsIdRoute = ApiChatsIdRouteImport.update({
   path: '/api/chats/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFundsAllocateRoute = ApiFundsAllocateRouteImport.update({
+  id: '/api/funds/allocate',
+  path: '/api/funds/allocate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFundsApprovalsRoute = ApiFundsApprovalsRouteImport.update({
+  id: '/api/funds/approvals',
+  path: '/api/funds/approvals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFundsReconcileRoute = ApiFundsReconcileRouteImport.update({
+  id: '/api/funds/reconcile',
+  path: '/api/funds/reconcile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFundsRecoveryRoute = ApiFundsRecoveryRouteImport.update({
+  id: '/api/funds/recovery',
+  path: '/api/funds/recovery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFundsReleaseRoute = ApiFundsReleaseRouteImport.update({
+  id: '/api/funds/release',
+  path: '/api/funds/release',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFundsSettleRoute = ApiFundsSettleRouteImport.update({
+  id: '/api/funds/settle',
+  path: '/api/funds/settle',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInvitationsCardRoute = ApiInvitationsCardRouteImport.update({
   id: '/api/invitations/card',
   path: '/api/invitations/card',
@@ -285,6 +327,7 @@ const ApiChatsIdAttachmentsAttachmentIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/ai': typeof AiRoute
+  '/funds': typeof FundsRoute
   '/host': typeof HostRouteWithChildren
   '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
@@ -312,6 +355,12 @@ export interface FileRoutesByFullPath {
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/ai/status': typeof ApiAiStatusRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/funds/allocate': typeof ApiFundsAllocateRoute
+  '/api/funds/approvals': typeof ApiFundsApprovalsRoute
+  '/api/funds/reconcile': typeof ApiFundsReconcileRoute
+  '/api/funds/recovery': typeof ApiFundsRecoveryRoute
+  '/api/funds/release': typeof ApiFundsReleaseRoute
+  '/api/funds/settle': typeof ApiFundsSettleRoute
   '/api/invitations/card': typeof ApiInvitationsCardRoute
   '/api/invitations/claim': typeof ApiInvitationsClaimRoute
   '/api/payments/verify': typeof ApiPaymentsVerifyRoute
@@ -330,6 +379,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/ai': typeof AiRoute
+  '/funds': typeof FundsRoute
   '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
   '/welcome': typeof WelcomeRoute
@@ -356,6 +406,12 @@ export interface FileRoutesByTo {
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/ai/status': typeof ApiAiStatusRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/funds/allocate': typeof ApiFundsAllocateRoute
+  '/api/funds/approvals': typeof ApiFundsApprovalsRoute
+  '/api/funds/reconcile': typeof ApiFundsReconcileRoute
+  '/api/funds/recovery': typeof ApiFundsRecoveryRoute
+  '/api/funds/release': typeof ApiFundsReleaseRoute
+  '/api/funds/settle': typeof ApiFundsSettleRoute
   '/api/invitations/card': typeof ApiInvitationsCardRoute
   '/api/invitations/claim': typeof ApiInvitationsClaimRoute
   '/api/payments/verify': typeof ApiPaymentsVerifyRoute
@@ -376,6 +432,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteWithChildren
   '/ai': typeof AiRoute
+  '/funds': typeof FundsRoute
   '/host': typeof HostRouteWithChildren
   '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
@@ -404,6 +461,12 @@ export interface FileRoutesById {
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/ai/status': typeof ApiAiStatusRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/funds/allocate': typeof ApiFundsAllocateRoute
+  '/api/funds/approvals': typeof ApiFundsApprovalsRoute
+  '/api/funds/reconcile': typeof ApiFundsReconcileRoute
+  '/api/funds/recovery': typeof ApiFundsRecoveryRoute
+  '/api/funds/release': typeof ApiFundsReleaseRoute
+  '/api/funds/settle': typeof ApiFundsSettleRoute
   '/api/invitations/card': typeof ApiInvitationsCardRoute
   '/api/invitations/claim': typeof ApiInvitationsClaimRoute
   '/api/payments/verify': typeof ApiPaymentsVerifyRoute
@@ -425,6 +488,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/ai'
+    | '/funds'
     | '/host'
     | '/observability'
     | '/planner'
@@ -452,6 +516,12 @@ export interface FileRouteTypes {
     | '/api/ai/report'
     | '/api/ai/status'
     | '/api/chats/$id'
+    | '/api/funds/allocate'
+    | '/api/funds/approvals'
+    | '/api/funds/reconcile'
+    | '/api/funds/recovery'
+    | '/api/funds/release'
+    | '/api/funds/settle'
     | '/api/invitations/card'
     | '/api/invitations/claim'
     | '/api/payments/verify'
@@ -470,6 +540,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/ai'
+    | '/funds'
     | '/observability'
     | '/planner'
     | '/welcome'
@@ -496,6 +567,12 @@ export interface FileRouteTypes {
     | '/api/ai/report'
     | '/api/ai/status'
     | '/api/chats/$id'
+    | '/api/funds/allocate'
+    | '/api/funds/approvals'
+    | '/api/funds/reconcile'
+    | '/api/funds/recovery'
+    | '/api/funds/release'
+    | '/api/funds/settle'
     | '/api/invitations/card'
     | '/api/invitations/claim'
     | '/api/payments/verify'
@@ -515,6 +592,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_public'
     | '/ai'
+    | '/funds'
     | '/host'
     | '/observability'
     | '/planner'
@@ -543,6 +621,12 @@ export interface FileRouteTypes {
     | '/api/ai/report'
     | '/api/ai/status'
     | '/api/chats/$id'
+    | '/api/funds/allocate'
+    | '/api/funds/approvals'
+    | '/api/funds/reconcile'
+    | '/api/funds/recovery'
+    | '/api/funds/release'
+    | '/api/funds/settle'
     | '/api/invitations/card'
     | '/api/invitations/claim'
     | '/api/payments/verify'
@@ -563,6 +647,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
   AiRoute: typeof AiRoute
+  FundsRoute: typeof FundsRoute
   HostRoute: typeof HostRouteWithChildren
   ObservabilityRoute: typeof ObservabilityRoute
   PlannerRoute: typeof PlannerRoute
@@ -579,6 +664,12 @@ export interface RootRouteChildren {
   ApiAiReportRoute: typeof ApiAiReportRoute
   ApiAiStatusRoute: typeof ApiAiStatusRoute
   ApiChatsIdRoute: typeof ApiChatsIdRouteWithChildren
+  ApiFundsAllocateRoute: typeof ApiFundsAllocateRoute
+  ApiFundsApprovalsRoute: typeof ApiFundsApprovalsRoute
+  ApiFundsReconcileRoute: typeof ApiFundsReconcileRoute
+  ApiFundsRecoveryRoute: typeof ApiFundsRecoveryRoute
+  ApiFundsReleaseRoute: typeof ApiFundsReleaseRoute
+  ApiFundsSettleRoute: typeof ApiFundsSettleRoute
   ApiInvitationsCardRoute: typeof ApiInvitationsCardRoute
   ApiInvitationsClaimRoute: typeof ApiInvitationsClaimRoute
   ApiPaymentsVerifyRoute: typeof ApiPaymentsVerifyRoute
@@ -606,6 +697,13 @@ declare module '@tanstack/react-router' {
       path: '/ai'
       fullPath: '/ai'
       preLoaderRoute: typeof AiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/funds': {
+      id: '/funds'
+      path: '/funds'
+      fullPath: '/funds'
+      preLoaderRoute: typeof FundsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/host': {
@@ -811,6 +909,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/funds/allocate': {
+      id: '/api/funds/allocate'
+      path: '/api/funds/allocate'
+      fullPath: '/api/funds/allocate'
+      preLoaderRoute: typeof ApiFundsAllocateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/funds/approvals': {
+      id: '/api/funds/approvals'
+      path: '/api/funds/approvals'
+      fullPath: '/api/funds/approvals'
+      preLoaderRoute: typeof ApiFundsApprovalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/funds/reconcile': {
+      id: '/api/funds/reconcile'
+      path: '/api/funds/reconcile'
+      fullPath: '/api/funds/reconcile'
+      preLoaderRoute: typeof ApiFundsReconcileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/funds/recovery': {
+      id: '/api/funds/recovery'
+      path: '/api/funds/recovery'
+      fullPath: '/api/funds/recovery'
+      preLoaderRoute: typeof ApiFundsRecoveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/funds/release': {
+      id: '/api/funds/release'
+      path: '/api/funds/release'
+      fullPath: '/api/funds/release'
+      preLoaderRoute: typeof ApiFundsReleaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/funds/settle': {
+      id: '/api/funds/settle'
+      path: '/api/funds/settle'
+      fullPath: '/api/funds/settle'
+      preLoaderRoute: typeof ApiFundsSettleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/invitations/card': {
       id: '/api/invitations/card'
       path: '/api/invitations/card'
@@ -995,6 +1135,7 @@ const ApiChatsIdRouteWithChildren = ApiChatsIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
   AiRoute: AiRoute,
+  FundsRoute: FundsRoute,
   HostRoute: HostRouteWithChildren,
   ObservabilityRoute: ObservabilityRoute,
   PlannerRoute: PlannerRoute,
@@ -1011,6 +1152,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiReportRoute: ApiAiReportRoute,
   ApiAiStatusRoute: ApiAiStatusRoute,
   ApiChatsIdRoute: ApiChatsIdRouteWithChildren,
+  ApiFundsAllocateRoute: ApiFundsAllocateRoute,
+  ApiFundsApprovalsRoute: ApiFundsApprovalsRoute,
+  ApiFundsReconcileRoute: ApiFundsReconcileRoute,
+  ApiFundsRecoveryRoute: ApiFundsRecoveryRoute,
+  ApiFundsReleaseRoute: ApiFundsReleaseRoute,
+  ApiFundsSettleRoute: ApiFundsSettleRoute,
   ApiInvitationsCardRoute: ApiInvitationsCardRoute,
   ApiInvitationsClaimRoute: ApiInvitationsClaimRoute,
   ApiPaymentsVerifyRoute: ApiPaymentsVerifyRoute,

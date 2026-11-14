@@ -312,3 +312,38 @@ affected feature, the status and the release impact. Approved answers move to
   contractual setting it can read), and the retention deadlines for other data (F-39 Record
   Retention Policy, F-59 Health Data Protection) — F-65 owns the first, the others own the rest.
 
+
+## F-109 Fund pool / recovery fund
+
+### Q20. What happens to a recovery advance the fund cannot cover?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — policy, not a build choice
+- **Affected:** F-109 Fund pool/recovery fund (built), F-17 Vendor No-show Recovery (blocked),
+  F-16 Dispute Filing & Arbitration (blocked), F-20 Host Cancellation Policy (blocked)
+- **Release impact:** the recovery fund is funded only by money already taken back from vendors,
+  and an advance may not exceed `least(the fund, what the provider can still send back from that
+  booking)`. When it cannot be covered the request is **refused** with
+  `insufficient_recovery_funds` and the console says "The recovery fund cannot cover this, so it
+  has gone to the people who decide". The PRD asks for human escalation without guarantees
+  (blueprint/prd.md:182), and this build implements the refusal, not the escalation. Until the
+  owner answers, a host whose replacement cannot be funded gets nothing from the platform, and
+  the case has to be handled by staff outside the product. Recommendation: decide the escalation
+  path (who is notified, in which surface, and whether the host is told anything) and whether a
+  partial advance is ever allowed — the current build refuses rather than half pays, and that
+  refusal should stay until the owner says otherwise.
+
+### Q21. Is a clawback capped by the booking or by the vendor house?
+
+- **Owner:** Ola (product owner)
+- **Status:** open — consequence of F-102's ledger, not of F-109
+- **Affected:** F-109 Fund pool/recovery fund (built), F-102 Fund pool/escrow (built), F-16
+  Dispute Filing & Arbitration (blocked)
+- **Release impact:** the money the platform owes a vendor is the `vendor_payable` account of the
+  **vendor house**, so a clawback is capped by that house's whole balance across its bookings,
+  not by the single booking the case is about. The money that has already been paid out to the
+  vendor is not counted and cannot be recovered. If the platform needs the claim to be per
+  booking, the ledger needs a per-booking vendor payable account (F-102's `ledger_account`
+  mapping would change, and every existing posting would have to be restated). Recommendation:
+  leave the cap at the house while the money is pooled per house, and revisit it only if the
+  owner decides a vendor's claim must be ring-fenced per booking.

@@ -35,6 +35,13 @@ export function toMajorUnits(amountMinor: number, currency: string): number | nu
   return amountMinor / 10 ** units;
 }
 
+/** The amount in the currency's minor unit, from an amount in major units. Null when unknown. */
+export function toMinorUnits(amountMajor: number, currency: string): number | null {
+  const units = minorUnitsFor(currency);
+  if (units === null) return null;
+  return Math.round(amountMajor * 10 ** units);
+}
+
 /** The amount a person reads, in the currency's own sign. */
 export function formatMoney(amountMinor: number, currency: string): string {
   const code = currency.trim().toUpperCase();

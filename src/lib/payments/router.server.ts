@@ -212,6 +212,36 @@ export async function releaseDueTranches(): Promise<number> {
   return Number(outcome ?? 0);
 }
 
+/**
+ * F-109: compare the provider's events with the ledger and write down what disagrees.
+ *
+ * The run moves no money and repairs nothing: it reads the payment router's own record and the
+ * journal, and it says where the two disagree. The shape belongs to the caller, so the raw
+ * report is handed back as it came.
+ */
+export async function reconcileLedger(): Promise<Record<string, unknown>> {
+  const outcome = await callAsService("reconcile_ledger", {});
+  return (outcome ?? {}) as Record<string, unknown>;
+}
+
+/**
+ * F-109: the money has moved, so the ledger follows.
+ *
+ * A clawback needs no provider reference: the money stays with the provider and is simply not
+ * paid out to the vendor. An advance names the provider's own reference for the money that was
+ * sent to the host, so the webhook that follows settles nothing twice.
+ */
+export async function settleRecoveryAction(
+  actionId: string,
+  providerReference: string | null,
+): Promise<string> {
+  const outcome = await callAsService("settle_recovery_action", {
+    p_action: actionId,
+    p_provider_reference: providerReference,
+  });
+  return typeof outcome === "string" ? outcome : "unknown";
+}
+
 /** The booking a provider reference belongs to, once the payment has been recorded. */
 export async function bookingForReference(reference: string): Promise<string | null> {
   const outcome = await callAsService("booking_for_payment_reference", {
