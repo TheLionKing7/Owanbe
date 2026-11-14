@@ -43,7 +43,12 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/auth0-setup.md` | Step-by-step Auth0 tenant, Post-Login Action, Supabase third-party auth, configure_auth0, .env.local |
 | `docs/decisions/2026-11-04-tanstack-start-and-paystack.md` | Sage 7 pickup copy of ADR 0003 (runtime + Paystack approved, CI workflows owner-requested); `blueprint/` still needs the sync. |
 | `docs/decisions/2026-11-06-feature-requests-competitive.md` | Owner decision record for the competitive feature requests raised on 2026-11-06. |
+| `docs/decisions/2026-11-10-payments-owner-answers.md` | Owner decision record for the open payment questions: custody stays with Paystack, the cancellation refund percentages, the dedicated virtual account, the two-approval threshold and read-only AI. |
+| `docs/decisions/f107-ai-console.md` | F-107 decision record: the console is a staff surface behind the existing `ai_investigation` grant, it lives outside both house shells, working a case changes the case and nothing else, the database owns the transition rule, and the note's text never reaches the audit trail. |
+| `docs/decisions/f108-offline-cache-window.md` | F-108 decision record: the offline door cache is bounded by the door window (the grant's own expiry), a device that has never synced or whose window has closed admits nobody, and the door has one reconciliation action that sends the waiting check-ins and fetches the list again. |
+| `docs/decisions/f126-observability-dashboard.md` | F-126 decision record: the dashboard reads operational records and returns counts only, access is the existing `operations` capability, every read is audited, and the gaps are named rather than hidden. |
 | `docs/decisions/f13-chat-owns-its-feature-code.md` | Owner decision: in-app chat gets its own feature code (F-100) and is built before F-13's direct search and book flow. |
+| `docs/decisions/f14-counter-response-deadline.md` | Decision record: a host counter starts the vendor's 24-hour response deadline, the counter deadline governs while the quote is countered, and the host is told when it closes. |
 | `docs/decisions/f14-quote-date-lock.md` | Owner decision on the F-14 quote date lock: which dates a quote holds and when expiry restarts. |
 | `docs/decisions/f79-monitoring-configuration.md` | F-79 decision record: browser-only Sentry with a strict allowlist; do not call monitoring active yet. |
 | `docs/decisions/f80-ci-install-and-test-gate.md` | Owner decision to install and test the CI gate before running it. |
@@ -69,8 +74,54 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-09-F-102-fund-pool-escrow.md` | Journal: F-102 fund pool and escrow — the ledger, the 70/30 split, the dispute freeze, the refunds and what was never executed. |
 | `docs/journal/2026-11-09-F-106-market-benchmark-data.md` | Journal: F-106 market benchmark data — the observed price, the two-vendor rule, the provenance gate, the audit trail and what was never executed. |
 | `docs/journal/2026-11-09-F-107-owanbeai.md` | F-107 journal: the four owner decisions, what OwanbeAI delivers, the database rules, the checks run and the limits. |
+| `docs/journal/2026-11-10-f13-payments-wiring.md` | Journal: the F-13, F-20/F-21, F-48 and F-60 wiring (the cancel action, quote requests, the dedicated account, the saved authorisation reference) and what was never applied. |
+| `docs/journal/2026-11-10-payment-completion-blocked.md` | Journal: the remaining payment and AI work is blocked — Sage 7 returned no task and the compliance specification leaves custody, KYC and thresholds unresolved. |
+| `docs/journal/2026-11-10-signup-sql-repair.md` | Journal: the F-76/F-7/F-13 installation and sign-up repair — repeatable SQL, the event-planner sign-up and the standalone Auth0 navigation. |
+| `docs/journal/2026-11-12-F-1-workspace-switcher.md` | F-1 build journal: what the audit found, the confirmation step, the per-house badge and the checks run |
+| `docs/journal/2026-11-12-F-14-counter-response-deadline.md` | F-14 build journal: the vendor response deadline, the expiry that releases the date, the host alert, and the alternatives that are still not built |
+| `docs/journal/2026-11-12-F-23-counter-offer-in-chat.md` | F-23 build journal: the counter-offer inside the chat thread, the message kinds, the thread projection and what stays in the quotes panel. |
+| `docs/journal/2026-11-12-F-90-paystack-webhook-signature.md` | F-90 build journal: the route-level test that proves the webhook checks the signature itself, and the four ways a forged request is refused |
+| `docs/journal/2026-11-13-F-107-ai-console.md` | F-107 console build journal: the three gaps the tree still had, the console, what working a case does and does not touch, the checks run and what was never executed. |
+| `docs/journal/2026-11-13-F-107-zdr-flag-and-console-label.md` | F-107 follow-up journal: the audit's note and why its premise was wrong, the zero-retention contract being read instead of asserted, the planner's party details marked sensitive, the label on every console answer, and the launch gate filed. |
+| `docs/journal/2026-11-13-F-108-ticketing.md` | The F-108 journal: the ticket-to-the-door path, the owner's four approvals, how the offline cache was reconciled with storing only hashes, and what was never proven. |
+| `docs/journal/2026-11-13-F-126-observability-dashboard.md` | F-126 build journal: the twelve counters, the access rule, the gaps the dashboard names, and what has not been run. |
+| `docs/journal/2026-11-13-F-46-investigation-only-role.md` | F-46 build journal: the identity the AI's payment read runs under, why the read lives in `app_private`, and what it may not do. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
-| `docs/Ówàńbè Compliance, KYC & Payments Spec.md` | Owner-supplied compliance, KYC and payments specification (untracked owner document). |
+| `docs/sql/2026-11-10-cancellation-tokens-dva.sql` | Installation script, superseded by the combined one: the cancellation refund function, the cancellation, authorisation and dedicated-account tables. |
+| `docs/sql/2026-11-10-f13-booking-completion.sql` | The combined installation script: cancellation and refunds, saved Paystack authorisation references, dedicated virtual accounts and the F-13 quote requests. |
+| `docs/Ówàńbè-Compliance-KYC-Payments-Spec.md` | Owner-supplied compliance, KYC and payments specification. |
+
+#### mobile/
+
+| File | Purpose |
+|---|---|
+| `mobile/.env.example` | The phone app's environment template: the Supabase URL and publishable key, the Auth0 domain, client id and audience. No secret is committed here. |
+| `mobile/.gitignore` | What the phone app keeps out of git: node_modules, the Expo build output and the local .env. |
+| `mobile/App.tsx` | The phone app's root: the two tabs (my card, the door), the config-missing screen, and the restore of the guest session. |
+| `mobile/README.md` | How to run the phone app: the Expo SDK 58 stack, the development build the NFC plugin needs, and the environment variables it expects. |
+| `mobile/app.json` | The Expo manifest: the app's name and scheme, the Android package, the NFC plugin options and the permissions the camera asks for. |
+| `mobile/babel.config.js` | The Expo Babel preset the phone app is compiled with. |
+| `mobile/index.ts` | The phone app's entry point: registerRootComponent with the App. |
+| `mobile/metro.config.js` | Metro's watch list, so the app can import the shared ticket modules from the repository root. |
+| `mobile/package.json` | The phone app's own dependencies: Expo SDK 58, the camera, the secure store, the crypto, the NFC manager and the QR renderer. |
+| `mobile/src/api.ts` | The phone's database boundary: the REST call to a Postgres function, how a refusal is classified, and the copy for each refusal. |
+| `mobile/src/auth.ts` | Auth0 on the phone: the authorization-code flow with PKCE, the token refresh and the session restore. |
+| `mobile/src/config.ts` | The phone app's configuration: the Expo public variables it needs, and the error it raises when one is missing. |
+| `mobile/src/device.ts` | The door device's own id: a random uuid kept in the secure store. |
+| `mobile/src/door/DoorScreen.tsx` | The door screen: the grant's standing, the check-in record, the cache summary, the queued check-ins and the way out. |
+| `mobile/src/door/PairScreen.tsx` | Pairing the door: paste the host's pairing code or scan it. |
+| `mobile/src/door/ScanScreen.tsx` | The door's scanning screen: a QR by camera, an NFC tag, or the credential typed in. |
+| `mobile/src/door/admission.ts` | The door's rules: hash the credential, check the cache, admit online or queue offline, and reconcile the queue. |
+| `mobile/src/door/store.ts` | The door's saved state: the pairing, the cached credential hashes and the queued check-ins, all in the secure store. |
+| `mobile/src/guest/CardScreen.tsx` | The guest's card: the QR, the credential, the copy button, writing it to an NFC tag, and the revoked state. |
+| `mobile/src/guest/ClaimScreen.tsx` | The guest's claim: the link, the name and the phone, claimed without an account. |
+| `mobile/src/guest/store.ts` | The guest session in the secure store: the one secret the app keeps. |
+| `mobile/src/guest/token.ts` | The token out of a shared link, so the app opens the right invitation. |
+| `mobile/src/nfc.ts` | NFC on the phone: reading an NDEF text record and writing one (writing is Android-only). |
+| `mobile/src/qr.tsx` | The QR scanner view: the camera permission and the QR barcode settings. |
+| `mobile/src/secure.ts` | The secure store wrapper: long secrets are chunked, because one entry has a size limit. |
+| `mobile/src/ui.tsx` | The phone app's own small components: the screen, the field, the button and the notice. |
+| `mobile/tsconfig.json` | The phone app's TypeScript configuration: the Expo base and the strict settings. |
 
 #### public/
 
@@ -123,12 +174,19 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 
 | File | Purpose |
 |---|---|
+| `src/features/ai/AiConsolePanel.test.tsx` | F-107 tests: the console — the caller's own answers, the case queue, the case move with its note, the refusal wording and the empty states. |
+| `src/features/ai/AiConsolePanel.tsx` | F-107 UI: the OwanbeAI console — your own answers, the case queue and the answer list, and the one form that works a case. Working a case changes the case and nothing else. |
 | `src/features/ai/AiDisclosure.test.tsx` | F-107 tests: the label renders, the report form opens, the categories are sent and a refusal is shown. |
 | `src/features/ai/AiDisclosure.tsx` | F-107 the one AI label and the one report control, shared by every AI surface so the disclosure and the report path are written once. |
 | `src/features/ai/AiInvestigationPanel.test.tsx` | F-107 tests: the staff panel — it stays hidden without the grant, forwards the question, shows the finding and the case reference, and shows the closed-gate wording. |
 | `src/features/ai/AiInvestigationPanel.tsx` | F-107 UI: the staff panel on a booking's payments — "Ask OwanbeAI about this payment", the disclosed answer and the report control. Read-only; it can open a case but never move money. |
 | `src/features/ai/api.test.ts` | F-107 tests: the browser boundary — the caller's token, the error codes and the investigation calls. |
 | `src/features/ai/api.ts` | F-107 browser boundary: the AI routes, the error codes and the refusal copy, including the closed-gate wording. |
+| `src/features/ai/console-contracts.ts` | F-107 console contracts: the case statuses, the legal moves, the labels, the disclosure and the update schema. It mirrors the database's transition rule so the form only offers a legal move; the database stays the authority. |
+| `src/features/ai/console.api.test.ts` | F-107 tests: the console browser boundary — the caller's token, the error codes and the refusal copy. |
+| `src/features/ai/console.api.ts` | F-107 console browser boundary: the console routes, the error codes and the refusal copy, including the "ask platform operations staff" wording. |
+| `src/features/ai/console.server.test.ts` | F-107 tests: the console server boundary — the token forwarding, the refusals, the case move and the note validation. |
+| `src/features/ai/console.server.ts` | F-107 console server boundary: the caller's token is forwarded to the database for the cases, the answers, the caller's own answers and the case move. No service-role path. |
 | `src/features/ai/contracts.test.ts` | F-107 tests: the disclosure labels, the report categories and the investigation request schema. |
 | `src/features/ai/contracts.ts` | F-107 contracts: the per-surface AI label, the report categories and the investigation request and result shapes. |
 | `src/features/ai/investigation.test.ts` | F-107 tests: the system prompt, the minimised trail, the model answer and the case subject. |
@@ -147,6 +205,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/chat/ChatPanel.tsx` | F-100 UI: the house's conversation list as messaging-style rows. |
 | `src/features/chat/ChatThread.test.tsx` | F-100 tests: the chat thread, the attach menu and shared documents. |
 | `src/features/chat/ChatThread.tsx` | F-100 UI: the WhatsApp-style chat thread — bubbles, day separators, composer and attachments. |
+| `src/features/chat/ThreadQuoteCard.tsx` | F-23 UI: the live quote band inside the chat thread — the offer, its server deadline, and the host's counter written into the conversation. |
 | `src/features/chat/api.test.ts` | F-100 tests: the chat API boundary — upload, link and error mapping. |
 | `src/features/chat/api.ts` | F-100 browser boundary: reads and writes over the app's own routes with the caller's token. |
 | `src/features/chat/contracts.test.ts` | F-100 tests: attachment types, size limits, captions and labels. |
@@ -170,6 +229,12 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/holds/api.ts` | F-38 browser boundary: the hold and notification projections. |
 | `src/features/holds/contracts.test.ts` | F-38 tests: hold status, countdown and the release wording. |
 | `src/features/holds/contracts.ts` | F-38 contracts: hold statuses, the countdown from the server deadline, refund and release wording. |
+| `src/features/observability/ObservabilityPanel.test.tsx` | F-126 tests: the operations panel — the signals it shows, where it says the numbers come from, the error counts, the gaps it names and the refusal wording. |
+| `src/features/observability/ObservabilityPanel.tsx` | F-126 UI: the operations dashboard — the counters, the severity, the error counts and the "not measured yet" list. It reads and explains; it never acts. |
+| `src/features/observability/api.ts` | F-126 browser boundary: the dashboard route, the error codes and the refusal copy. |
+| `src/features/observability/contracts.ts` | F-126 contracts: the signal shape, the severities and the list of what the platform cannot measure yet. |
+| `src/features/observability/server.test.ts` | F-126 tests: the route boundary — the token forwarding, the refusals, the signals, the error counts and the locked environment. |
+| `src/features/observability/server.ts` | F-126 server boundary: the caller's token is forwarded to the database for the dashboard; the Sentry summary is read on the server and never blocks the counters. |
 | `src/features/onboarding/OnboardingGate.tsx` | F-7: keeps a house closed until onboarding is complete; never locks people out when the check can't run. |
 | `src/features/onboarding/Welcome.test.tsx` | Tests for the F-7 wizard and gate (host path, vendor path, failures, staff bypass). |
 | `src/features/onboarding/WelcomePlanCard.tsx` | F-7: Host overview card with what the host said at sign-up and a hand-off to the AI Planner. |
@@ -197,21 +262,44 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/planner/server.ts` | F-101 server boundary: token-forwarding handlers for the plan and the report. |
 | `src/features/quotes/QuoteBuilder.tsx` | F-14 UI: the vendor's quote editor with integer minor-unit lines. |
 | `src/features/quotes/QuoteCard.tsx` | F-14 UI: one quote revision with the actions its side may take. |
+| `src/features/quotes/QuoteRequestForm.tsx` | F-13 UI: the host's quote request form, sent from the vendor's public page. |
+| `src/features/quotes/QuoteRequestsList.tsx` | F-13 UI: the quote requests a house has sent or received, with the vendor's write-quote and the host's withdraw action. |
 | `src/features/quotes/QuotesPanel.test.tsx` | F-14 tests: the quote list, the actions offered and the error copy. |
 | `src/features/quotes/QuotesPanel.tsx` | F-14 UI: the house's quotes and the actions each side may take. |
 | `src/features/quotes/api.ts` | F-14 browser boundary: the quote RPCs and their error classification. |
 | `src/features/quotes/contracts.test.ts` | F-14 tests: quote validation, totals and status transitions. |
 | `src/features/quotes/contracts.ts` | F-14 contracts: quote statuses, revisions and money in integer minor units. |
+| `src/features/quotes/requests.test.ts` | F-13 tests: the quote request rules (a future date, the guest count, the budget and the notes). |
+| `src/features/quotes/requests.ts` | F-13 quote request contract and browser boundary: the schema, the RPC calls and the request shape. |
+| `src/features/tickets/InvitationsPanel.test.tsx` | Tests for the host's invitations panel: issuing, the one-time token, reissue, revoke and the door grants. |
+| `src/features/tickets/InvitationsPanel.tsx` | The host's ticketing panel: issue a link, reissue or revoke it, hand a door device to a named person, and read the record the door leaves behind. |
+| `src/features/tickets/InviteClaim.test.tsx` | Tests for the guest's claim form and the card it shows. |
+| `src/features/tickets/InviteClaim.tsx` | The guest's claim form and the card it renders. |
+| `src/features/tickets/api.test.ts` | Tests for the host-side boundary: the calls it makes and the way it classifies a refusal. |
+| `src/features/tickets/api.ts` | The host-side database boundary: it forwards the caller's own session and explains the refusal; it grants nothing itself. |
+| `src/features/tickets/claim.server.test.ts` | Tests for the server-side claim and card reads. |
+| `src/features/tickets/claim.server.ts` | The server side of the guest's path: it calls the claim and card functions with the publishable key, never a secret. |
+| `src/features/tickets/claim.test.ts` | Tests for the guest's claim rules and their errors. |
+| `src/features/tickets/claim.ts` | The guest's claim rules: the input it accepts and the error it gives for each refusal. |
+| `src/features/tickets/contracts.test.ts` | Tests for the ticketing contracts: the schemas, the copy and the link format. |
+| `src/features/tickets/contracts.ts` | F-108's contracts: the statuses, the shapes, the validation at the trust boundary and the copy the interface renders. |
+| `src/features/tickets/pairing.test.ts` | Tests for the pairing code: the round trip and every shape it refuses. |
+| `src/features/tickets/pairing.ts` | The pairing code format, shared by the web and the phone so there is one definition of the code. |
+| `src/features/tickets/scanner.test.ts` | Tests for the scanner rules: hashing, the cache, the offline queue and the reconciliation. |
+| `src/features/tickets/scanner.ts` | The door rules shared with the phone: hash the credential, check the cache, queue while offline. |
 | `src/features/vendor-profile/OpenVendorHouse.tsx` | UI: opens the caller's single Vendor house. |
 | `src/features/vendor-profile/ProfileCopyStudio.tsx` | UI: the vendor profile editor with the AI copy assistant. |
 | `src/features/vendor-profile/contracts.test.ts` | Tests: the vendor profile brief validation and the copy result shape. |
 | `src/features/vendor-profile/contracts.ts` | Vendor profile contracts: the brief, the copy result and the save payload. |
 | `src/features/vendor-profile/copy.functions.ts` | Server function that verifies the caller before asking for AI copy. |
-| `src/features/vendor-profile/copy.server.ts` | Server-only: drafts vendor profile copy through the Lovable AI Gateway. |
+| `src/features/vendor-profile/copy.server.test.ts` | F-107 tests: the copy assistant drafts through the platform's provider and the provider's failures are said in the studio's own words. |
+| `src/features/vendor-profile/copy.server.ts` | Vendor copy assistant: drafts the profile copy through the platform's one AI provider (the gateway client is not written twice) and logs the draft as an interaction with the model that answered. |
 | `src/features/vendor-profile/presets.ts` | Vendor profile presets: categories, service options and tones. |
 | `src/features/vendor-profile/profile-data.test.ts` | Tests: the saved brief and the profile save payload. |
 | `src/features/vendor-profile/profile-data.ts` | Vendor profile data helpers: the saved brief, the publish state and the save payload. |
 | `src/features/vendor-profile/public.functions.ts` | Server functions: the public reads of published vendor profiles. |
+| `src/features/workspace/HouseSwitcher.test.tsx` | F-1 switcher tests: both houses listed, per-house unread badge, confirm-before-switch, cancel stays, one-house account, unreadable house |
+| `src/features/workspace/HouseSwitcher.tsx` | F-1 house switcher: the caller's own houses with a badge each, and a confirmation before the house changes |
 
 #### src/hooks/
 
@@ -243,10 +331,12 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | File | Purpose |
 |---|---|
 | `src/lib/ai/provider.server.test.ts` | F-107 tests: the shared provider — the gateway, the model, the store-off rule, the refusals and the sensitive-request gate. |
-| `src/lib/ai/provider.server.ts` | F-107 the platform's one AI provider: the Lovable AI Gateway, the model table, the failure mapping and the gate that refuses a sensitive request while no zero-retention contract is confirmed. |
+| `src/lib/ai/provider.server.ts` | The platform's one AI provider: the model chains, the gateway, the zero-retention gate that refuses a sensitive request unless the database says the contract is confirmed, and the model that answered (every call sets store: false). |
 | `src/lib/auth/AuthProvider.tsx` | Auth context: idle session restore, admit via ensureAppUser + listHouses, login/logout/completeLogin/retry; `useAuth()` |
 | `src/lib/auth/auth0Client.ts` | LAZY CHUNK: Auth0 SPA client + Supabase client (accessToken = Auth0 token); rpc ensure_user / my_houses; safe returnTo. |
 | `src/lib/auth/config.functions.ts` | Server function that hands the browser only the public Auth0 identifiers. |
+| `src/lib/auth/preview-navigation.test.ts` | Tests: the standalone Auth0 path, the unsafe destinations and the new-tab fallback. |
+| `src/lib/auth/preview-navigation.ts` | Leaves the preview iframe before the Auth0 transaction and builds the same-origin sign-in path. |
 | `src/lib/auth/types.ts` | `AuthClient` boundary, `AppUser`, `HouseSummary`, `AuthStatus`, `AccountBlockedError` |
 | `src/lib/auth/validate-token.server.ts` | Server-side Auth0 JWT verification (jose JWKS, RS256, iss/aud/exp/sub) mapped to one active user; no call sites yet. |
 | `src/lib/db/caller.server.ts` | The one way the app asks the database something as the caller: the caller's own token is forwarded to PostgREST and a secret key is refused, so the database decides what they may read and write. |
@@ -257,6 +347,10 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/lib/monitoring/browser.ts` | initializeMonitoring(): lazy Sentry init from the server-provided DSN; no DSN means no capture. |
 | `src/lib/monitoring/config.functions.ts` | Read-only server function exposing only the public Sentry DSN and environment label. |
 | `src/lib/monitoring/privacy.ts` | Sentry event sanitizer: allowlist fields, redacted message, no user/request/breadcrumbs/contexts. |
+| `src/lib/monitoring/sentry.server.test.ts` | F-126 tests: the Sentry summary — the configured check, the counted issues, the token in the header, and the answers of nothing when Sentry is absent or unreachable. |
+| `src/lib/monitoring/sentry.server.ts` | F-126 server-only client for Sentry's management API: the unresolved issues in the window, the count's cap, and a null whenever Sentry cannot be asked. The token never leaves the file. |
+| `src/lib/payments/cancellation.test.ts` | F-20/F-21 tests: the refund percentages, the day boundaries and the two-approval threshold. |
+| `src/lib/payments/cancellation.ts` | F-20/F-21 preview of who gets what back when a booking is cancelled; the database figure is the one that is paid. |
 | `src/lib/payments/credential-guard.test.ts` | F-60 tests: raw card and bank credentials are refused. |
 | `src/lib/payments/credential-guard.ts` | F-60 guard that refuses raw card and bank credentials in code, logs and payloads. |
 | `src/lib/payments/currency.test.ts` | F-102 tests: the minor-unit table, the money formatting and the unknown currency. |
@@ -265,6 +359,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/lib/payments/paystack.server.ts` | Paystack HMAC-SHA512 sign/verify for webhook payloads; secret stays server-side. |
 | `src/lib/payments/router.server.test.ts` | F-102 tests: the router key gate, the service-role call, the SQLSTATE mapping and the provider events. |
 | `src/lib/payments/router.server.ts` | F-102 payment router: the only module that may move money; the allocate, the provider event, the refund settlement and the due-tranche sweep behind PAYMENT_ROUTER_KEY. |
+| `src/lib/payments/safe-authorization.test.ts` | F-60 test: only the Paystack reference and the safe display fields are kept. |
 | `src/lib/permissions.ts` | UI mirror of the F-78 role matrix: houseCan(), validateStaffCapabilities(), isValidAccessPurpose(); not wired. |
 | `src/lib/router.tsx` | React-Router-shaped adapter over the TanStack router (Link, useNavigate, useParams, Navigate) for ported components. |
 | `src/lib/supabase-admin-env.server.ts` | Resolves the service-role key (EXTERNAL_SUPABASE_SERVICE_ROLE_KEY, then SUPABASE_SERVICE_ROLE_KEY). |
@@ -280,6 +375,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/pages/NotFound.tsx` | Unknown route page. |
 | `src/pages/PlaceholderPage.tsx` | Coming-soon page for the marketing slugs listed in the splat route. |
 | `src/pages/SignIn.tsx` | Sign-in/sign-up screen: starts Auth0 login and redirects signed-in users to ?next=. |
+| `src/pages/SignUp.test.tsx` | F-7 tests: the role picker and the sign-up hand-off to Auth0. |
 | `src/pages/SignUp.tsx` | F-7 /sign-up: Host or Vendor role picker, then Auth0 sign-up returning to /welcome?role=. |
 | `src/pages/Welcome.tsx` | F-7 /welcome onboarding wizard with progress bar: about you → host intent or vendor business → the right house. |
 
@@ -300,11 +396,17 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/_public/auth.callback.tsx` | Route for /auth/callback (client-only). |
 | `src/routes/_public/guest-lists.$id.tsx` | F-40 public page for a guest list the host made public — noindex, names and responses only. |
 | `src/routes/_public/index.tsx` | Route for / with SSR on and a hero image preload. |
+| `src/routes/_public/invite.$token.tsx` | The invitation route: the guest claims a link and reads the card back. |
 | `src/routes/_public/sign-in.tsx` | Route for /sign-in (client-only). |
 | `src/routes/_public/sign-up.tsx` | Route for /sign-up rendering SignIn in signup mode. |
 | `src/routes/_public/vendors.$slug.tsx` | Public vendor profile page. |
 | `src/routes/_public/vendors.index.tsx` | Public vendor directory. |
+| `src/routes/ai.tsx` | F-107: the /ai page — the OwanbeAI console, outside either house shell. |
+| `src/routes/api/ai/answers.ts` | GET /api/ai/answers — the answers OwanbeAI gave, for staff holding the `ai_investigation` grant. |
+| `src/routes/api/ai/case.ts` | POST /api/ai/case — move a case and leave a note on it; the database decides whether the move is legal. |
+| `src/routes/api/ai/cases.ts` | GET /api/ai/cases — the case queue for staff holding the `ai_investigation` grant. |
 | `src/routes/api/ai/investigate.ts` | POST /api/ai/investigate — the read-only payment investigation, run as the caller and logged as the caller's own interaction. |
+| `src/routes/api/ai/mine.ts` | GET /api/ai/mine — the caller's own AI answers; every signed-in person may read their own. |
 | `src/routes/api/ai/report.ts` | POST /api/ai/report — report one AI answer under a category, against the caller's own interaction. |
 | `src/routes/api/ai/status.ts` | GET /api/ai/status — whether the zero-retention contract is confirmed and whether the caller holds the AI investigation grant; the panel asks before it renders. |
 | `src/routes/api/benchmarks.ts` | F-106 route: `POST /api/benchmarks` — the market range for the categories a host is comparing. |
@@ -317,14 +419,19 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/api/chats/$id/attachments/$attachmentId.ts` | GET /api/chats/:id/attachments/:attachmentId — mint a signed link for a shared file. |
 | `src/routes/api/chats/$id/messages.ts` | POST /api/chats/:id/messages — send a message or a document into the thread. |
 | `src/routes/api/guest-lists/$id/share.ts` | POST /api/guest-lists/:id/share — the host shares a list with one platform user. |
+| `src/routes/api/invitations/card.ts` | The guest's card read, by the guest's own session, with the publishable key. |
+| `src/routes/api/invitations/claim.ts` | The guest's claim, with no account and with the publishable key only. |
+| `src/routes/api/observability.ts` | F-126 route: `GET /api/observability` — the platform's operational counters, for staff holding the `operations` capability. |
 | `src/routes/api/payments/verify.ts` | POST /api/payments/verify — the browser check of a Paystack reference; the allocation happens on the webhook or here, never twice. |
 | `src/routes/api/planner/generate.ts` | POST /api/planner/generate — the grounded answer, logged as the caller's own interaction. |
 | `src/routes/api/planner/report.ts` | POST /api/planner/report — report one answer against the caller's own interaction. |
+| `src/routes/api/public/paystack/webhook.test.ts` | F-90 route tests: the webhook route refuses an unsigned, wrong-key or altered-body request and records a signed charge |
 | `src/routes/api/public/paystack/webhook.ts` | POST /api/public/paystack/webhook: verifies the signature and logs the event name only. |
 | `src/routes/chat.$id.tsx` | The /chat/:id page: one conversation between a host house and a vendor house. |
 | `src/routes/host.tsx` | /host layout: RequireAuth inside HouseLayout houseId=host. |
 | `src/routes/host/$section.tsx` | /host/:section route. |
 | `src/routes/host/index.tsx` | /host index route. |
+| `src/routes/observability.tsx` | F-126: the /observability page — the operations dashboard, outside either house shell. |
 | `src/routes/planner.tsx` | The /planner page: OwanbePlanner outside either house shell. |
 | `src/routes/vendor.tsx` | /vendor layout: RequireAuth inside HouseLayout houseId=vendor. |
 | `src/routes/vendor/$section.tsx` | /vendor/:section route. |
@@ -393,6 +500,13 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261109140000_f102_fund_pool.sql` | F-102: the ledger (ledger_accounts, journal_entries, postings), the fund pool, the wallet ledger, the 70/30 split, the refunds, the dispute freeze and the projections. |
 | `supabase/migrations/20261109160000_f106_market_benchmarks.sql` | F-106 migration: the `market_benchmarks` table (one observed price per place, from a sent quote), the `analytics` staff capability, the observation trigger on `public.quotes`, and the two read functions — the published range and the provenance. |
 | `supabase/migrations/20261109180000_f107_owanbe_ai.sql` | F-107 migration: the `ai_investigation` platform-staff capability, `app_private.ai_settings`, the `cases` and `ai_interactions` tables, the minimised payment-log read, the interaction log and the case opener. |
+| `supabase/migrations/20261110203000_f107_open_zdr_gate.sql` | F-107 follow-up: opens the zero-retention gate in `app_private.ai_settings` on the owner's confirmation (2026-11-10) that the platform's provider holds a zero-data-retention agreement, and carries the statement that closes it again. |
+| `supabase/migrations/20261112100000_f14_counter_response_deadline.sql` | F-14 follow-up: the counter-response deadline (`quotes.counter_response_due_at`), the state shape that says which deadline governs a quote, the expiry that releases the date when the vendor runs out of time, and the `counter_ignored` house alert. |
+| `supabase/migrations/20261112110000_f23_counter_offer_in_chat.sql` | F-23 migration: the message kinds (`quote_offer`, `counter_offer`) with the quote and revision they carry, the thread a revision was made in, the counter that posts into the thread, the offer that is announced in it, the `thread_quotes` projection, and F-60's credential guard on the chat body. |
+| `supabase/migrations/20261112130000_f46_investigation_only_role.sql` | F-46 migration: the `investigation_only` role, the two minimised views it may read, the payment reads it owns, and the passthroughs `public.ai_payment_log` and `public.ai_payment_event_log` keep the application on. |
+| `supabase/migrations/20261112140000_f126_observability_dashboard.sql` | F-126 migration: `public.observability_dashboard()` — twelve counters read from the platform's own operational records, for staff holding the existing `operations` capability, with every read audited. |
+| `supabase/migrations/20261113120000_f107_ai_console.sql` | F-107 console migration: the `ai_case_notes` table, the case and answer reads (`read_ai_cases`, `read_ai_interactions`), the audited case move (`update_ai_case`) with its transition rule, and `my_ai_interactions` re-created with the request and the model. |
+| `supabase/migrations/20261113150000_f108_ticketing.sql` | F-108's five RLS-closed tables and the functions that are the only way in: issue, reissue, revoke, claim, the card, the grants, the scan and the check-in. |
 
 #### supabase/tests/
 
@@ -404,15 +518,22 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f101_ai_planner.test.sql` | F-101 SQL tests: logging an interaction, the cooldown, the host check and the report. |
 | `supabase/tests/f102_fund_pool.test.sql` | F-102 SQL tests: the allocation, the replay, the completion, the refund, the freeze, the append-only ledger and the house isolation. |
 | `supabase/tests/f106_market_benchmarks.test.sql` | F-106 SQL suite: a sent quote becomes an observed price with its provenance, a new price supersedes the old one, an unverified or withdrawn quote never reaches the market, one vendor is not a range, and only the planner's Host houses and the `analytics` capability may read. |
+| `supabase/tests/f107_ai_console.test.sql` | F-107 console SQL suite: the console is closed without the `ai_investigation` grant and to anon, the case queue and the answer queue read, the audit rows, the whole case lifecycle from open to closed, every refused move, the caller's own answers only, the AI identity's lack of any path in, and the proof that working a case moves no money. |
 | `supabase/tests/f107_owanbe_ai.test.sql` | F-107 SQL suite: the closed gate, the grant, the minimised trail, the logged interaction, the opened case and the proof that the AI path cannot allocate, refund, settle, freeze, unfreeze, complete or release. |
+| `supabase/tests/f108_ticketing.test.sql` | The F-108 SQL suite: the claim's atomicity, the couple link, the phone binding, the host-only reissue and revoke, the grant and the check-ins. |
+| `supabase/tests/f126_observability_dashboard.test.sql` | F-126 SQL suite: the dashboard is closed without the `operations` capability, the twelve counts, the audit row, the absence of money and party detail, the tables that cannot be read directly, and the grant that closes it again. |
+| `supabase/tests/f14_counter_response.test.sql` | F-14 SQL tests for the counter deadline: the window the counter starts, the expiry that releases the date, the audit reason, the host alert and the vendor's re-send. |
 | `supabase/tests/f14_quotes.test.sql` | F-14 SQL tests: quote revisions, transitions and vendor-only authoring. |
+| `supabase/tests/f23_counter_offer_in_chat.test.sql` | F-23 SQL suite: the offer announced in the thread, the host's counter in the thread, the thread a counter may name, the parties-only read of the thread's quote, the draft that never appears, and the refused transitions. |
 | `supabase/tests/f38_soft_hold.test.sql` | F-38 SQL tests: hold creation, the payment window and release. |
 | `supabase/tests/f40_guest_privacy.test.sql` | F-40 SQL tests: default privacy, masking, sharing and revocation. |
+| `supabase/tests/f46_investigation_only.test.sql` | F-46 SQL suite: the `investigation_only` identity and its powerlessness, the reads it owns, the fact that nobody can become it, and the investigator's unchanged, still-audited read. |
 | `supabase/tests/f60_payment_data_protection.test.sql` | F-60 SQL tests: the refusal of raw credentials and the partner-reference rules. |
 | `supabase/tests/f76_auth.test.sql` | Token checks (iss/aud/exp/sub), one user per sub, suspended refused, RLS, fail closed |
 | `supabase/tests/f77_data_model.test.sql` | Host house provisioning, composite FK and constraint checks, staff visibility, grants/assignments, append-only audit, version |
 | `supabase/tests/f78_permissions.test.sql` | SQL suite for the F-78 functions: owner/staff rules, support and event-manager grants, purpose enforcement. |
 | `supabase/tests/f7_onboarding.test.sql` | SQL tests for F-7 (validation, completion rules, isolation, no phone in audit). |
+| `supabase/tests/payment-installation-retry.test.sql` | Proves the payment installation script can be rerun: the four tables survive and the grants and policies stay as they were. |
 | `supabase/tests/run-local.sh` | Runs stub + migrations + every *.test.sql on a throwaway Postgres 16 |
 | `supabase/tests/schema_conventions.test.sql` | Enforces conventions on every public table (uuid id, timestamptz, *_minor + currency, RLS, no client writes) |
 | `supabase/tests/supabase_stub.sql` | Local stand-in for Supabase roles and auth.jwt() |

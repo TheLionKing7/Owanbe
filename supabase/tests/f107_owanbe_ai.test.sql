@@ -1,6 +1,6 @@
 -- F-107 OwanbeAI tests. Raises on the first failure.
--- Covers: the zero-retention gate is closed until the owner records a contract, and no
--- application role can open it; the 'ai_investigation' grant reads a minimised payment log and
+-- Covers: the zero-retention gate refuses sensitive work while it is closed, and no application
+-- role can open or close it; the 'ai_investigation' grant reads a minimised payment log and
 -- every read is audited as a sensitive read; the AI cannot allocate, refund, settle, freeze,
 -- complete or release anything; the AI opens its own case, and a case holds no money fields; one
 -- answer can be reported once; and nobody writes the tables directly.
@@ -102,11 +102,23 @@ begin;
 commit;
 
 -- ---------------------------------------------------------------------------
--- 1. The zero-retention gate is closed until the owner records a contract
+-- 1. The zero-retention gate refuses sensitive work while it is closed
 -- ---------------------------------------------------------------------------
+-- The owner has confirmed the contract (2026-11-10) and the migration that records it runs
+-- before this suite, so the gate starts open. The suite proves both states from a known one: it
+-- closes the gate as the owner, proves the refusal, and opens it again further down.
+update app_private.ai_settings
+   set zdr_confirmed = false,
+       zdr_provider = null,
+       zdr_contract_ref = null,
+       zdr_confirmed_at = null,
+       zdr_confirmed_by = null,
+       updated_at = now()
+ where id;
+
 do $$ declare c boolean; begin
   select zdr_confirmed into c from app_private.ai_settings where id;
-  assert c = false, 'the gate starts closed';
+  assert c = false, 'the gate is closed';
 end $$;
 
 begin;
@@ -159,11 +171,12 @@ begin;
        zdr_contract_ref = 'y', zdr_confirmed_at = now() where id$q$, 'permission denied');
 commit;
 
--- The owner opens the gate in the database. No application path does it.
+-- The owner opens the gate in the database. No application path does it. The values are the ones
+-- the 2026-11-10 confirmation migration records.
 update app_private.ai_settings
    set zdr_confirmed = true,
-       zdr_provider = 'owner-contracted-zdr-provider',
-       zdr_contract_ref = 'OWNER-CONTRACT-2026-11-09',
+       zdr_provider = 'Lovable AI Gateway (OpenAI gpt, zero data retention)',
+       zdr_contract_ref = 'owner confirmation 2026-11-10, Sage 7 question 3e793b14',
        zdr_confirmed_at = now(),
        zdr_confirmed_by = (select root from ids)
  where id;

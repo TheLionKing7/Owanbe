@@ -17,6 +17,8 @@ export interface QuoteSummary {
   current_revision: number;
   sent_at: string | null;
   expires_at: string | null;
+  /** The vendor's deadline to answer a host counter. Set only while the quote is countered. */
+  counter_response_due_at: string | null;
   decided_at: string | null;
   close_note: string | null;
   version: number;
@@ -122,7 +124,16 @@ export interface QuoteApi {
   create(input: NewQuote): Promise<string>;
   revise(quoteId: string, version: number, input: RevisionInput): Promise<number>;
   send(quoteId: string, version: number): Promise<string>;
-  counter(quoteId: string, version: number, message: string): Promise<void>;
+  /**
+   * F-23: `conversationId` ties the counter to the thread it was made in, so the counter is a
+   * message in that conversation. Omitted when the counter is made outside a thread.
+   */
+  counter(
+    quoteId: string,
+    version: number,
+    message: string,
+    conversationId?: string | undefined,
+  ): Promise<void>;
   accept(quoteId: string, version: number): Promise<void>;
   decline(quoteId: string, version: number): Promise<void>;
   cancel(quoteId: string, version: number, reason: string | null): Promise<void>;
@@ -153,11 +164,12 @@ export const quoteApi: QuoteApi = {
     }),
   send: (quoteId, version) =>
     rpc<string>("send_quote", { p_quote: quoteId, p_expected_version: version }),
-  counter: (quoteId, version, message) =>
+  counter: (quoteId, version, message, conversationId) =>
     rpc<void>("counter_quote", {
       p_quote: quoteId,
       p_expected_version: version,
       p_message: message,
+      p_conversation: conversationId ?? null,
     }),
   accept: (quoteId, version) =>
     rpc<void>("accept_quote", { p_quote: quoteId, p_expected_version: version }),

@@ -1,19 +1,9 @@
-/** Server-only: drafts vendor profile copy through Lovable AI Gateway (OpenAI Responses). */
-import { createOpenAI } from "@ai-sdk/openai";
-import { APICallError, NoObjectGeneratedError, Output, streamText } from "ai";
+/** Server-only: drafts vendor profile copy through the platform's one AI provider. */
 import { z } from "zod";
-import {
-  normalizeCopy,
-  profileCopyText,
-  type GenerateResult,
-  type ProfileBrief,
-  type ProfileCopy,
-} from "./contracts";
+import { normalizeCopy, profileCopyText, type ProfileBrief, type ProfileCopy } from "./contracts";
 import { findCategory, TONES } from "./presets";
-import { AI_MODELS } from "@/lib/ai/provider.server";
+import { generateStructured, type AiFailure } from "@/lib/ai/provider.server";
 import { callAsCaller } from "@/lib/db/caller.server";
-
-const MODEL = "openai/gpt-6-astra";
 
 const outputSchema = z.object({
   headline: z.string(),
@@ -54,41 +44,65 @@ function prompt(brief: ProfileBrief): string {
     .join("\n\n");
 }
 
-export async function generateProfileCopy(brief: ProfileBrief): Promise<GenerateResult> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) return { ok: false, error: "The writing assistant is not set up yet.", retryable: false };
+export type CopyDraft =
+  { ok: true; copy: ProfileCopy; model: string } | { ok: false; error: string; retryable: boolean };
 
-  const openai = createOpenAI({
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-  });
-
-  try {
-    const result = streamText({
-      model: openai.responses(MODEL),
-      system: SYSTEM,
-      prompt: prompt(brief),
-      output: Output.object({ schema: outputSchema }),
-      maxRetries: 0,
-      providerOptions: {
-        openai: { forceReasoning: true, reasoningEffort: "low", store: false },
-      },
-    });
-    const copy = normalizeCopy(await result.output);
-    if (!copy) return { ok: false, error: "The draft came back incomplete. Please try again.", retryable: true };
-    return { ok: true, copy, interaction_id: null };
-  } catch (error) {
-    if (NoObjectGeneratedError.isInstance(error)) {
-      return { ok: false, error: "The draft came back incomplete. Please try again.", retryable: true };
-    }
-    const status = APICallError.isInstance(error) ? error.statusCode : undefined;
-    console.error("[profile-copy] gateway error", status);
-    if (status === 429) return { ok: false, error: "Too many requests right now. Wait a minute and try again.", retryable: true };
-    if (status === 402) return { ok: false, error: "AI credits have run out. The workspace owner needs to top up.", retryable: false };
-    if (status === 403) return { ok: false, error: "The writing assistant is not available for this workspace.", retryable: false };
-    return { ok: false, error: "We couldn't write your profile just now. Please try again.", retryable: true };
+/**
+ * The provider's failure, said in the copy studio's own words. The wording belongs to the
+ * surface; the provider only says what went wrong.
+ */
+function copyFailure(failure: AiFailure): { error: string; retryable: boolean } {
+  switch (failure.code) {
+    case "unconfigured":
+      return { error: "The writing assistant is not set up yet.", retryable: false };
+    case "rate_limited":
+      return {
+        error: "Too many requests right now. Wait a minute and try again.",
+        retryable: true,
+      };
+    case "credits":
+      return {
+        error: "AI credits have run out. The workspace owner needs to top up.",
+        retryable: false,
+      };
+    case "unavailable":
+      return {
+        error: "The writing assistant is not available for this workspace.",
+        retryable: false,
+      };
+    case "incomplete":
+      return { error: "The draft came back incomplete. Please try again.", retryable: true };
+    case "zdr_required":
+      return {
+        error:
+          "The writing assistant cannot run while the platform's AI agreement is being confirmed.",
+        retryable: false,
+      };
+    default:
+      return {
+        error: "We couldn't write your profile just now. Please try again.",
+        retryable: true,
+      };
   }
+}
+
+export async function generateProfileCopy(brief: ProfileBrief): Promise<CopyDraft> {
+  const outcome = await generateStructured({
+    model: "vendorCopy",
+    system: SYSTEM,
+    prompt: prompt(brief),
+    schema: outputSchema,
+  });
+  if (!outcome.ok) return { ok: false, ...copyFailure(outcome.failure) };
+
+  const copy = normalizeCopy(outcome.value);
+  if (!copy)
+    return {
+      ok: false,
+      error: "The draft came back incomplete. Please try again.",
+      retryable: true,
+    };
+  return { ok: true, copy, model: outcome.model };
 }
 
 /** What the vendor asked for, in one line, so the log says what the draft was for. */
@@ -113,6 +127,7 @@ export async function logCopyInteraction(
   token: string,
   brief: ProfileBrief,
   copy: ProfileCopy,
+  model: string,
 ): Promise<string | null> {
   try {
     const res = await callAsCaller("log_ai_interaction", token, {
@@ -120,7 +135,7 @@ export async function logCopyInteraction(
       p_request_summary: briefSummary(brief),
       p_response_text: profileCopyText(copy).slice(0, 4000),
       p_reason: null,
-      p_model: AI_MODELS.vendorCopy,
+      p_model: model,
       p_outcome: "answered",
       p_booking: null,
     });

@@ -25,6 +25,8 @@ export const draftProfileCopy = createServerFn({ method: "POST" })
     // The draft is logged as an interaction so the vendor can report it. A draft that cannot be
     // logged is still shown; it simply carries no report.
     const token = bearerToken(authorization);
-    const interactionId = token ? await logCopyInteraction(token, data, result.copy) : null;
+    const interactionId = token
+      ? await logCopyInteraction(token, data, result.copy, result.model)
+      : null;
     return { ok: true, copy: result.copy, interaction_id: interactionId };
   });

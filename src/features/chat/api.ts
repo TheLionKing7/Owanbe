@@ -123,9 +123,13 @@ export async function fetchConversation(
     messages: Array.isArray(body.messages)
       ? body.messages.map((message) => ({
           ...message,
+          kind: message.kind ?? "text",
+          quote_id: message.quote_id ?? null,
+          revision: message.revision ?? null,
           attachments: Array.isArray(message.attachments) ? message.attachments : [],
         }))
       : [],
+    quotes: Array.isArray(body.quotes) ? body.quotes : [],
   };
 }
 

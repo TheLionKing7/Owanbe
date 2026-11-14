@@ -42,6 +42,7 @@ function summary(overrides: Partial<QuoteSummary> = {}): QuoteSummary {
     current_revision: 2,
     sent_at: new Date(Date.now() - 3_600_000).toISOString(),
     expires_at: inHours(5),
+    counter_response_due_at: null,
     decided_at: null,
     close_note: null,
     version: 3,
@@ -295,6 +296,56 @@ describe("QuotesPanel", () => {
     fireEvent.click(await screen.findByTestId("action-decline"));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "That quote is no longer open to this action.",
+    );
+  });
+});
+
+describe("QuotesPanel counter deadlines (F-14)", () => {
+  it("tells the host how long the vendor has to answer their counter", async () => {
+    const api = stubApi({
+      list: vi.fn(async () => [
+        summary({ status: "countered", counter_response_due_at: inHours(9) }),
+      ]),
+    });
+    render(<QuotesPanel house={HOST_HOUSE} side="host" api={api} />);
+
+    const countdown = await screen.findByTestId("quote-countdown");
+    expect(countdown).toHaveAttribute("data-deadline", "counter");
+    expect(countdown).toHaveTextContent("The vendor has 9h");
+    expect(countdown).toHaveTextContent("the date is released");
+  });
+
+  it("shows the vendor the window they have to answer, not the old offer deadline", async () => {
+    const api = stubApi({
+      list: vi.fn(async () => [
+        summary({
+          status: "countered",
+          is_vendor_side: true,
+          expires_at: inHours(1),
+          counter_response_due_at: inHours(9),
+        }),
+      ]),
+    });
+    render(<QuotesPanel house={VENDOR_OWNER} side="vendor" api={api} />);
+
+    const countdown = await screen.findByTestId("quote-countdown");
+    expect(countdown).toHaveTextContent("You have 9h");
+    expect(countdown).not.toHaveTextContent("1h 0m left to respond");
+  });
+
+  it("says so plainly when the vendor's time has run out", async () => {
+    const api = stubApi({
+      list: vi.fn(async () => [
+        summary({
+          status: "countered",
+          counter_response_due_at: new Date(Date.now() - 60_000).toISOString(),
+        }),
+      ]),
+    });
+    render(<QuotesPanel house={HOST_HOUSE} side="host" api={api} />);
+
+    expect(await screen.findByTestId("quote-countdown")).toHaveTextContent(
+      "The vendor's time to respond has run out",
     );
   });
 });

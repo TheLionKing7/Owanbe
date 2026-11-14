@@ -44,9 +44,10 @@ export type AiFailureCode =
   | "incomplete"
   | "unknown";
 
-export type AiFailure = { code: AiFailureCode; retryable: boolean };
+export type AiFailure = { code: AiFailureCode; retryable: boolean; model?: string };
 
-export type AiOutcome<T> = { ok: true; value: T } | { ok: false; failure: AiFailure };
+export type AiOutcome<T> =
+  { ok: true; value: T; model: string } | { ok: false; failure: AiFailure };
 
 export type AiRequest<S extends z.ZodTypeAny> = {
   model: AiModelName;
@@ -121,17 +122,23 @@ async function tryModel<S extends z.ZodTypeAny>(
       },
     });
     const value = await result.output;
-    return { ok: true, value };
+    // The model that answered, not the one the chain tried first: the interaction log has to name
+    // the model that actually produced the answer.
+    return { ok: true, value, model };
   } catch (error) {
     if (NoObjectGeneratedError.isInstance(error)) {
-      return { ok: false, failure: { code: "incomplete", retryable: true } };
+      return { ok: false, failure: { code: "incomplete", retryable: true, model } };
     }
     const status = APICallError.isInstance(error) ? error.statusCode : undefined;
     console.error("[ai] gateway error", model, status);
-    if (status === 429) return { ok: false, failure: { code: "rate_limited", retryable: true } };
-    if (status === 402) return { ok: false, failure: { code: "credits", retryable: false } };
-    if (status === 403 || status === 404) return { ok: false, failure: { code: "unavailable", retryable: false } };
-    if (status === 400) return { ok: false, failure: { code: "incomplete", retryable: false } };
-    return { ok: false, failure: { code: "unknown", retryable: true } };
+    if (status === 429)
+      return { ok: false, failure: { code: "rate_limited", retryable: true, model } };
+    if (status === 402) return { ok: false, failure: { code: "credits", retryable: false, model } };
+    if (status === 403 || status === 404) {
+      return { ok: false, failure: { code: "unavailable", retryable: false, model } };
+    }
+    if (status === 400)
+      return { ok: false, failure: { code: "incomplete", retryable: false, model } };
+    return { ok: false, failure: { code: "unknown", retryable: true, model } };
   }
 }

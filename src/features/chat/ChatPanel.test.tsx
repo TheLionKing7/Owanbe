@@ -51,6 +51,7 @@ function stubApi(overrides: Partial<ChatApi> = {}): ChatApi {
       counterparty_name: "Adeola Cakes",
       counterparty_slug: "adeola-cakes",
       messages: [],
+      quotes: [],
     })),
     send: vi.fn(async () => "m-1"),
     sendDocument: vi.fn(async () => "m-2"),

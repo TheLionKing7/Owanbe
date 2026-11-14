@@ -22,7 +22,7 @@ import {
   type PaymentEventRow,
   type PaymentLogRow,
 } from "./investigation";
-import { AI_MODELS, generateStructured, type AiFailure } from "@/lib/ai/provider.server";
+import { generateStructured, type AiFailure } from "@/lib/ai/provider.server";
 import { callAsCaller, callerToken } from "@/lib/db/caller.server";
 
 function json(body: unknown, status: number): Response {
@@ -239,6 +239,25 @@ function nullableText(value: unknown): string | null {
   return text ? text : null;
 }
 
+/**
+ * Whether the platform's zero-retention contract is confirmed.
+ *
+ * The row in app_private.ai_settings is the only truth about it, so the app reads it and never
+ * assumes it: a request marked sensitive is refused unless the database says the contract is
+ * confirmed. `null` means the answer could not be read, which is not the same as "no" and is
+ * treated as a refusal.
+ */
+async function zdrConfirmedAsCaller(token: string): Promise<boolean | null> {
+  try {
+    const res = await callAsCaller("ai_investigation_status", token, {});
+    if (!res.ok) return null;
+    const rows = (await res.json()) as { zdr_confirmed?: unknown }[];
+    return rows[0]?.zdr_confirmed === true;
+  } catch {
+    return null;
+  }
+}
+
 /** The model's failure, said in OwanbeAI's own words. */
 function investigationFailure(failure: AiFailure): Response {
   switch (failure.code) {
@@ -322,6 +341,16 @@ export async function investigatePaymentAsCaller(request: Request): Promise<Resp
   const bookingId = parsed.data.booking_id;
   const question = parsed.data.question?.trim() || undefined;
 
+  // The contract is the database's to confirm. The app reads it rather than assuming it, so a
+  // payment trail cannot reach a model on the strength of a constant in this file.
+  const zdrConfirmed = await zdrConfirmedAsCaller(token);
+  if (zdrConfirmed === null) {
+    return json(UNCONFIGURED, 503);
+  }
+  if (!zdrConfirmed) {
+    return json({ error: "locked", message: ZDR_LOCKED }, 503);
+  }
+
   // The database holds the payment trail. It refuses the read unless the caller holds the grant
   // and the zero-retention contract is confirmed, so the trail never leaves for a model that has
   // not contracted to keep nothing.
@@ -358,7 +387,7 @@ export async function investigatePaymentAsCaller(request: Request): Promise<Resp
     prompt: buildInvestigationPrompt(log, events, question),
     schema: investigationSchema,
     sensitive: true,
-    zdrConfirmed: true,
+    zdrConfirmed,
   });
   if (!outcome.ok) return investigationFailure(outcome.failure);
 
@@ -382,7 +411,7 @@ export async function investigatePaymentAsCaller(request: Request): Promise<Resp
       ),
       p_response_text: summary,
       p_reason: null,
-      p_model: AI_MODELS.investigation,
+      p_model: outcome.model,
       p_outcome: FINDING_OUTCOME[finding],
       p_booking: bookingId,
     });

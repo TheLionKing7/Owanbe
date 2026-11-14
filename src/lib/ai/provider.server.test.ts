@@ -66,7 +66,25 @@ describe("the shared AI provider", () => {
       zdrConfirmed: true,
     });
 
-    expect(outcome).toEqual({ ok: true, value: { summary: "The money is still held." } });
+    expect(outcome).toEqual({
+      ok: true,
+      value: { summary: "The money is still held." },
+      model: "openai/gpt-6-astra",
+    });
+  });
+
+  it("names the model that answered, so the interaction log is true", async () => {
+    streamText.mockReturnValue({ output: Promise.resolve({ summary: "A." }) });
+
+    const outcome = await generateStructured({
+      model: "planner",
+      system: "s",
+      prompt: "p",
+      schema,
+    });
+
+    expect(outcome.ok).toBe(true);
+    expect(outcome.ok && outcome.model).toBe("openai/gpt-6-astra");
   });
 
   it("never asks the provider to keep the exchange", async () => {
@@ -108,18 +126,50 @@ describe("the shared AI provider", () => {
       schema,
     });
 
-    expect(outcome).toEqual({ ok: false, failure: { code: "incomplete", retryable: true } });
+    expect(outcome).toEqual({
+      ok: false,
+      failure: { code: "incomplete", retryable: true, model: "openai/gpt-6-astra" },
+    });
   });
 
   it("uses each surface's first-choice model", () => {
     expect(Object.values(AI_MODELS).every((m) => m.startsWith("openai/"))).toBe(true);
+  });
+
+  it("names the model that answered after a fallback", async () => {
+    const { APICallError } = await import("ai");
+    let calls = 0;
+    streamText.mockImplementation(() => {
+      calls += 1;
+      if (calls === 1) {
+        throw new APICallError({
+          message: "busy",
+          url: "https://ai.gateway.lovable.dev/v1",
+          requestBodyValues: {},
+          statusCode: 429,
+          isRetryable: true,
+        });
+      }
+      return { output: Promise.resolve({ summary: "A." }) };
+    });
+
+    const outcome = await generateStructured({
+      model: "planner",
+      system: "s",
+      prompt: "p",
+      schema,
+    });
+
+    expect(outcome.ok).toBe(true);
+    expect(outcome.ok && outcome.model).toBe("openai/gpt-6-luna");
   });
 });
 
 import { AI_MODEL_CHAINS, shouldFallBack } from "./provider.server";
 describe("multi-model fallback", () => {
   it("offers GPT Luna 6 and at least two models per surface", () => {
-    for (const chain of Object.values(AI_MODEL_CHAINS)) expect(chain.length).toBeGreaterThanOrEqual(2);
+    for (const chain of Object.values(AI_MODEL_CHAINS))
+      expect(chain.length).toBeGreaterThanOrEqual(2);
     expect(AI_MODEL_CHAINS.vendorCopy[0]).toBe("openai/gpt-6-luna");
   });
   it("falls back on busy models but never on credits", () => {

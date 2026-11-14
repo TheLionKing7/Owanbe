@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
+import { Route as AiRouteImport } from './routes/ai'
 import { Route as HostRouteImport } from './routes/host'
+import { Route as ObservabilityRouteImport } from './routes/observability'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as VendorRouteImport } from './routes/vendor'
 import { Route as WelcomeRouteImport } from './routes/welcome'
@@ -19,6 +21,7 @@ import { Route as PublicSplatRouteImport } from './routes/_public/$'
 import { Route as PublicSignInRouteImport } from './routes/_public/sign-in'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
 import { Route as ApiBenchmarksRouteImport } from './routes/api/benchmarks'
+import { Route as ApiObservabilityRouteImport } from './routes/api/observability'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as HostIndexRouteImport } from './routes/host/index'
 import { Route as HostSectionRouteImport } from './routes/host/$section'
@@ -26,12 +29,19 @@ import { Route as VendorIndexRouteImport } from './routes/vendor/index'
 import { Route as VendorSectionRouteImport } from './routes/vendor/$section'
 import { Route as PublicAuthCallbackRouteImport } from './routes/_public/auth.callback'
 import { Route as PublicGuestListsIdRouteImport } from './routes/_public/guest-lists.$id'
+import { Route as PublicInviteTokenRouteImport } from './routes/_public/invite.$token'
 import { Route as PublicVendorsIndexRouteImport } from './routes/_public/vendors.index'
 import { Route as PublicVendorsSlugRouteImport } from './routes/_public/vendors.$slug'
+import { Route as ApiAiAnswersRouteImport } from './routes/api/ai/answers'
+import { Route as ApiAiCaseRouteImport } from './routes/api/ai/case'
+import { Route as ApiAiCasesRouteImport } from './routes/api/ai/cases'
 import { Route as ApiAiInvestigateRouteImport } from './routes/api/ai/investigate'
+import { Route as ApiAiMineRouteImport } from './routes/api/ai/mine'
 import { Route as ApiAiReportRouteImport } from './routes/api/ai/report'
 import { Route as ApiAiStatusRouteImport } from './routes/api/ai/status'
 import { Route as ApiChatsIdRouteImport } from './routes/api/chats/$id'
+import { Route as ApiInvitationsCardRouteImport } from './routes/api/invitations/card'
+import { Route as ApiInvitationsClaimRouteImport } from './routes/api/invitations/claim'
 import { Route as ApiPaymentsVerifyRouteImport } from './routes/api/payments/verify'
 import { Route as ApiPlannerGenerateRouteImport } from './routes/api/planner/generate'
 import { Route as ApiPlannerReportRouteImport } from './routes/api/planner/report'
@@ -49,9 +59,19 @@ const PublicRoute = PublicRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiRoute = AiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HostRoute = HostRouteImport.update({
   id: '/host',
   path: '/host',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObservabilityRoute = ObservabilityRouteImport.update({
+  id: '/observability',
+  path: '/observability',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlannerRoute = PlannerRouteImport.update({
@@ -94,6 +114,11 @@ const ApiBenchmarksRoute = ApiBenchmarksRouteImport.update({
   path: '/api/benchmarks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiObservabilityRoute = ApiObservabilityRouteImport.update({
+  id: '/api/observability',
+  path: '/api/observability',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatIdRoute = ChatIdRouteImport.update({
   id: '/chat/$id',
   path: '/chat/$id',
@@ -129,6 +154,11 @@ const PublicGuestListsIdRoute = PublicGuestListsIdRouteImport.update({
   path: '/guest-lists/$id',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicInviteTokenRoute = PublicInviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => PublicRoute,
+} as any)
 const PublicVendorsIndexRoute = PublicVendorsIndexRouteImport.update({
   id: '/vendors/',
   path: '/vendors/',
@@ -139,9 +169,29 @@ const PublicVendorsSlugRoute = PublicVendorsSlugRouteImport.update({
   path: '/vendors/$slug',
   getParentRoute: () => PublicRoute,
 } as any)
+const ApiAiAnswersRoute = ApiAiAnswersRouteImport.update({
+  id: '/api/ai/answers',
+  path: '/api/ai/answers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiCaseRoute = ApiAiCaseRouteImport.update({
+  id: '/api/ai/case',
+  path: '/api/ai/case',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiCasesRoute = ApiAiCasesRouteImport.update({
+  id: '/api/ai/cases',
+  path: '/api/ai/cases',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAiInvestigateRoute = ApiAiInvestigateRouteImport.update({
   id: '/api/ai/investigate',
   path: '/api/ai/investigate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiMineRoute = ApiAiMineRouteImport.update({
+  id: '/api/ai/mine',
+  path: '/api/ai/mine',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAiReportRoute = ApiAiReportRouteImport.update({
@@ -157,6 +207,16 @@ const ApiAiStatusRoute = ApiAiStatusRouteImport.update({
 const ApiChatsIdRoute = ApiChatsIdRouteImport.update({
   id: '/api/chats/$id',
   path: '/api/chats/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInvitationsCardRoute = ApiInvitationsCardRouteImport.update({
+  id: '/api/invitations/card',
+  path: '/api/invitations/card',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInvitationsClaimRoute = ApiInvitationsClaimRouteImport.update({
+  id: '/api/invitations/claim',
+  path: '/api/invitations/claim',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPaymentsVerifyRoute = ApiPaymentsVerifyRouteImport.update({
@@ -224,7 +284,9 @@ const ApiChatsIdAttachmentsAttachmentIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
+  '/ai': typeof AiRoute
   '/host': typeof HostRouteWithChildren
+  '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
   '/vendor': typeof VendorRouteWithChildren
   '/welcome': typeof WelcomeRoute
@@ -232,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
   '/api/benchmarks': typeof ApiBenchmarksRoute
+  '/api/observability': typeof ApiObservabilityRoute
   '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
@@ -239,11 +302,18 @@ export interface FileRoutesByFullPath {
   '/vendor/': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/guest-lists/$id': typeof PublicGuestListsIdRoute
+  '/invite/$token': typeof PublicInviteTokenRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/ai/answers': typeof ApiAiAnswersRoute
+  '/api/ai/case': typeof ApiAiCaseRoute
+  '/api/ai/cases': typeof ApiAiCasesRoute
   '/api/ai/investigate': typeof ApiAiInvestigateRoute
+  '/api/ai/mine': typeof ApiAiMineRoute
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/ai/status': typeof ApiAiStatusRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/invitations/card': typeof ApiInvitationsCardRoute
+  '/api/invitations/claim': typeof ApiInvitationsClaimRoute
   '/api/payments/verify': typeof ApiPaymentsVerifyRoute
   '/api/planner/generate': typeof ApiPlannerGenerateRoute
   '/api/planner/report': typeof ApiPlannerReportRoute
@@ -259,12 +329,15 @@ export interface FileRoutesByFullPath {
   '/api/chats/$id/attachments/$attachmentId': typeof ApiChatsIdAttachmentsAttachmentIdRoute
 }
 export interface FileRoutesByTo {
+  '/ai': typeof AiRoute
+  '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
   '/welcome': typeof WelcomeRoute
   '/$': typeof PublicSplatRoute
   '/sign-in': typeof PublicSignInRoute
   '/sign-up': typeof PublicSignUpRoute
   '/api/benchmarks': typeof ApiBenchmarksRoute
+  '/api/observability': typeof ApiObservabilityRoute
   '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
@@ -273,11 +346,18 @@ export interface FileRoutesByTo {
   '/vendor': typeof VendorIndexRoute
   '/auth/callback': typeof PublicAuthCallbackRoute
   '/guest-lists/$id': typeof PublicGuestListsIdRoute
+  '/invite/$token': typeof PublicInviteTokenRoute
   '/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/ai/answers': typeof ApiAiAnswersRoute
+  '/api/ai/case': typeof ApiAiCaseRoute
+  '/api/ai/cases': typeof ApiAiCasesRoute
   '/api/ai/investigate': typeof ApiAiInvestigateRoute
+  '/api/ai/mine': typeof ApiAiMineRoute
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/ai/status': typeof ApiAiStatusRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/invitations/card': typeof ApiInvitationsCardRoute
+  '/api/invitations/claim': typeof ApiInvitationsClaimRoute
   '/api/payments/verify': typeof ApiPaymentsVerifyRoute
   '/api/planner/generate': typeof ApiPlannerGenerateRoute
   '/api/planner/report': typeof ApiPlannerReportRoute
@@ -295,7 +375,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteWithChildren
+  '/ai': typeof AiRoute
   '/host': typeof HostRouteWithChildren
+  '/observability': typeof ObservabilityRoute
   '/planner': typeof PlannerRoute
   '/vendor': typeof VendorRouteWithChildren
   '/welcome': typeof WelcomeRoute
@@ -303,6 +385,7 @@ export interface FileRoutesById {
   '/_public/sign-in': typeof PublicSignInRoute
   '/_public/sign-up': typeof PublicSignUpRoute
   '/api/benchmarks': typeof ApiBenchmarksRoute
+  '/api/observability': typeof ApiObservabilityRoute
   '/chat/$id': typeof ChatIdRoute
   '/host/$section': typeof HostSectionRoute
   '/vendor/$section': typeof VendorSectionRoute
@@ -311,11 +394,18 @@ export interface FileRoutesById {
   '/vendor/': typeof VendorIndexRoute
   '/_public/auth/callback': typeof PublicAuthCallbackRoute
   '/_public/guest-lists/$id': typeof PublicGuestListsIdRoute
+  '/_public/invite/$token': typeof PublicInviteTokenRoute
   '/_public/vendors/$slug': typeof PublicVendorsSlugRoute
+  '/api/ai/answers': typeof ApiAiAnswersRoute
+  '/api/ai/case': typeof ApiAiCaseRoute
+  '/api/ai/cases': typeof ApiAiCasesRoute
   '/api/ai/investigate': typeof ApiAiInvestigateRoute
+  '/api/ai/mine': typeof ApiAiMineRoute
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/ai/status': typeof ApiAiStatusRoute
   '/api/chats/$id': typeof ApiChatsIdRouteWithChildren
+  '/api/invitations/card': typeof ApiInvitationsCardRoute
+  '/api/invitations/claim': typeof ApiInvitationsClaimRoute
   '/api/payments/verify': typeof ApiPaymentsVerifyRoute
   '/api/planner/generate': typeof ApiPlannerGenerateRoute
   '/api/planner/report': typeof ApiPlannerReportRoute
@@ -334,7 +424,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ai'
     | '/host'
+    | '/observability'
     | '/planner'
     | '/vendor'
     | '/welcome'
@@ -342,6 +434,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/api/benchmarks'
+    | '/api/observability'
     | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
@@ -349,11 +442,18 @@ export interface FileRouteTypes {
     | '/vendor/'
     | '/auth/callback'
     | '/guest-lists/$id'
+    | '/invite/$token'
     | '/vendors/$slug'
+    | '/api/ai/answers'
+    | '/api/ai/case'
+    | '/api/ai/cases'
     | '/api/ai/investigate'
+    | '/api/ai/mine'
     | '/api/ai/report'
     | '/api/ai/status'
     | '/api/chats/$id'
+    | '/api/invitations/card'
+    | '/api/invitations/claim'
     | '/api/payments/verify'
     | '/api/planner/generate'
     | '/api/planner/report'
@@ -369,12 +469,15 @@ export interface FileRouteTypes {
     | '/api/chats/$id/attachments/$attachmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/ai'
+    | '/observability'
     | '/planner'
     | '/welcome'
     | '/$'
     | '/sign-in'
     | '/sign-up'
     | '/api/benchmarks'
+    | '/api/observability'
     | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
@@ -383,11 +486,18 @@ export interface FileRouteTypes {
     | '/vendor'
     | '/auth/callback'
     | '/guest-lists/$id'
+    | '/invite/$token'
     | '/vendors/$slug'
+    | '/api/ai/answers'
+    | '/api/ai/case'
+    | '/api/ai/cases'
     | '/api/ai/investigate'
+    | '/api/ai/mine'
     | '/api/ai/report'
     | '/api/ai/status'
     | '/api/chats/$id'
+    | '/api/invitations/card'
+    | '/api/invitations/claim'
     | '/api/payments/verify'
     | '/api/planner/generate'
     | '/api/planner/report'
@@ -404,7 +514,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_public'
+    | '/ai'
     | '/host'
+    | '/observability'
     | '/planner'
     | '/vendor'
     | '/welcome'
@@ -412,6 +524,7 @@ export interface FileRouteTypes {
     | '/_public/sign-in'
     | '/_public/sign-up'
     | '/api/benchmarks'
+    | '/api/observability'
     | '/chat/$id'
     | '/host/$section'
     | '/vendor/$section'
@@ -420,11 +533,18 @@ export interface FileRouteTypes {
     | '/vendor/'
     | '/_public/auth/callback'
     | '/_public/guest-lists/$id'
+    | '/_public/invite/$token'
     | '/_public/vendors/$slug'
+    | '/api/ai/answers'
+    | '/api/ai/case'
+    | '/api/ai/cases'
     | '/api/ai/investigate'
+    | '/api/ai/mine'
     | '/api/ai/report'
     | '/api/ai/status'
     | '/api/chats/$id'
+    | '/api/invitations/card'
+    | '/api/invitations/claim'
     | '/api/payments/verify'
     | '/api/planner/generate'
     | '/api/planner/report'
@@ -442,16 +562,25 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
+  AiRoute: typeof AiRoute
   HostRoute: typeof HostRouteWithChildren
+  ObservabilityRoute: typeof ObservabilityRoute
   PlannerRoute: typeof PlannerRoute
   VendorRoute: typeof VendorRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
   ApiBenchmarksRoute: typeof ApiBenchmarksRoute
+  ApiObservabilityRoute: typeof ApiObservabilityRoute
   ChatIdRoute: typeof ChatIdRoute
+  ApiAiAnswersRoute: typeof ApiAiAnswersRoute
+  ApiAiCaseRoute: typeof ApiAiCaseRoute
+  ApiAiCasesRoute: typeof ApiAiCasesRoute
   ApiAiInvestigateRoute: typeof ApiAiInvestigateRoute
+  ApiAiMineRoute: typeof ApiAiMineRoute
   ApiAiReportRoute: typeof ApiAiReportRoute
   ApiAiStatusRoute: typeof ApiAiStatusRoute
   ApiChatsIdRoute: typeof ApiChatsIdRouteWithChildren
+  ApiInvitationsCardRoute: typeof ApiInvitationsCardRoute
+  ApiInvitationsClaimRoute: typeof ApiInvitationsClaimRoute
   ApiPaymentsVerifyRoute: typeof ApiPaymentsVerifyRoute
   ApiPlannerGenerateRoute: typeof ApiPlannerGenerateRoute
   ApiPlannerReportRoute: typeof ApiPlannerReportRoute
@@ -472,11 +601,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai': {
+      id: '/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/host': {
       id: '/host'
       path: '/host'
       fullPath: '/host'
       preLoaderRoute: typeof HostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/observability': {
+      id: '/observability'
+      path: '/observability'
+      fullPath: '/observability'
+      preLoaderRoute: typeof ObservabilityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planner': {
@@ -535,6 +678,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBenchmarksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/observability': {
+      id: '/api/observability'
+      path: '/api/observability'
+      fullPath: '/api/observability'
+      preLoaderRoute: typeof ApiObservabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/$id': {
       id: '/chat/$id'
       path: '/chat/$id'
@@ -584,6 +734,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicGuestListsIdRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/invite/$token': {
+      id: '/_public/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof PublicInviteTokenRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/vendors/': {
       id: '/_public/vendors/'
       path: '/vendors'
@@ -598,11 +755,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicVendorsSlugRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/api/ai/answers': {
+      id: '/api/ai/answers'
+      path: '/api/ai/answers'
+      fullPath: '/api/ai/answers'
+      preLoaderRoute: typeof ApiAiAnswersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/case': {
+      id: '/api/ai/case'
+      path: '/api/ai/case'
+      fullPath: '/api/ai/case'
+      preLoaderRoute: typeof ApiAiCaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/cases': {
+      id: '/api/ai/cases'
+      path: '/api/ai/cases'
+      fullPath: '/api/ai/cases'
+      preLoaderRoute: typeof ApiAiCasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ai/investigate': {
       id: '/api/ai/investigate'
       path: '/api/ai/investigate'
       fullPath: '/api/ai/investigate'
       preLoaderRoute: typeof ApiAiInvestigateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/mine': {
+      id: '/api/ai/mine'
+      path: '/api/ai/mine'
+      fullPath: '/api/ai/mine'
+      preLoaderRoute: typeof ApiAiMineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ai/report': {
@@ -624,6 +809,20 @@ declare module '@tanstack/react-router' {
       path: '/api/chats/$id'
       fullPath: '/api/chats/$id'
       preLoaderRoute: typeof ApiChatsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/invitations/card': {
+      id: '/api/invitations/card'
+      path: '/api/invitations/card'
+      fullPath: '/api/invitations/card'
+      preLoaderRoute: typeof ApiInvitationsCardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/invitations/claim': {
+      id: '/api/invitations/claim'
+      path: '/api/invitations/claim'
+      fullPath: '/api/invitations/claim'
+      preLoaderRoute: typeof ApiInvitationsClaimRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/payments/verify': {
@@ -720,6 +919,7 @@ interface PublicRouteChildren {
   PublicIndexRoute: typeof PublicIndexRoute
   PublicAuthCallbackRoute: typeof PublicAuthCallbackRoute
   PublicGuestListsIdRoute: typeof PublicGuestListsIdRoute
+  PublicInviteTokenRoute: typeof PublicInviteTokenRoute
   PublicVendorsSlugRoute: typeof PublicVendorsSlugRoute
   PublicVendorsIndexRoute: typeof PublicVendorsIndexRoute
 }
@@ -731,6 +931,7 @@ const PublicRouteChildren: PublicRouteChildren = {
   PublicIndexRoute: PublicIndexRoute,
   PublicAuthCallbackRoute: PublicAuthCallbackRoute,
   PublicGuestListsIdRoute: PublicGuestListsIdRoute,
+  PublicInviteTokenRoute: PublicInviteTokenRoute,
   PublicVendorsSlugRoute: PublicVendorsSlugRoute,
   PublicVendorsIndexRoute: PublicVendorsIndexRoute,
 }
@@ -793,16 +994,25 @@ const ApiChatsIdRouteWithChildren = ApiChatsIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
+  AiRoute: AiRoute,
   HostRoute: HostRouteWithChildren,
+  ObservabilityRoute: ObservabilityRoute,
   PlannerRoute: PlannerRoute,
   VendorRoute: VendorRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
   ApiBenchmarksRoute: ApiBenchmarksRoute,
+  ApiObservabilityRoute: ApiObservabilityRoute,
   ChatIdRoute: ChatIdRoute,
+  ApiAiAnswersRoute: ApiAiAnswersRoute,
+  ApiAiCaseRoute: ApiAiCaseRoute,
+  ApiAiCasesRoute: ApiAiCasesRoute,
   ApiAiInvestigateRoute: ApiAiInvestigateRoute,
+  ApiAiMineRoute: ApiAiMineRoute,
   ApiAiReportRoute: ApiAiReportRoute,
   ApiAiStatusRoute: ApiAiStatusRoute,
   ApiChatsIdRoute: ApiChatsIdRouteWithChildren,
+  ApiInvitationsCardRoute: ApiInvitationsCardRoute,
+  ApiInvitationsClaimRoute: ApiInvitationsClaimRoute,
   ApiPaymentsVerifyRoute: ApiPaymentsVerifyRoute,
   ApiPlannerGenerateRoute: ApiPlannerGenerateRoute,
   ApiPlannerReportRoute: ApiPlannerReportRoute,

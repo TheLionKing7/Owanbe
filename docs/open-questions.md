@@ -9,17 +9,24 @@ affected feature, the status and the release impact. Approved answers move to
 ### Q1. What stops a vendor from ignoring a counter-offer?
 
 - **Owner:** Ola (product owner)
-- **Status:** open — asked in the F-14 feature spec, still unanswered
+- **Status:** **answered 2026-11-12** — the feature spec's own answer is now built:
+  a host counter starts a 24-hour vendor response deadline; if the vendor neither
+  revises nor declines by then, the quote expires, the date lock is released and
+  the host is told their counter went unanswered. See
+  `docs/decisions/f14-counter-response-deadline.md`.
 - **Affected:** F-14 (counter path), F-23 Quote Counter-Offer Controls (`planned`),
   F-22 Trust Score System (blocked), F-24 Multi-channel Notification Delivery (blocked)
-- **Release impact:** a host can counter, and the vendor's 24-hour clock keeps
-  running, but nothing in F-14 pressures the vendor to respond. The quote simply
-  expires. No reminder, penalty or ranking consequence was implemented, because
-  inventing one would put an unapproved business rule into the database.
-- **What was built instead:** the counter is recorded as a host-authored revision
-  with a required message, it does not restart the vendor's deadline, and the
-  vendor can revise and re-send (which does restart it). That is the whole
-  behaviour; the enforcement question is left to F-23/F-22.
+- **Release impact:** the counter is recorded as a host-authored revision with a
+  required message, and it now starts the vendor's own 24-hour window
+  (`quotes.counter_response_due_at`). The expiry is audited as
+  `vendor_response_overdue` and raises a `counter_ignored` alert in the host
+  house. **Still not built:** the "show the host relevant alternatives" half of
+  the spec answer — listing other vendors for that date needs vendor discovery
+  and a relevance rule (F-13, F-35, F-27), the same gap Q5 records for F-38. The
+  host is told the date is free again and that they can ask the vendor or look
+  for another vendor. No reminder, penalty or ranking consequence was
+  implemented, because inventing one would put an unapproved business rule into
+  the database.
 
 ### Q2. Where does a vendor get the host house ID to quote for?
 
@@ -246,28 +253,62 @@ affected feature, the status and the release impact. Approved answers move to
 
 
 
+## F-108 Ticketing system
+
+### Q19. How long may an offline door device keep admitting from its cache?
+
+- **Owner:** Ola (product owner)
+- **Status:** **answered** (asked 2026-11-13, answered 2026-11-13). The decision is
+  `docs/decisions/f108-offline-cache-window.md`: the offline cache is bounded by the **door
+  window** (the grant's own expiry, which the host sets), a device that has never synced or
+  whose window has closed admits nobody and answers `needs_sync`, and the door has one
+  reconciliation action — **sync the door** — that sends the waiting check-ins and fetches the
+  guest list again. No new threshold was invented; the platform's answer still wins whenever
+  the platform can be reached. The residual exposure is written down in the decision: while the
+  device is dark it cannot see a revocation, so the window is the bound on that.
+- **Detail:** The scanner's cache holds **hashes** of the admission credentials, never the
+  credentials themselves, and a scan is hashed on the device before it is compared. That is the
+  protection that lets the device work with no network. What is *not* settled is how a cache
+  behaves once the authority behind it has gone: a host who revokes a scanner grant, an
+  invitation the host revokes, or a card whose admission has expired will still match a hash
+  the device cached while it was offline. Today the cache is bounded by the **grant's** expiry,
+  and a queued check-in is reconciled against the database when the network returns — a check-in
+  the database refuses is refused in the reconciliation, not accepted silently. What is missing
+  is the owner's rule for the window itself: how long a cached hash may be trusted, whether the
+  device must wipe its cache on a revocation it learns about, and whether a door that has been
+  offline across a revocation must refuse the next scan rather than admit it.
+- **Affected:** F-108 Ticketing system (built; the door app under `mobile/`), F-16 Dispute
+  Filing & Arbitration, F-17 Vendor No-show Recovery (both read the check-in record), F-33
+  No-show Ticket & Evidence Flow
+- **Release impact:** the door device can admit a guest the platform has since stopped
+  admitting, and the check-in is recorded — so the record and the truth can differ until the
+  device is online. The **check-in row** says which it was (`mode` = `online` or
+  `queued_offline`), so the disagreement is visible rather than hidden, but it is not resolved
+  by the code. Recommendation: bound the cache by the grant's expiry **and** require a
+  reconciliation pass before a device is trusted again after a revocation, rather than letting
+  the offline window be however long the outage was.
+
 ## F-107 OwanbeAI
 
 ### Q18. Who confirms the zero-data-retention contract, and with which provider?
 
 - **Owner:** Ola (product owner)
-- **Status:** open — the gate is built and closed by the owner's decision (2026-11-09: "Build the
-  gate, closed until the owner confirms a contract"), so nothing is blocked by it, but OwanbeAI
-  cannot be used until it is answered
-- **Affected:** F-107 OwanbeAI (built, gated), F-65 Zero Data Retention (ZDR) for AI Models
-  (`blocked`), F-46 AI Investigation-only Role, any future AI surface that reads sensitive data
+- **Status:** **answered 2026-11-10** (Sage 7 question `3e793b14`): "Lovable has ZDR and gpt also
+  has ZDR in place so this is okay to function now." The gate is open, recorded by
+  `supabase/migrations/20261110203000_f107_open_zdr_gate.sql`. F-65 stays open — the contract
+  paperwork is a separate feature.
+- **Affected:** F-107 OwanbeAI (built, the gate is now open), F-65 Zero Data Retention (ZDR) for
+  AI Models (`blocked`), F-46 AI Investigation-only Role, any future AI surface that reads
+  sensitive data
 - **Release impact:** the platform talks to one AI gateway (`ai.gateway.lovable.dev`, model
-  `openai/gpt-6-astra`). `app_private.ai_settings` holds the record of the contract and
-  `app_private.ai_zdr_confirmed()` reads it; no application role can write to that table, so the
-  gate can only be opened by an owner action in the database. While it is closed,
-  `public.ai_payment_log` raises `zdr_contract_required`, the API answers `503 locked`, the staff
-  panel does not appear, and the shared provider refuses any request marked sensitive. Nothing
-  sensitive has left for a model under F-107, and no payment trail has been read by a model at all.
-  The owner still needs to decide **who signs the contract and with whom** (the gateway operator or
-  the model vendor), **what the confirmation actually requires** (a written zero-retention clause
-  naming the model, or a contractual setting the platform can verify), and **how the record is
-  written** — a row in `app_private.ai_settings` set by an owner-only script, or a signed document
-  the platform checks. Until then OwanbeAI stays closed and F-65 stays open. The open decisions
-  around retention deadlines for other data (F-39 Record Retention Policy, F-59 Health Data
-  Protection) are separate and are not answered by this one.
+  `openai/gpt-6-astra`), and the owner confirms that both the gateway operator and the model
+  vendor hold a zero-data-retention agreement. `app_private.ai_settings` holds the record and
+  `app_private.ai_zdr_confirmed()` reads it; the table is still revoked from every application
+  role, so no application path can open or close the gate — the owner can, and the migration
+  records that act. The trail is still minimised in the database and every read is still a
+  sensitive read with a purpose, so what reaches the model is unchanged: money and state, never a
+  person and never a provider reference. **Not** answered by this: whether the platform should
+  *verify* the contract rather than record it (a signed document the platform checks, or a
+  contractual setting it can read), and the retention deadlines for other data (F-39 Record
+  Retention Policy, F-59 Health Data Protection) — F-65 owns the first, the others own the rest.
 

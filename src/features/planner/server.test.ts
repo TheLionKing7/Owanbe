@@ -51,6 +51,7 @@ interface RpcCalls {
   houses?: unknown;
   cooldown?: unknown;
   profiles?: unknown;
+  aiStatus?: unknown;
   log?: unknown;
 }
 
@@ -81,6 +82,11 @@ function stubDatabase(overrides: RpcCalls = {}) {
     }
     if (rpc === "public_vendor_profiles") {
       return jsonResponse(overrides.profiles ?? PROFILES);
+    }
+    if (rpc === "ai_investigation_status") {
+      return jsonResponse(
+        overrides.aiStatus ?? [{ zdr_confirmed: true, has_grant: false, can_investigate: false }],
+      );
     }
     if (rpc === "log_ai_planner_interaction") {
       return jsonResponse(overrides.log ?? INTERACTION_ID);
@@ -158,6 +164,32 @@ describe("POST /planner/generate", () => {
     expect(facts).toHaveLength(1);
     expect(facts.at(0)?.slug).toBe("adeola-cakes");
     expect(facts.at(0)?.price_note).toBe("Packages from ₦500,000");
+  });
+
+  it("tells the assistant whether the zero-retention contract is confirmed", async () => {
+    stubDatabase();
+    generatePlanOptions.mockResolvedValue({
+      ok: true,
+      plan: { summary: "A plan.", options: [], removed_vendors: 0, unknown_prices: 0 },
+    });
+    await planAsCaller(request(INPUT));
+
+    const call = generatePlanOptions.mock.calls.at(0);
+    expect(call?.[2]).toEqual({ zdrConfirmed: true });
+  });
+
+  it("tells the assistant when the contract is not confirmed", async () => {
+    stubDatabase({
+      aiStatus: [{ zdr_confirmed: false, has_grant: false, can_investigate: false }],
+    });
+    generatePlanOptions.mockResolvedValue({
+      ok: true,
+      plan: { summary: "A plan.", options: [], removed_vendors: 0, unknown_prices: 0 },
+    });
+    await planAsCaller(request(INPUT));
+
+    const call = generatePlanOptions.mock.calls.at(0);
+    expect(call?.[2]).toEqual({ zdrConfirmed: false });
   });
 
   it("returns the answer with the interaction it was logged as", async () => {

@@ -162,11 +162,16 @@ export async function planAsCaller(request: Request): Promise<Response> {
   let houses: Response;
   let cooldown: Response;
   let profiles: Response;
+  let aiStatus: Response;
   try {
-    [houses, cooldown, profiles] = await Promise.all([
+    [houses, cooldown, profiles, aiStatus] = await Promise.all([
       callAsCaller("my_houses", token, {}),
       callAsCaller("ai_planner_cooldown_seconds", token, {}),
       callAsCaller("public_vendor_profiles", token, {}),
+      // The platform's AI status read. It carries the zero-retention flag, and the planner's
+      // prompt holds the host's celebration details, so the contract is read here and never
+      // assumed: an unconfirmed contract means no call leaves.
+      callAsCaller("ai_investigation_status", token, {}),
     ]);
   } catch {
     return json(UNCONFIGURED, 503);
@@ -174,6 +179,7 @@ export async function planAsCaller(request: Request): Promise<Response> {
   if (!houses.ok) return failure(houses);
   if (!cooldown.ok) return failure(cooldown);
   if (!profiles.ok) return failure(profiles);
+  if (!aiStatus.ok) return failure(aiStatus);
 
   const houseRows = (await houses.json()) as { kind?: unknown }[];
   if (!houseRows.some((row) => row?.kind === "host")) {
@@ -196,8 +202,14 @@ export async function planAsCaller(request: Request): Promise<Response> {
 
   const facts = toVendorFacts(await profiles.json());
 
+  const statusRows = (await aiStatus.json()) as { zdr_confirmed?: unknown }[];
+  const zdrConfirmed = statusRows[0]?.zdr_confirmed === true;
+
   const { generatePlanOptions, PLANNER_MODEL } = await import("./planner.server");
-  const outcome = await generatePlanOptions(input, facts);
+  const outcome = await generatePlanOptions(input, facts, { zdrConfirmed });
+  // The model that answered, not the chain's first choice: the interaction log has to name the
+  // model that actually produced the plan.
+  const answeredModel = outcome.model ?? PLANNER_MODEL;
 
   const plan: GroundedPlan | null = outcome.ok ? outcome.plan : null;
   const status = outcome.ok ? "ok" : "error";
@@ -218,7 +230,7 @@ export async function planAsCaller(request: Request): Promise<Response> {
       p_budget_minor: input.budget_minor,
       p_budget_currency: input.budget_currency,
       p_brief: input.brief,
-      p_model: PLANNER_MODEL,
+      p_model: answeredModel,
       p_status: status,
       p_option_count: plan?.options.length ?? 0,
       p_plan_summary: planSummary,

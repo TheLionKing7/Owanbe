@@ -36,8 +36,8 @@ export type PlannerFailureCode =
   "unconfigured" | "rate_limited" | "credits" | "unavailable" | "incomplete" | "unknown";
 
 export type PlannerOutcome =
-  | { ok: true; plan: GroundedPlan }
-  | { ok: false; code: PlannerFailureCode; error: string; retryable: boolean };
+  | { ok: true; plan: GroundedPlan; model: string }
+  | { ok: false; code: PlannerFailureCode; error: string; retryable: boolean; model?: string };
 
 function factsPrompt(facts: VendorFact[]): string {
   return facts
@@ -79,6 +79,11 @@ function emptyPlan(reason: string): GroundedPlan {
  * plain error: if the zero-retention gate ever refuses this surface, the host is told so.
  */
 function plannerFailure(failure: AiFailure): PlannerOutcome {
+  const outcome = plannerFailureMessage(failure);
+  return failure.model ? { ...outcome, model: failure.model } : outcome;
+}
+
+function plannerFailureMessage(failure: AiFailure): PlannerOutcome {
   switch (failure.code) {
     case "unconfigured":
       return {
@@ -139,6 +144,7 @@ function plannerFailure(failure: AiFailure): PlannerOutcome {
 export async function generatePlanOptions(
   input: PlannerInput,
   facts: VendorFact[],
+  options: { zdrConfirmed: boolean },
 ): Promise<PlannerOutcome> {
   if (facts.length === 0) {
     return {
@@ -146,6 +152,7 @@ export async function generatePlanOptions(
       plan: emptyPlan(
         "No vendor has published a profile yet, so there is nothing for the planner to build on. Come back once the marketplace has vendors, or open a vendor house of your own.",
       ),
+      model: PLANNER_MODEL,
     };
   }
 
@@ -154,8 +161,12 @@ export async function generatePlanOptions(
     system: SYSTEM,
     prompt: `The host's celebration:\n${hostPrompt(input)}\n\nThe vendors on the platform:\n${factsPrompt(facts)}`,
     schema: rawPlanSchema,
+    // The host's celebration details are party details, and the platform's own rule counts those
+    // as sensitive: the request is refused unless the zero-retention contract is confirmed.
+    sensitive: true,
+    zdrConfirmed: options.zdrConfirmed,
   });
 
   if (!outcome.ok) return plannerFailure(outcome.failure);
-  return { ok: true, plan: groundPlan(outcome.value, facts, input) };
+  return { ok: true, plan: groundPlan(outcome.value, facts, input), model: outcome.model };
 }

@@ -279,6 +279,30 @@ describe("POST /ai/investigate", () => {
     expect(generateStructured).not.toHaveBeenCalled();
   });
 
+  it("does not read the payment trail while the database says the contract is unconfirmed", async () => {
+    const { calls } = stubDatabase({
+      status: [{ zdr_confirmed: false, has_grant: true, can_investigate: false }],
+    });
+    const res = await investigatePaymentAsCaller(
+      request("/api/ai/investigate", { booking_id: BOOKING_ID }),
+    );
+
+    expect(res.status).toBe(503);
+    expect((await res.json()).error).toBe("locked");
+    expect(calls.some((call) => call.rpc === "ai_payment_log")).toBe(false);
+    expect(generateStructured).not.toHaveBeenCalled();
+  });
+
+  it("asks the database for the contract instead of assuming it", async () => {
+    const { calls } = stubDatabase();
+    await investigatePaymentAsCaller(request("/api/ai/investigate", { booking_id: BOOKING_ID }));
+
+    expect(calls.some((call) => call.rpc === "ai_investigation_status")).toBe(true);
+    const call = generateStructured.mock.calls.at(0);
+    const modelRequest = call?.[0] as { zdrConfirmed?: boolean };
+    expect(modelRequest.zdrConfirmed).toBe(true);
+  });
+
   it("forwards the caller's own token to the database", async () => {
     const { calls } = stubDatabase();
     await investigatePaymentAsCaller(request("/api/ai/investigate", { booking_id: BOOKING_ID }));
