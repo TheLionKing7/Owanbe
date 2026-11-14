@@ -70,6 +70,13 @@ Browser ── SSR HTML (src/server.ts → nitro) ──► "/" Home
 | `src/routes/_public/invite.$token.tsx` | `/invite/:token` | public and `noindex`; the F-108 guest claim page — the token is in the path, never in a query string |
 | `src/routes/api/invitations/claim.ts` | `/api/invitations/claim` | POST the guest's claim; the **publishable** key only (a `sb_secret_` key is refused with 503), so a guest needs no account |
 | `src/routes/api/invitations/card.ts` | `/api/invitations/card` | POST the guest's own card, read with the guest's own session; the token or the phone is never echoed back |
+| `src/routes/funds.tsx` | `/funds` | the F-109 recovery fund console; outside both house shells, so it is not a house page |
+| `src/routes/api/funds/allocate.ts` | `/api/funds/allocate` | POST the 70/30 split of a booking total, calculated by the database; the caller's token is forwarded |
+| `src/routes/api/funds/release.ts` | `/api/funds/release` | POST the last tranche of a booking whose completion window has closed; the rules decide, the person only asks |
+| `src/routes/api/funds/recovery.ts` | `/api/funds/recovery` | POST a clawback or an advance ask; the server reads the recovery wallet and hands it to the database |
+| `src/routes/api/funds/approvals.ts` | `/api/funds/approvals` | POST one staff member's decision (approve, refuse, withdraw); the database counts the approvals |
+| `src/routes/api/funds/settle.ts` | `/api/funds/settle` | POST the money moves; the server asks the provider to send it and then records it |
+| `src/routes/api/funds/reconcile.ts` | `/api/funds/reconcile` | POST the provider's events against the ledger; the run is the platform's own sweep through the payment router |
 
 Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, `PlaceholderPage`, `NotFound`) even though `src/routes/README.md` says not to create that folder. House sections come from `src/lib/houses.ts`.
 
@@ -80,6 +87,7 @@ Page bodies are in `src/pages/` (`Home`, `SignIn`, `AuthCallback`, `HousePage`, 
 - Also read ad hoc: `LOVABLE_CRON_SECRET`, `LOVABLE_CRON_SECRET_PREVIOUS`, `INITIAL_JS_BUDGET_KB`, and `AUTH0_TENANT` / `AUTH0_TENANT_REGION` in `supabase/config.toml`.
 - F-107 added **`LOVABLE_API_KEY`** as the one key for every AI surface. It is read only by `src/lib/ai/provider.server.ts` (and by the older vendor copy path), never by the browser, and never logged. Without it the platform says "not set up in this environment" rather than failing silently.
 - F-102 added `PAYMENT_ROUTER_KEY`: the platform's own gate on `src/lib/payments/router.server.ts`, the only module that may move money. It is not a third-party credential, it is never logged, and the module refuses to run without it (`unconfigured`). The Paystack secret stays in `PAYSTACK_SECRET_KEY` and is read inside the call.
+- F-109 added **`FUND_POOL_WALLET_ID`**: the platform wallet the money taken back from a vendor is held in. It is configuration, not a secret, but the browser never chooses it and never sees it — `src/features/funds/server.ts` reads it and hands it to the database. Without it the recovery console says the fund is not set up in this environment.
 - `docs/deployment.md` is the release runbook: one hosted Supabase project (owner's decision), env matrix, migrations-before-app order, backup/restore rehearsal, Paystack and Sentry setup per environment.
 
 ## Performance / bundle

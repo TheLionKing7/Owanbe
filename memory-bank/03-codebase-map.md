@@ -46,6 +46,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/decisions/2026-11-10-payments-owner-answers.md` | Owner decision record for the open payment questions: custody stays with Paystack, the cancellation refund percentages, the dedicated virtual account, the two-approval threshold and read-only AI. |
 | `docs/decisions/f107-ai-console.md` | F-107 decision record: the console is a staff surface behind the existing `ai_investigation` grant, it lives outside both house shells, working a case changes the case and nothing else, the database owns the transition rule, and the note's text never reaches the audit trail. |
 | `docs/decisions/f108-offline-cache-window.md` | F-108 decision record: the offline door cache is bounded by the door window (the grant's own expiry), a device that has never synced or whose window has closed admits nobody, and the door has one reconciliation action that sends the waiting check-ins and fetches the list again. |
+| `docs/decisions/f109-recovery-fund.md` | F-109 decision record: the advance is half the replacement cost and is computed in SQL, two distinct staff approve and the requester may not, a clawback is capped by the vendor house balance, a clawback needs no provider call while an advance is a partial refund, the fund is funded only by money already taken back, the split belongs to the database, the reconciliation is read-only, the provider reference never reaches the browser, and `FUND_POOL_WALLET_ID` is configuration. |
 | `docs/decisions/f126-observability-dashboard.md` | F-126 decision record: the dashboard reads operational records and returns counts only, access is the existing `operations` capability, every read is audited, and the gaps are named rather than hidden. |
 | `docs/decisions/f13-chat-owns-its-feature-code.md` | Owner decision: in-app chat gets its own feature code (F-100) and is built before F-13's direct search and book flow. |
 | `docs/decisions/f14-counter-response-deadline.md` | Decision record: a host counter starts the vendor's 24-hour response deadline, the counter deadline governs while the quote is countered, and the host is told when it closes. |
@@ -86,6 +87,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `docs/journal/2026-11-13-F-108-ticketing.md` | The F-108 journal: the ticket-to-the-door path, the owner's four approvals, how the offline cache was reconciled with storing only hashes, and what was never proven. |
 | `docs/journal/2026-11-13-F-126-observability-dashboard.md` | F-126 build journal: the twelve counters, the access rule, the gaps the dashboard names, and what has not been run. |
 | `docs/journal/2026-11-13-F-46-investigation-only-role.md` | F-46 build journal: the identity the AI's payment read runs under, why the read lives in `app_private`, and what it may not do. |
+| `docs/journal/2026-11-14-F-109-recovery-fund.md` | The F-109 build journal: what the feature delivers, the rules that live in the database against the rules that live in the app, the `notifications_kind_check` defect repaired on the way, the checks that were run, and what was not run. |
 | `docs/open-questions.md` | Open questions for the owner, each with feature, status and release impact. |
 | `docs/sql/2026-11-10-cancellation-tokens-dva.sql` | Installation script, superseded by the combined one: the cancellation refund function, the cancellation, authorisation and dedicated-account tables. |
 | `docs/sql/2026-11-10-f13-booking-completion.sql` | The combined installation script: cancellation and refunds, saved Paystack authorisation references, dedicated virtual accounts and the F-13 quote requests. |
@@ -212,6 +214,14 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/features/chat/contracts.ts` | F-100 contracts: message and attachment shapes, allowed file types, size limit, day and size labels. |
 | `src/features/chat/server.test.ts` | F-100 server tests: sending a document, upload to the bucket and signed links. |
 | `src/features/chat/server.ts` | F-100 server boundary: token-forwarding reads, sends, uploads and signed attachment links. |
+| `src/features/funds/FundsPanel.test.tsx` | F-109 console tests: the balances, the request queue, the refusal when the console cannot be opened, the empty fund, the approval, the clawback and the advance asked for in minor units, the release, the reconciliation report, the split the database calculated, and the trail of recovery money. |
+| `src/features/funds/FundsPanel.tsx` | F-109 console: what the fund holds, the recovery requests and their approvals, the bookings waiting for their last payment, the form that asks for money to move, the split the database calculated, the reconciliation report, and the trail of the recovery money on a case. |
+| `src/features/funds/api.test.ts` | F-109 browser-boundary tests: the reads go through the database projections, the writes go through the app routes with the caller's own token, and a refusal becomes a sentence. |
+| `src/features/funds/api.ts` | F-109 browser boundary: reads through the database's own projections, writes through the app's routes with the caller's token, and the refusal copy that turns a database code into a sentence. The browser never writes a table and never computes an amount. |
+| `src/features/funds/contracts.test.ts` | F-109 contract tests: the labels staff read, the two-approval rule, and the schemas that decide what a person may type. |
+| `src/features/funds/contracts.ts` | F-109 contracts: the shapes the console reads, the labels, the schemas for the split, the release, the request and the decision, the refusal copy and the classifier that reads a database refusal as a code. |
+| `src/features/funds/server.test.ts` | F-109 server-boundary tests: the caller's token is forwarded, the wallet is configuration the browser never chooses, the split is asked of the database, and an advance sends the money to the provider before the ledger records it. |
+| `src/features/funds/server.ts` | F-109 server boundary: the routes' handlers. Every rule about who may do what stays in the database; the caller's own token is forwarded so the database decides, and the platform acts as itself only through the payment router. |
 | `src/features/guest-lists/GuestListCard.test.tsx` | F-40 tests: one list card — visibility, sharing, revocation and the masked preview. |
 | `src/features/guest-lists/GuestListCard.tsx` | F-40 UI: one guest list with its visibility, share controls, guests and masked preview. |
 | `src/features/guest-lists/GuestListPanel.test.tsx` | F-40 tests: the house's lists, the create form and “shared with you”. |
@@ -418,6 +428,12 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/api/chats/$id/attachments.ts` | POST /api/chats/:id/attachments — upload a document or photo for the thread. |
 | `src/routes/api/chats/$id/attachments/$attachmentId.ts` | GET /api/chats/:id/attachments/:attachmentId — mint a signed link for a shared file. |
 | `src/routes/api/chats/$id/messages.ts` | POST /api/chats/:id/messages — send a message or a document into the thread. |
+| `src/routes/api/funds/allocate.ts` | POST /api/funds/allocate — the 70/30 split of a booking total, asked of the database. |
+| `src/routes/api/funds/approvals.ts` | POST /api/funds/approvals — one staff member's decision on a recovery request. |
+| `src/routes/api/funds/reconcile.ts` | POST /api/funds/reconcile — the provider's events against the ledger. It moves no money. |
+| `src/routes/api/funds/recovery.ts` | POST /api/funds/recovery — asking for a clawback or an advance. Asking moves no money. |
+| `src/routes/api/funds/release.ts` | POST /api/funds/release — the last 30% of a booking whose completion window has closed. |
+| `src/routes/api/funds/settle.ts` | POST /api/funds/settle — the money moves: the provider first, then the ledger. |
 | `src/routes/api/guest-lists/$id/share.ts` | POST /api/guest-lists/:id/share — the host shares a list with one platform user. |
 | `src/routes/api/invitations/card.ts` | The guest's card read, by the guest's own session, with the publishable key. |
 | `src/routes/api/invitations/claim.ts` | The guest's claim, with no account and with the publishable key only. |
@@ -428,6 +444,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `src/routes/api/public/paystack/webhook.test.ts` | F-90 route tests: the webhook route refuses an unsigned, wrong-key or altered-body request and records a signed charge |
 | `src/routes/api/public/paystack/webhook.ts` | POST /api/public/paystack/webhook: verifies the signature and logs the event name only. |
 | `src/routes/chat.$id.tsx` | The /chat/:id page: one conversation between a host house and a vendor house. |
+| `src/routes/funds.tsx` | The /funds page: the recovery fund console for platform staff. |
 | `src/routes/host.tsx` | /host layout: RequireAuth inside HouseLayout houseId=host. |
 | `src/routes/host/$section.tsx` | /host/:section route. |
 | `src/routes/host/index.tsx` | /host index route. |
@@ -507,6 +524,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/migrations/20261112140000_f126_observability_dashboard.sql` | F-126 migration: `public.observability_dashboard()` — twelve counters read from the platform's own operational records, for staff holding the existing `operations` capability, with every read audited. |
 | `supabase/migrations/20261113120000_f107_ai_console.sql` | F-107 console migration: the `ai_case_notes` table, the case and answer reads (`read_ai_cases`, `read_ai_interactions`), the audited case move (`update_ai_case`) with its transition rule, and `my_ai_interactions` re-created with the request and the model. |
 | `supabase/migrations/20261113150000_f108_ticketing.sql` | F-108's five RLS-closed tables and the functions that are the only way in: issue, reissue, revoke, claim, the card, the grants, the scan and the check-in. |
+| `supabase/migrations/20261114120000_f109_recovery_fund.sql` | F-109 migration: the four RLS-closed tables, the money functions (a clawback, an advance, the two approvals, the withdrawal, the settlement, the payout target, the split, the release and the reconciliation) and the five projections. It also repairs the `notifications_kind_check` that F-14 had narrowed. |
 
 #### supabase/tests/
 
@@ -521,6 +539,7 @@ Not indexed: `blueprint/` (Sage 7 spec, see `01`), `owanbe-brand-kit/` (brand so
 | `supabase/tests/f107_ai_console.test.sql` | F-107 console SQL suite: the console is closed without the `ai_investigation` grant and to anon, the case queue and the answer queue read, the audit rows, the whole case lifecycle from open to closed, every refused move, the caller's own answers only, the AI identity's lack of any path in, and the proof that working a case moves no money. |
 | `supabase/tests/f107_owanbe_ai.test.sql` | F-107 SQL suite: the closed gate, the grant, the minimised trail, the logged interaction, the opened case and the proof that the AI path cannot allocate, refund, settle, freeze, unfreeze, complete or release. |
 | `supabase/tests/f108_ticketing.test.sql` | The F-108 SQL suite: the claim's atomicity, the couple link, the phone binding, the host-only reissue and revoke, the grant and the check-ins. |
+| `supabase/tests/f109_recovery_fund.test.sql` | The F-109 SQL suite: the request and its refusals, the advance at exactly half, the two distinct approvals and the requester excluded, the settlement and the idempotent replay, the clawback ceiling, the fund balance, the split, the release, the reconciliation and the tables that cannot be read directly. |
 | `supabase/tests/f126_observability_dashboard.test.sql` | F-126 SQL suite: the dashboard is closed without the `operations` capability, the twelve counts, the audit row, the absence of money and party detail, the tables that cannot be read directly, and the grant that closes it again. |
 | `supabase/tests/f14_counter_response.test.sql` | F-14 SQL tests for the counter deadline: the window the counter starts, the expiry that releases the date, the audit reason, the host alert and the vendor's re-send. |
 | `supabase/tests/f14_quotes.test.sql` | F-14 SQL tests: quote revisions, transitions and vendor-only authoring. |

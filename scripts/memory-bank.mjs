@@ -28,11 +28,11 @@ const TODO = "TODO: describe";
 
 // Paths that are not indexed (generated, vendored, binary assets or owned by another system).
 const IGNORE = [
-  /^\.git\//, /^node_modules\//, /^dist\//, /^coverage\//, /^Claude outputs\//,
+  /^\.git\//, /(^|\/)node_modules\//, /(^|\/)\.expo\//, /^\.tanstack\//, /^\.output\//, /^\.nitro\//, /^\.vinxi\//, /^\.wrangler\//, /^\.lovable\//,
+  /^dist\//, /^coverage\//, /^Claude outputs\//,
   /^memory-bank\//, /^blueprint\//, /^owanbe-brand-kit\//, /^public\/(images|icons)\//,
-  /^\.tanstack\//, /^\.output\//, /^\.nitro\//, /^\.vinxi\//, /^\.wrangler\//, /^\.lovable\//,
   /^src\/components\/ui\//, /^drizzle\//, /^src\/routeTree\.gen\.ts$/,
-  /^package-lock\.json$/, /^bun\.lock$/, /^publish-to-github\.ps1$/,
+  /(^|\/)package-lock\.json$/, /^bun\.lock$/, /^publish-to-github\.ps1$/,
   /\.(png|jpe?g|webp|ico|pdf|gif)$/i,
   /^\.env(\..*)?$/, /\.local$/, /\.tsbuildinfo$/,
 ];
