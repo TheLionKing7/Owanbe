@@ -337,8 +337,8 @@ export function WelcomeFlow({ api: injected }: { api?: OnboardingApi | undefined
                   ["hosting", "I'm hosting it", "It's my own celebration or my family's."],
                   [
                     "arranging",
-                    "I'm arranging it for someone",
-                    "I'm planning or booking on someone else's behalf.",
+                    "I'm a planner, arranging it for a client",
+                    "Professional event planners & managers booking on a client's behalf.",
                   ],
                 ] as const
               ).map(([value, title, body]) => (

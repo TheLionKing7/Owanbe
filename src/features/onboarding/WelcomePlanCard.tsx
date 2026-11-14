@@ -41,7 +41,7 @@ export function WelcomePlanCard({ api: injected }: { api?: OnboardingApi | undef
       data-testid="welcome-plan"
     >
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-plum-500">
-        {state.host_intent === "arranging" ? "You're arranging" : "You're hosting"}
+        {state.host_intent === "arranging" ? "You're planning for a client" : "You're hosting"}
       </p>
       <h2 className="mt-1 font-display text-2xl font-bold text-plum-950">
         {state.event_type ?? "A celebration"}

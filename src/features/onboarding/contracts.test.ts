@@ -83,7 +83,7 @@ describe("F-7 onboarding rules", () => {
     ).toBe("Help me plan my wedding in Lagos on 14 March 2027.");
     expect(
       plannerPrompt({ host_intent: "arranging", event_type: null, event_date: null, city: null }),
-    ).toBe("Help me plan a celebration I'm arranging for someone.");
+    ).toBe("Help me plan a celebration I'm arranging for a client.");
   });
 
   it("only continues to in-app paths", () => {
