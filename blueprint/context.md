@@ -1,22 +1,42 @@
 # Ówàńbè context
 
-> Context version 13. Compiled at 2026-11-11T09:17:41.888Z.
-
-## Project summary
-
-Ówàńbè tracks 126 assessed features across workflows including commerce, scheduling, authentication, administration, integrations, and support; its status inventory lists 45 built, 59 planned, 12 flagged, and none missing. Implemented functionality includes quote creation and revision workflows, personalized onboarding with a welcome-plan dashboard, and Paystack payment webhook handling.
+> Context version 14. Compiled at 2026-11-13T03:59:07.987Z.
 
 ## Current task spec
 
-No buildable feature is mapped yet.
+### F-107 OwanbeAI
 
-Read the [system overview](./system-overview.md) for the intended product scope.
+Category: Core Workflows | Priority: must | Status: planned
+
+Needed before the features that name "OwanbeAI" can be built.
+
+Build evidence: in progress, unverified (branch develop). Commits and audits never change the saved feature status; an owner must explicitly mark it built with a reason.
+
+Read the [full PRD](./prd.md), [design system](./design-system.md), [tech spec](./tech-spec.md) before starting.
+
+Next after this: F-108 Ticketing system, F-109 Fund pool/recovery fund.
 
 ## Current batch
 
-- F-13 Direct Search & Book Flow (blocked)
-  - Proposed acceptance: Search leads to profile, chat, quote, acceptance, payment flow; Booking confirmed only after successful payment
-  - Must be wired (checked by code; built only when every line is found): route /search; route /vendor/:id; api POST /bookings; table bookings
+- F-107 OwanbeAI (in progress)
+  - Proposed acceptance: Persistent AI labeling shown on all OwanbeAI responses; Payment-log access is read-only; no approval or transfer capability; Sensitive processing uses contracted zero-retention AI provider; Tickets open automatically without any fund movement authority
+  - Open: Which AI/LLM provider is contracted for zero data retention compliance?; What ticketing or payment-log APIs does OwanbeAI call internally?
+- F-108 Ticketing system (ready)
+  - Proposed acceptance: Claim binds invitation/phone without requiring full account; Atomic claims allow one person or two for couple links; QR/NFC admission supports offline scanner cache; Only host can invalidate or reissue invitation tokens
+  - Must be wired (checked by code; built only when every line is found): table invitations; api POST /invitations/claim; route /invite/:token; fn claimInvitation
+  - Open: Does ticketing cover Regular/VIP/VVIP/Diamond tiers or only basic invites?; Which service owns offline QR/NFC scanner cache sync logic?
+- F-109 Fund pool/recovery fund (ready)
+  - Proposed acceptance: Fund pool holds 70% booking and 30% completion splits; Dispute holds freeze balances pending judgement; Recovery advances release 50% replacement cost; Auditable ledger reconciles with payment router
+  - Must be wired (checked by code; built only when every line is found): api POST /funds/allocate; api POST /funds/release; table fund_pool_ledger; fn calculateSplitAllocation; env FUND_POOL_WALLET_ID; call services/payment_router -> reconcileLedger
+  - Open: Legal structure for fund segregation?; Regulatory compliance for recovery advances?
+- F-113 Malware/file-type scanning (ready)
+  - Proposed acceptance: All uploads are quarantined until scanning completes; Scanning blocks disallowed file types and detected malware; Ownership complaints support evidence review workflow; Approved takedown removes flagged content from visibility
+  - Must be wired (checked by code; built only when every line is found): fn scanUpload; table uploads
+  - Open: Which malware-scanning provider or service should be integrated?; What file types/extensions are explicitly allowed or blocked?
+- F-115 Identity verification per country (ready)
+  - Proposed acceptance: Verify identity via country-specific service (e.g., NIN/BVN); Queue verification during outages; allow limited signup; Store minimal verification data with explicit consent; Delete documents after completion when legally permitted
+  - Must be wired (checked by code; built only when every line is found): api POST /verify/identity; table identity_verifications; fn verifyIdentity
+  - Open: Which countries' verification services are in scope?; How to handle verification data retention per country?
 
 ## Engineering Workflow & Blocker Rules
 
@@ -41,38 +61,26 @@ Follow these; they override assumptions in earlier work.
 
 ## Plan
 
-Release: MVP v1 (77 features). Build only these; 44 other feature(s) are planned for a later release, so don't start them.
-Now: F-13 Direct Search & Book Flow.
-Next: None recorded.
-Blocked: 47 (wave 0: 19, wave 1: 19, wave 2: 7, wave 3: 2).
-Why this is next: F-13 is the current priority because it is the only feature marked now. Full roadmap: /projects/cfbf39db-b40e-4f75-9039-f241e7b05bfd?tab=roadmap
-Held (built out of order, not counted until what they stand on is verified; don't extend them): F-38 Vendor Calendar Soft-hold, F-23 Quote Counter-Offer Controls, F-79 Deployment.
-
-- Blocked F-60 Payment Data Protection (Tokenization via Partner): walking skeleton not verified; needs Payment Router & Banking Integrations (built); needs Backup Payment Processor (built); needs Manual CAC/NIMC/BVN Verification Integration (built); needs Partner bank (deprecated)
-- Blocked F-64 Subscription Cancellation & Billing Transparency: walking skeleton not verified; needs Payment Router & Banking Integrations (built)
-- Blocked F-15 Split Payment & Completion Confirmation: walking skeleton not verified; needs Payment Router & Banking Integrations (built); needs Fund pool/escrow (reported built, awaiting audit)
-- Blocked F-56 System Monitoring Dashboard: walking skeleton not verified; needs Real-time Job Monitoring & Alerting (planned)
-- Blocked F-12 AI-Assisted Event Planning (OwanbePlann
+- Blocked F-64 Subscription Cancellation & Billing Transparency: needs Payment Router & Banking Integrations (built)
+- Blocked F-14 Quote Lifecycle & Date Lock: needs "Vendor service catalog", which isn't a feature yet; needs "Vendor calendar": did you mean F-38 Vendor Calendar Soft-hold or F-91 Vendor Calendar Soft-Hold & Refund Ledger?
+- Blocked F-56 System Monitori
 
 ## Decisions
 
-- reconcile: Owner confirmed the agent's decision.
-- reconcile: High-confidence verification against src/lib/monitoring/browser.ts, src/lib/monitoring/privacy.ts; auto-confirmed by Sage CTO.
-- reconcile: Regression after the push: Browser error monitoring and Sentry config present, but no admin monitoring dashboard UI.
-- reconcile: Code verified for F-89: src/routes/_public/vendors.index.tsx, src/routes/_public/vendors.$slug.tsx
+- reconcile: Yeah, very sure it has been built but I instructed the agent to downgrade the CI workflow runs
+- reconcile: Code verified for F-94: src/pages/Home.tsx, components/home/Hero.tsx, FeaturedVendors.tsx
+- reconcile: High-confidence verification against supabase/migrations/20261109160000_f106_market_benchmarks.sql:staff_grants capability; auto-confirmed by Sage CTO.
+- reconcile: Regression after the push: Public vendor directory and category filtering exist, but direct booking flow is not complete.
+- reconcile: Regression after the push: Database stores only payment_reference and minor units, never raw card data.
 
 ## Engineering guardrails
 
 - Decided stack: Web frontend: TanStack Start (owner); Mobile app: Expo (React Native); Backend: Supabase (Postgres, Auth, Storage, Edge Functions); Database: Supabase Postgres; Authentication: Auth0 (Okta); Payments: Paystack (owner); Email: Resend; Realtime: Supabase Realtime; Background jobs: Trigger.dev; File storage: Supabase Storage; Search: Algolia; AI integration: Vercel AI SDK; Hosting: Lovable hosting; Observability: Sentry. Do not add other frameworks, libraries or services without a recorded decision.
 - Top quality drivers (ISO/IEC 25010): Security, Performance efficiency, Reliability, Flexibility, Safety, Compatibility, Maintainability.
-- Architecture decision records are in blueprint/tech-spec.md.
 
 ## Active design tokens
 
-- color accent = #007860 (Highlights and the signature motif; never for primary actions.)
-- color background = #FEF9F4 (Page background.)
 - color card = #FFFDFB (Raised surfaces: cards, popovers, dialogs.)
-- color dark-destructive = #FFA096 (Dark mode destructive.)
 - color dark-warning = #CF953A (Dark mode warning.)
 - color destructive = #9B2D28 (Errors and irreversible actions.)
 - color foreground = #181411 (Body text and icons.)
@@ -80,33 +88,29 @@ Held (built out of order, not counted until what they stand on is verified; don'
 - color muted-foreground = #4E4944 (Secondary text; still meets the contrast target.)
 - color primary = #F09000 (Main actions and selected states. One primary action per view.)
 - color ring = #FFB05F (Focus outline: 2px with 2px offset on every interactive element.)
-- color success = #135127 (Confirmed and completed states.)
 - component _rationale = Aso-Oke Ledger: Information is woven like aso-oke cloth, with warm stripe rhythms organizing vendor records, quotes and payments into trustworthy, legible bands. Signature: a thin alternating orange/teal selvage-stripe rule used as section dividers and step progress, echoing the woven edge of aso-oke (Avoids: generic white-and-gold luxury wedding template with script fonts and soft gradients)
 - component Alert = Full-width banner, soft rounded corners, warm tone border-left in orange/teal selvage-stripe, subtle elevation, calm fade-in. (Used by: Backup Payment Processor outage, AI Chatbot Disclosure, Payment Caution Acknowledgment. Do: keep copy concise and persistent when required. Don't: auto-dismiss compliance alerts.)
 - component Badge = Small soft-radius pill, muted base with a thin stripe edge accent, non-animated, subtle contrast for visibility without alarm. (Used by: Cross-house Alert Badges, Invitation Tiers. Do: keep badge count visible but low-contrast. Don't: use motion or pulsing to draw attention.)
-- component Button = Soft radius-md pill button, primary fill with subtle elevation on hover, 48px min height, calm 150ms ease transition, selvage-stripe focus ring on keyboard nav. (Used by: Quote Lifecycle, Payment Caution Acknowledgment, Direct Search & Book. Do: keep label verbs clear (Accept/Book). Don't: stack more than one primary button per row.)
-- component Card = Rounded-lg soft card, subtle shadow-sm, warm background with a thin orange/teal selvage-stripe top rule separating header from content. (Used by: Quote Cards, Vendor Profile, Media Showcase gallery. Do: use stripe rule to separate price/metadata. Don't: nest cards more than one level deep.)
-- component Dialog = Centered modal, radius-lg, subtle elevation, selvage-stripe divider between identity-log section and action buttons, calm scale-in 150ms. (Used by: Second-approver for Large Fund Actions, Health Data Consent capture. Do: show both approver identitie
 
 <!-- sage7:audit:start -->
 ## Valid audit evidence
 
-Audit run: 2026-11-10T00:58:50.626576+00:00 against a confirmed target.
+Audit run: 2026-11-13T01:41:51.175534+00:00 against a confirmed target.
 
-- F-1 Dual Workspace Switcher (Host/Vendor Houses): built - Host and Vendor houses have dedicated navigation and a switcher link in HouseLayout.
-- F-2 Become a Vendor Empty State: built - OpenVendorHouse component renders empty state form to open a vendor house when none exists.
-- F-5 Unified Vendor House (Single Vendor Type): built - Single unified Vendor House structure with category presets in ProfileCopyStudio.
-- F-3 Cross-house Alert Badges: partial - Unread alert count badge exists inside HouseAlerts panel, not yet as cross-house nav badge.
+- F-1 Dual Workspace Switcher (Host/Vendor Houses): partial - Host/vendor routes and HouseLayout exist; workspace switcher component unconfirmed
 - F-4 Unicode-normalized Search Alias: unverified - Possible evidence in blueprint/design-system.md; not counted as missing. No unicode-normalized search alias implementation found in the repository.
-- F-6 Vendor Team Structure: partial - Role matrix and owner/staff membership structure defined in permissions and schema.
-- F-7 AI Intent Capture: unverified - Possible evidence in blueprint/system-overview.md; not counted as missing. No AI intent capture onboarding flow implemented in code.
+- F-6 Vendor Team Structure: unverified - OpenVendorHouse.tsx exists but vendor team structure unconfirmed
+- F-3 Cross-house Alert Badges: partial - Unread alert count badge exists inside HouseAlerts panel, not yet as cross-house nav badge.
+- F-2 Become a Vendor Empty State: built - OpenVendorHouse component shown when no vendor house exists
+- F-5 Unified Vendor House (Single Vendor Type): unverified - OpenVendorHouse.tsx exists but unified vendor house concept unconfirmed
 - F-9 Media Section & Event of the Week: unverified - Possible evidence in blueprint/design-system.md; not counted as missing. No media section or Event of the Week found.
 - F-10 Vendor Vetting at Sign-up: unverified - Possible evidence in blueprint/tech-spec.md; not counted as missing. No vendor vetting at sign-up implemented; vendors open house directly.
 - F-11 Payment Caution Acknowledgment: unverified - Possible evidence in blueprint/tech-spec.md; not counted as missing. No payment caution acknowledgment implemented.
-- F-8 Personalised Dashboard: partial - Host and Vend
+- F-8 Personalised Dashboard: partial - Host and Vendor house overview routes exist, though mostly scaffolding and alerts.
+- F-7 AI Intent Capture: unverified - Possible evidence in blueprint/system-overview.md; not counted as missing. No AI intent capture onboarding flow impl
 
 [Audit evidence truncated to the context budget.]
 
 <!-- sage7:audit:end -->
 
-> Trimmed to the 2500-token context budget: 52 lower-priority items left out from Project summary (1), Current batch (1), Plan (4), Decisions (19), Engineering guardrails (1), Active design tokens (26). The linked source documents have the full detail.
+> Trimmed to the 2500-token context budget: 64 lower-priority items left out from Project summary (2), Current batch (1), Plan (8), Decisions (18), Engineering guardrails (2), Active design tokens (33). The linked source documents have the full detail.
